@@ -13,7 +13,7 @@ async function bootstrap() {
     .setContact(
       'Iván Manzaba',
       'https://ivan-manzaba.vercel.app',
-      'imanzabag@uteq.edu.ec',
+      'mauricio.9.inm@gmail.com',
     )
     .addServer('/api')
     .setVersion('1.0')
@@ -36,7 +36,7 @@ async function bootstrap() {
   );
   app.use(compression());
 
-  app.use(helmet());
+  app.use('/api', helmet());
 
   app.setGlobalPrefix('api');
   await app.listen(4000);
