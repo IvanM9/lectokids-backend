@@ -1,0 +1,209 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  TEACHER
+  ADMIN
+  STUDENT
+}
+
+model user {
+  id        String   @id @default(cuid())
+  firstName String?
+  lastName  String?
+  user      String   @unique
+  password  String
+  role      Role
+  genre     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  teacher Teacher?
+  student Student?
+}
+
+model Teacher {
+  id        String   @id @default(cuid())
+  user      user     @relation(fields: [userId], references: [id])
+  userId    String   @unique
+  isPending Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  comprensionLevelHistory ComprensionLevelHistory[]
+  courses                  Course[]
+}
+
+model Student {
+  id        String   @id @default(cuid())
+  user      user     @relation(fields: [userId], references: [id])
+  userId    String   @unique
+  birthDate DateTime
+  city      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  comprensionLevelHistory ComprensionLevelHistory[]
+  coursesStudent           CourseStudent[]
+}
+
+model ComprensionLevelHistory {
+  id           String   @id @default(cuid())
+  student      Student  @relation(fields: [studentId], references: [id])
+  studentId    String
+  level        String
+  observations String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  createdBy    Teacher? @relation(fields: [createdById], references: [id])
+  createdById  String?
+}
+
+model Course {
+  id        String   @id @default(cuid())
+  name      String
+  teacher   Teacher  @relation(fields: [teacherId], references: [id])
+  teacherId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  courseStudents CourseStudent[]
+}
+
+model CourseStudent {
+  id          String   @id @default(cuid())
+  course      Course   @relation(fields: [courseId], references: [id])
+  courseId    String
+  student     Student  @relation(fields: [studentId], references: [id])
+  studentId   String
+  grade       String
+  customPromp String?
+  problems    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  detailLectures DetailLecture[]
+}
+
+model Levels {
+  id          String   @id @default(cuid())
+  goals       String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  lectures Lecture[]
+}
+
+model Lecture {
+  id        String   @id @default(cuid())
+  title     String
+  goals     String
+  type      String?
+  length    String?
+  level     Levels   @relation(fields: [levelId], references: [id])
+  levelId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  detailLectures DetailLecture[]
+}
+
+model DetailLecture {
+  id        String   @id @default(cuid())
+  lecture   Lecture  @relation(fields: [lectureId], references: [id])
+  lectureId String
+  student   CourseStudent  @relation(fields: [courseStudentId], references: [id])
+  courseStudentId String
+  portada Multimedia @relation(fields: [portadaId], references: [id])
+  portadaId String
+
+  activities Activity[]
+  contentsLecture ContentLecture[]
+}
+
+model ContentLecture {
+  id        String   @id @default(cuid())
+  detailLecture DetailLecture @relation(fields: [detailLectureId], references: [id])
+  detailLectureId String
+  positionPage Int
+  content String
+}
+
+enum TypeActivity {
+  VIDEO
+  QUIZ
+  EXERCISE
+}
+
+model Activity {
+  id        String   @id @default(cuid())
+  type      TypeActivity
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  detailLecture DetailLecture @relation(fields: [detailLectureId], references: [id])
+  detailLectureId String
+
+  questionActivities QuestionActivity[]
+  imageActivities ImageActivity[]
+  califications Calification[]
+}
+
+model QuestionActivity {
+  id        String   @id @default(cuid())
+  question  String
+  activity  Activity @relation(fields: [activityId], references: [id])
+  activityId String
+
+  answerActivity AnswerActivity[]
+} 
+
+model AnswerActivity {
+  id        String   @id @default(cuid())
+  answer    String
+  isCorrect Boolean
+  question  QuestionActivity @relation(fields: [questionId], references: [id])
+  questionId String
+}
+
+model ImageActivity {
+  id        String   @id @default(cuid())
+  multimedia Multimedia @relation(fields: [multimediaId], references: [id])
+  multimediaId String
+  activity  Activity @relation(fields: [activityId], references: [id])
+  activityId String
+}
+
+model Multimedia {
+  id        String   @id @default(cuid())
+  url       String
+  description String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  imageActivities ImageActivity[]
+  detailLectures DetailLecture[]
+}
+
+model Calification {
+  id        String   @id @default(cuid())
+  calification Decimal
+  recommendation String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  activity Activity @relation(fields: [activityId], references: [id])
+  activityId String
+}
