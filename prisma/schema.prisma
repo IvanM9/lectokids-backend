@@ -20,190 +20,235 @@ enum Role {
 }
 
 model user {
-  id        String   @id @default(cuid())
-  firstName String?
-  lastName  String?
-  user      String   @unique
+  id        String    @id @default(cuid())
+  firstName String?   @map("first_name")
+  lastName  String?   @map("last_name")
+  user      String    @unique
   password  String
   role      Role
-  genre     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  genre     String?   @db.VarChar(1)
+  status    Boolean   @default(true)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamptz()
 
   teacher Teacher?
   student Student?
+
+  @@map("users")
 }
 
 model Teacher {
-  id        String   @id @default(cuid())
-  user      user     @relation(fields: [userId], references: [id])
-  userId    String   @unique
-  isPending Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id        String    @id @default(cuid())
+  user      user      @relation(fields: [userId], references: [id])
+  userId    String    @unique @map("user_id")
+  isPending Boolean   @default(true) @map("is_pending")
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamptz()
 
   comprensionLevelHistory ComprensionLevelHistory[]
-  courses                  Course[]
+  courses                 Course[]
+
+  @@map("teachers")
 }
 
 model Student {
-  id        String   @id @default(cuid())
-  user      user     @relation(fields: [userId], references: [id])
-  userId    String   @unique
-  birthDate DateTime
-  city      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             String    @id @default(cuid())
+  user           user      @relation(fields: [userId], references: [id])
+  userId         String    @unique @map("user_id")
+  identification String?   @unique @db.VarChar(15)
+  birthDate      DateTime  @map("birth_date") @db.Date
+  city           String    @db.VarChar(150)
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt      DateTime? @updatedAt @map("updated_at") @db.Timestamptz()
 
   comprensionLevelHistory ComprensionLevelHistory[]
-  coursesStudent           CourseStudent[]
+  coursesStudent          CourseStudent[]
+
+  @@map("students")
 }
 
 model ComprensionLevelHistory {
-  id           String   @id @default(cuid())
-  student      Student  @relation(fields: [studentId], references: [id])
-  studentId    String
-  level        String
-  observations String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  createdBy    Teacher? @relation(fields: [createdById], references: [id])
-  createdById  String?
+  id           String    @id @default(cuid())
+  student      Student   @relation(fields: [studentId], references: [id])
+  studentId    String    @map("student_id")
+  level        Int       @db.SmallInt
+  observations String?   @db.Text
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt    DateTime? @updatedAt @map("updated_at") @db.Timestamptz()
+  createdBy    Teacher?  @relation(fields: [createdById], references: [id])
+  createdById  String?   @map("created_by_id")
+
+  @@map("comprension_level_history")
 }
 
 model Course {
-  id        String   @id @default(cuid())
-  name      String
-  teacher   Teacher  @relation(fields: [teacherId], references: [id])
-  teacherId String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id        String    @id @default(cuid())
+  name      String    @db.VarChar(150)
+  teacher   Teacher   @relation(fields: [teacherId], references: [id])
+  teacherId String    @map("teacher_id")
+  status    Boolean   @default(true)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamptz()
 
   courseStudents CourseStudent[]
+
+  @@map("courses")
 }
 
 model CourseStudent {
-  id          String   @id @default(cuid())
-  course      Course   @relation(fields: [courseId], references: [id])
-  courseId    String
-  student     Student  @relation(fields: [studentId], references: [id])
-  studentId   String
-  grade       String
-  customPromp String?
-  problems    String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id          String    @id @default(cuid())
+  course      Course    @relation(fields: [courseId], references: [id])
+  courseId    String    @map("course_id")
+  student     Student   @relation(fields: [studentId], references: [id])
+  studentId   String    @map("student_id")
+  grade       Int
+  customPromp String?   @map("custom_promp")
+  problems    String?   @db.Text
+  status      Boolean   @default(true)
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt   DateTime? @updatedAt @map("updated_at") @db.Timestamptz()
 
   detailLectures DetailLecture[]
+
+  @@map("courses_students")
 }
 
-model Levels {
-  id          String   @id @default(cuid())
-  goals       String
-  description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+model Level {
+  id          String    @id @default(cuid())
+  goals       String    @db.Text
+  description String?   @db.Text
+  status      Boolean   @default(true)
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt   DateTime? @updatedAt @map("updated_at") @db.Timestamptz()
 
   lectures Lecture[]
+
+  @@map("levels")
 }
 
 model Lecture {
-  id        String   @id @default(cuid())
-  title     String
-  goals     String
-  type      String?
-  length    String?
-  level     Levels   @relation(fields: [levelId], references: [id])
-  levelId   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id        String    @id @default(cuid())
+  title     String    @db.VarChar(150)
+  goals     String    @db.Text
+  type      String?   @db.VarChar(50)
+  length    String?   @db.VarChar(50)
+  status    Boolean   @default(true)
+  level     Level     @relation(fields: [levelId], references: [id])
+  levelId   String    @map("level_id")
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamptz()
 
   detailLectures DetailLecture[]
+
+  @@map("lectures")
 }
 
 model DetailLecture {
-  id        String   @id @default(cuid())
-  lecture   Lecture  @relation(fields: [lectureId], references: [id])
-  lectureId String
-  student   CourseStudent  @relation(fields: [courseStudentId], references: [id])
-  courseStudentId String
-  portada Multimedia @relation(fields: [portadaId], references: [id])
-  portadaId String
+  id              String        @id @default(cuid())
+  lecture         Lecture       @relation(fields: [lectureId], references: [id])
+  lectureId       String        @map("lecture_id")
+  student         CourseStudent @relation(fields: [courseStudentId], references: [id])
+  courseStudentId String        @map("course_student_id")
+  frontPage       Multimedia    @relation(fields: [frontPageId], references: [id])
+  frontPageId     String        @map("front_page_id")
+  status          Boolean       @default(true)
 
-  activities Activity[]
+  activities      Activity[]
   contentsLecture ContentLecture[]
+
+  @@map("detail_lectures")
 }
 
 model ContentLecture {
-  id        String   @id @default(cuid())
-  detailLecture DetailLecture @relation(fields: [detailLectureId], references: [id])
-  detailLectureId String
-  positionPage Int
-  content String
+  id              String        @id @default(cuid())
+  detailLecture   DetailLecture @relation(fields: [detailLectureId], references: [id])
+  detailLectureId String        @map("detail_lecture_id")
+  positionPage    Int           @map("position_page") @db.SmallInt
+  status          Boolean       @default(true)
+  content         String        @db.Text
+  createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt       DateTime?     @updatedAt @map("updated_at") @db.Timestamptz()
+
+  @@map("contents_lecture")
 }
 
 enum TypeActivity {
-  VIDEO
+  YES_NO
   QUIZ
-  EXERCISE
+  OPEN_ANSWERS
+  OPEN_TEXT
+  CROSSWORD
 }
 
 model Activity {
-  id        String   @id @default(cuid())
-  type      TypeActivity
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  detailLecture DetailLecture @relation(fields: [detailLectureId], references: [id])
-  detailLectureId String
+  id              String        @id @default(cuid())
+  type            TypeActivity
+  createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt       DateTime?     @updatedAt @map("updated_at") @db.Timestamptz()
+  detailLecture   DetailLecture @relation(fields: [detailLectureId], references: [id])
+  detailLectureId String        @map("detail_lecture_id")
+  status          Boolean       @default(true)
 
   questionActivities QuestionActivity[]
-  imageActivities ImageActivity[]
-  califications Calification[]
+  imageActivities    ImageActivity[]
+  scores             Score[]
+
+  @@map("activities")
 }
 
 model QuestionActivity {
-  id        String   @id @default(cuid())
-  question  String
-  activity  Activity @relation(fields: [activityId], references: [id])
-  activityId String
+  id         String   @id @default(cuid())
+  question   String   @db.VarChar(255)
+  activity   Activity @relation(fields: [activityId], references: [id])
+  activityId String   @map("activity_id")
 
   answerActivity AnswerActivity[]
-} 
+
+  @@map("question_activities")
+}
 
 model AnswerActivity {
-  id        String   @id @default(cuid())
-  answer    String
-  isCorrect Boolean
-  question  QuestionActivity @relation(fields: [questionId], references: [id])
-  questionId String
+  id         String           @id @default(cuid())
+  answer     String           @db.VarChar(255)
+  isCorrect  Boolean?         @default(false) @map("is_correct")
+  question   QuestionActivity @relation(fields: [questionId], references: [id])
+  questionId String           @map("question_id")
+
+  @@map("answer_activities")
 }
 
 model ImageActivity {
-  id        String   @id @default(cuid())
-  multimedia Multimedia @relation(fields: [multimediaId], references: [id])
-  multimediaId String
-  activity  Activity @relation(fields: [activityId], references: [id])
-  activityId String
+  id           String     @id @default(cuid())
+  multimedia   Multimedia @relation(fields: [multimediaId], references: [id])
+  multimediaId String     @map("multimedia_id")
+  activity     Activity   @relation(fields: [activityId], references: [id])
+  activityId   String     @map("activity_id")
+
+  @@map("image_activities")
 }
 
 model Multimedia {
-  id        String   @id @default(cuid())
-  url       String
-  description String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String    @id @default(cuid())
+  url         String    @db.Text
+  description String?   @db.Text
+  status      Boolean   @default(true)
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt   DateTime? @updatedAt @map("updated_at") @db.Timestamptz()
 
   imageActivities ImageActivity[]
-  detailLectures DetailLecture[]
+  frontPages      DetailLecture[]
 }
 
-model Calification {
-  id        String   @id @default(cuid())
-  calification Decimal
-  recommendation String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model Score {
+  id             String    @id @default(cuid())
+  score          Decimal?  @db.Decimal(3, 2)
+  recommendation String?   @db.Text
+  reponses       Json[]    @default([]) @db.Json
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt      DateTime? @updatedAt @map("updated_at") @db.Timestamptz()
 
-  activity Activity @relation(fields: [activityId], references: [id])
+  activity   Activity @relation(fields: [activityId], references: [id])
   activityId String
+
+  @@map("scores")
 }

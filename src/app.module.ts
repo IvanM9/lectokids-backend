@@ -6,6 +6,8 @@ import { APP_GUARD } from '@nestjs/core';
 import { CacheModule } from '@nestjs/cache-manager';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { SecurityModule } from '@/security/security.module';
+import { SharedModule } from './shared/shared.module';
 
 @Module({
   imports: [
@@ -27,6 +29,8 @@ import { join } from 'path';
         cacheControl: true,
       },
     }),
+    SecurityModule,
+    SharedModule,
   ],
   controllers: [AppController],
   providers: [
