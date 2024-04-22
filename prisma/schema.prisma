@@ -23,7 +23,7 @@ model user {
   id        String    @id @default(cuid())
   firstName String?   @map("first_name")
   lastName  String?   @map("last_name")
-  user      String    @unique
+  user      String    @unique @db.VarChar(50)
   password  String
   role      Role
   genre     String?   @db.VarChar(1)
