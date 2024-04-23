@@ -121,12 +121,12 @@ model Level {
   createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt   DateTime? @updatedAt @map("updated_at") @db.Timestamptz()
 
-  lectures Lecture[]
+  readings Reading[]
 
   @@map("levels")
 }
 
-model Lecture {
+model Reading {
   id        String    @id @default(cuid())
   title     String    @db.VarChar(150)
   goals     String    @db.Text
@@ -140,13 +140,13 @@ model Lecture {
 
   detailLectures DetailLecture[]
 
-  @@map("lectures")
+  @@map("readings")
 }
 
 model DetailLecture {
   id              String        @id @default(cuid())
-  lecture         Lecture       @relation(fields: [lectureId], references: [id])
-  lectureId       String        @map("lecture_id")
+  reading         Reading       @relation(fields: [readingId], references: [id])
+  readingId       String        @map("lecture_id")
   student         CourseStudent @relation(fields: [courseStudentId], references: [id])
   courseStudentId String        @map("course_student_id")
   frontPage       Multimedia    @relation(fields: [frontPageId], references: [id])

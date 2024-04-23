@@ -9,6 +9,9 @@ import { join } from 'path';
 import { SecurityModule } from '@/security/security.module';
 import { SharedModule } from './shared/shared.module';
 import { UsersModule } from './users/users.module';
+import { CoursesModule } from './courses/courses.module';
+import { ReadingsModule } from './readings/readings.module';
+import { AiModule } from './ai/ai.module';
 
 @Module({
   imports: [
@@ -33,6 +36,9 @@ import { UsersModule } from './users/users.module';
     SecurityModule,
     SharedModule,
     UsersModule,
+    CoursesModule,
+    ReadingsModule,
+    AiModule,
   ],
   controllers: [AppController],
   providers: [
