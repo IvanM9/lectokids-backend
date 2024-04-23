@@ -5,10 +5,12 @@ import { Injectable } from '@nestjs/common';
 export class UsersService {
   constructor(private db: PrismaService) {}
 
-  async getAllMyStudents(teacherId: string) {
+  async getAllMyStudents(teacherId: string, courseId: string) {
     return await this.db.student.findMany({
       where: {
-        coursesStudent: { some: { course: { teacher: { id: teacherId } } } },
+        coursesStudent: {
+          some: { course: { teacher: { id: teacherId }, id: courseId } },
+        },
       },
       select: {
         id: true,

@@ -1,4 +1,10 @@
-import { Controller, Get, UseGuards, UseInterceptors } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { UsersService } from '@/users/services/users.service';
 import { RoleGuard } from '@/security/jwt-strategy/roles.guard';
@@ -16,11 +22,14 @@ import { InfoUserInterface } from '@/security/jwt-strategy/info-user.interface';
 export class UsersController {
   constructor(private service: UsersService) {}
 
-  @Get('students')
+  @Get('students/:courseId')
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Role(RoleEnum.TEACHER)
-  async getAllStudents(@CurrentUser() { id }: InfoUserInterface) {
-    return { data: await this.service.getAllMyStudents(id) };
+  async getAllStudents(
+    @CurrentUser() { id }: InfoUserInterface,
+    @Param('courseId') courseId: string,
+  ) {
+    return { data: await this.service.getAllMyStudents(id, courseId) };
   }
 
   @Get('teachers')

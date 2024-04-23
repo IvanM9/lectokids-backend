@@ -17,6 +17,7 @@ export class CoursesService {
         id: true,
         name: true,
         status: true,
+        description: true,
       },
     });
   }
