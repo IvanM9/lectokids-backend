@@ -48,7 +48,7 @@ export class AuthService {
           role: user.role,
         },
         {
-          expiresIn: '5',
+          expiresIn: '12h',
           secret: ENVIRONMENT.JWT_SECRET_KEY,
         },
       ),

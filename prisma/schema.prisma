@@ -82,13 +82,15 @@ model ComprensionLevelHistory {
 }
 
 model Course {
-  id        String    @id @default(cuid())
-  name      String    @db.VarChar(150)
-  teacher   Teacher   @relation(fields: [teacherId], references: [id])
-  teacherId String    @map("teacher_id")
-  status    Boolean   @default(true)
-  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamptz()
+  id          String    @id @default(cuid())
+  name        String    @db.VarChar(150)
+  teacher     Teacher   @relation(fields: [teacherId], references: [id])
+  teacherId   String    @map("teacher_id")
+  color       String?   @db.VarChar(7)
+  description String?   @db.Text
+  status      Boolean   @default(true)
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt   DateTime? @updatedAt @map("updated_at") @db.Timestamptz()
 
   courseStudents CourseStudent[]
 
