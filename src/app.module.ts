@@ -8,6 +8,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { SecurityModule } from '@/security/security.module';
 import { SharedModule } from './shared/shared.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { SharedModule } from './shared/shared.module';
     }),
     SecurityModule,
     SharedModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [
