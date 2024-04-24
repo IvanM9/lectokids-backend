@@ -58,6 +58,7 @@ model Student {
   identification String?   @unique @db.VarChar(15)
   birthDate      DateTime  @map("birth_date") @db.Date
   city           String    @db.VarChar(150)
+  interests      String?   @db.Text
   createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt      DateTime? @updatedAt @map("updated_at") @db.Timestamptz()
 
@@ -104,7 +105,7 @@ model CourseStudent {
   student     Student   @relation(fields: [studentId], references: [id])
   studentId   String    @map("student_id")
   grade       Int
-  customPromp String?   @map("custom_promp")
+  customPrompt String?   @map("custom_prompt")
   problems    String?   @db.Text
   status      Boolean   @default(true)
   createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz()
@@ -174,17 +175,30 @@ model ContentLecture {
   @@map("contents_lecture")
 }
 
-enum TypeActivity {
-  YES_NO
-  QUIZ
-  OPEN_ANSWERS
-  OPEN_TEXT
-  CROSSWORD
+// enum TypeActivity {
+//   YES_NO
+//   QUIZ
+//   OPEN_ANSWERS
+//   OPEN_TEXT
+//   CROSSWORD
+// }
+
+model TypeActivity {
+  id        String    @id @default(cuid())
+  name      String    @db.VarChar(50)
+  status    Boolean   @default(true)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamptz()
+
+  activities Activity[]
+
+  @@map("types_activities")
 }
 
 model Activity {
   id              String        @id @default(cuid())
-  type            TypeActivity
+  typeActivity    TypeActivity  @relation(fields: [typeActivityId], references: [id])
+  typeActivityId  String        @map("type_activity_id")
   createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt       DateTime?     @updatedAt @map("updated_at") @db.Timestamptz()
   detailLecture   DetailLecture @relation(fields: [detailLectureId], references: [id])

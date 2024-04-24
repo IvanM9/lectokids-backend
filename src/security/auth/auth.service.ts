@@ -66,7 +66,7 @@ export class AuthService {
         throw new UnauthorizedException('El usuario no es profesor');
       });
 
-    if (!isPending)
+    if (isPending)
       throw new UnauthorizedException('El usuario no está habilitado');
   }
 

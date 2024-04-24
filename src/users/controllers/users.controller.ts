@@ -1,7 +1,9 @@
 import {
+  Body,
   Controller,
   Get,
   Param,
+  Post,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -14,6 +16,7 @@ import { RoleEnum } from '@/security/jwt-strategy/role.enum';
 import { ResponseHttpInterceptor } from '@/shared/interceptors/response-http.interceptor';
 import { CurrentUser } from '@/security/jwt-strategy/auth.decorator';
 import { InfoUserInterface } from '@/security/jwt-strategy/info-user.interface';
+import { CreateStudentDto } from '../dtos/students.dto';
 
 @Controller('users')
 @ApiTags('users')
@@ -37,5 +40,15 @@ export class UsersController {
   @Role(RoleEnum.ADMIN)
   async getAllTeachers() {
     return { data: await this.service.getAllTeachers() };
+  }
+
+  @Post('create-student')
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Role(RoleEnum.TEACHER)
+  async createStudents(
+    @CurrentUser() { id }: InfoUserInterface,
+    @Body() data: CreateStudentDto,
+  ) {
+    return await this.service.createStudents(data, id);
   }
 }
