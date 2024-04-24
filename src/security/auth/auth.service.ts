@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from '@/security/auth/dtos/LoginDto';
 import { PrismaService } from '@/prisma.service';
@@ -19,14 +23,14 @@ export class AuthService {
         where: { user: payload.user },
       })
       .catch(() => {
-        throw new UnauthorizedException('Usuario no encontrado');
+        throw new BadRequestException('Usuario no encontrado');
       });
 
     if (!user.status)
       throw new UnauthorizedException('El usuario se encuentra desactivado');
 
     if (!(await compare(payload.password, user.password))) {
-      throw new UnauthorizedException('Contraseña incorrecta');
+      throw new BadRequestException('Contraseña incorrecta');
     }
 
     switch (user.role) {

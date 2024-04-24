@@ -92,6 +92,7 @@ export class UsersService {
               birthDate: data.birthDate,
               city: data.city,
               identification: data.identification,
+              interests: data.interests,
             },
           },
           grade: data.grade,

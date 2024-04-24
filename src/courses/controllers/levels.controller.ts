@@ -1,4 +1,65 @@
-import { Controller } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
+import { LevelsService } from '../services/levels.service';
+import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ResponseHttpInterceptor } from '@/shared/interceptors/response-http.interceptor';
+import { JwtAuthGuard } from '@/security/jwt-strategy/jwt-auth.guard';
+import { RoleGuard } from '@/security/jwt-strategy/roles.guard';
+import { CurrentUser } from '@/security/jwt-strategy/auth.decorator';
+import { CreateLevelDto } from '../dtos/levels.dto';
+import { OptionalBooleanPipe } from '@/shared/pipes/optional-boolean.pipe';
 
 @Controller('levels')
-export class LevelsController {}
+@ApiTags('levels')
+@UseInterceptors(ResponseHttpInterceptor)
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard, RoleGuard)
+export class LevelsController {
+  constructor(private levelsService: LevelsService) {}
+
+  @Get(':courseId')
+  @ApiQuery({ name: 'status', required: false })
+  async getAllLevels(
+    @Param('courseId') courseId: string,
+    @CurrentUser() { id }: { id: string },
+    @Query('status', OptionalBooleanPipe) status?: boolean,
+  ) {
+    return {
+      data: await this.levelsService.getAllLevels(courseId, id, status),
+    };
+  }
+
+  @Post()
+  async createLevel(
+    @Body() data: CreateLevelDto,
+    @CurrentUser() { id }: { id: string },
+  ) {
+    return await this.levelsService.createLevel(data, id);
+  }
+
+  @Patch(':levelId')
+  async updateLevel(
+    @Param('levelId') levelId: string,
+    @Body() data: CreateLevelDto,
+    @CurrentUser() { id }: { id: string },
+  ) {
+    return await this.levelsService.updateLevel(levelId, data, id);
+  }
+
+  @Patch(':levelId/status')
+  async updateStatus(
+    @Param('levelId') levelId: string,
+    @CurrentUser() { id }: { id: string },
+  ) {
+    return await this.levelsService.updateStatusLevel(levelId, id);
+  }
+}

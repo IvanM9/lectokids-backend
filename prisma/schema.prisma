@@ -94,6 +94,7 @@ model Course {
   updatedAt   DateTime? @updatedAt @map("updated_at") @db.Timestamptz()
 
   courseStudents CourseStudent[]
+  levels         Level[]
 
   @@map("courses")
 }
@@ -118,11 +119,14 @@ model CourseStudent {
 
 model Level {
   id          String    @id @default(cuid())
+  name        String    @db.VarChar(150)
   goals       String    @db.Text
   description String?   @db.Text
   status      Boolean   @default(true)
   createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt   DateTime? @updatedAt @map("updated_at") @db.Timestamptz()
+  course     Course    @relation(fields: [courseId], references: [id])
+  courseId   String    @map("course_id")
 
   readings Reading[]
 
