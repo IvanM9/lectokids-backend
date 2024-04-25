@@ -31,6 +31,9 @@ export class LevelsService {
           updatedAt: true,
           name: true,
         },
+        orderBy: {
+          createdAt: 'asc',
+        },
       })
       .catch(() => {
         throw new NotFoundException('No se encontraron niveles');
@@ -95,6 +98,7 @@ export class LevelsService {
         data: {
           goals: data.goals,
           description: data.description,
+          name: data.name,
         },
       })
       .catch(() => {
