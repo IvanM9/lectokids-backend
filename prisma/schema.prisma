@@ -87,7 +87,6 @@ model Course {
   name        String    @db.VarChar(150)
   teacher     Teacher   @relation(fields: [teacherId], references: [id])
   teacherId   String    @map("teacher_id")
-  color       String?   @db.VarChar(7)
   description String?   @db.Text
   status      Boolean   @default(true)
   createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz()
@@ -100,17 +99,17 @@ model Course {
 }
 
 model CourseStudent {
-  id          String    @id @default(cuid())
-  course      Course    @relation(fields: [courseId], references: [id])
-  courseId    String    @map("course_id")
-  student     Student   @relation(fields: [studentId], references: [id])
-  studentId   String    @map("student_id")
-  grade       Int
+  id           String    @id @default(cuid())
+  course       Course    @relation(fields: [courseId], references: [id])
+  courseId     String    @map("course_id")
+  student      Student   @relation(fields: [studentId], references: [id])
+  studentId    String    @map("student_id")
+  grade        Int
   customPrompt String?   @map("custom_prompt")
-  problems    String?   @db.Text
-  status      Boolean   @default(true)
-  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt   DateTime? @updatedAt @map("updated_at") @db.Timestamptz()
+  problems     String?   @db.Text
+  status       Boolean   @default(true)
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt    DateTime? @updatedAt @map("updated_at") @db.Timestamptz()
 
   detailLectures DetailLecture[]
 
@@ -125,8 +124,8 @@ model Level {
   status      Boolean   @default(true)
   createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt   DateTime? @updatedAt @map("updated_at") @db.Timestamptz()
-  course     Course    @relation(fields: [courseId], references: [id])
-  courseId   String    @map("course_id")
+  course      Course    @relation(fields: [courseId], references: [id])
+  courseId    String    @map("course_id")
 
   readings Reading[]
 
@@ -188,11 +187,12 @@ model ContentLecture {
 // }
 
 model TypeActivity {
-  id        String    @id @default(cuid())
-  name      String    @db.VarChar(50)
-  status    Boolean   @default(true)
-  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamptz()
+  id          String    @id @default(cuid())
+  name        String    @db.VarChar(50)
+  description String?   @db.Text
+  status      Boolean   @default(true)
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt   DateTime? @updatedAt @map("updated_at") @db.Timestamptz()
 
   activities Activity[]
 

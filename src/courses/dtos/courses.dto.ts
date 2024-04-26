@@ -1,11 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsBoolean,
-  IsHexColor,
-  IsOptional,
-  IsString,
-  Length,
-} from 'class-validator';
+import { IsBoolean, IsOptional, IsString, Length } from 'class-validator';
 
 export class CreateCoursesDto {
   @ApiProperty()
@@ -17,11 +11,6 @@ export class CreateCoursesDto {
   @IsOptional()
   @IsBoolean()
   status?: boolean;
-
-  @ApiProperty()
-  @IsHexColor()
-  @IsOptional()
-  color?: string;
 
   @ApiProperty()
   @IsString()
