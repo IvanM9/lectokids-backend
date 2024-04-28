@@ -39,11 +39,11 @@ export class StudentsService {
                   genre: data.genre,
                   user: data.identification,
                   password: hashSync(data.identification, 10),
+                  identification: data.identification,
+                  birthDate: data.birthDate,
                 },
               },
-              birthDate: data.birthDate,
               city: data.city,
-              identification: data.identification,
               interests: data.interests,
             },
           },
@@ -64,7 +64,15 @@ export class StudentsService {
     teacherId: string,
     courseId: string,
     status?: boolean,
+    search?: string,
   ) {
+    const searchQuery = search
+      ? [
+          { firstName: { contains: search, mode: 'insensitive' } },
+          { lastName: { contains: search, mode: 'insensitive' } },
+        ]
+      : undefined;
+
     return await this.db.student.findMany({
       where: {
         coursesStudent: {
@@ -72,6 +80,9 @@ export class StudentsService {
             course: { teacher: { userId: teacherId }, id: courseId },
             status,
           },
+        },
+        user: {
+          OR: searchQuery,
         },
       },
       select: {
@@ -81,11 +92,11 @@ export class StudentsService {
             firstName: true,
             lastName: true,
             status: true,
+            birthDate: true,
+            identification: true,
           },
         },
-        birthDate: true,
         city: true,
-        identification: true,
         createdAt: true,
         updatedAt: true,
         interests: true,
@@ -118,9 +129,9 @@ export class StudentsService {
             update: {
               firstName: data.firstName,
               lastName: data.lastName,
+              birthDate: data.birthDate,
             },
           },
-          birthDate: data.birthDate,
           city: data.city,
           interests: data.interests,
           coursesStudent: {
@@ -145,17 +156,20 @@ export class StudentsService {
     return { message: 'Estudiante actualizado correctamente' };
   }
 
-  async updateStudentStatus(studentId: string) {
-    const user = await this.db.student.findUnique({
-      where: { id: studentId },
-      select: { user: { select: { status: true } } },
-    });
-    console.log(studentId);
+  async updateStudentStatus(studentId: string, courseId: string) {
+    const data = await this.db.courseStudent
+      .findFirstOrThrow({
+        where: { studentId, courseId },
+        select: { id: true, status: true },
+      })
+      .catch(() => {
+        throw new NotFoundException('No se encontró el estudiante');
+      });
 
-    await this.db.student
+    await this.db.courseStudent
       .update({
-        where: { id: studentId },
-        data: { user: { update: { status: !user.user.status } } },
+        where: { id: data.id },
+        data: { status: !data.status },
       })
       .catch(() => {
         throw new BadRequestException('No se pudo actualizar el estudiante');
@@ -164,13 +178,23 @@ export class StudentsService {
     return { message: 'Estudiante actualizado correctamente' };
   }
 
-  async deleteStudent(studentId: string) {
-    await this.db.courseStudent
-      .delete({ where: { id: studentId } })
-      .catch(() => {
-        throw new BadRequestException('No se pudo eliminar el estudiante');
-      });
-
-    return { message: 'Estudiante eliminado correctamente' };
+  async getStudentByIdentification(identification: string) {
+    return await this.db.student.findFirst({
+      where: { user: { identification } },
+      select: {
+        id: true,
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+            status: true,
+            genre: true,
+            birthDate: true,
+          },
+        },
+        city: true,
+        interests: true,
+      },
+    });
   }
 }

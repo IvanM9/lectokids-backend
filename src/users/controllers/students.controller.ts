@@ -42,12 +42,16 @@ export class StudentsController {
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Role(RoleEnum.TEACHER)
   @ApiQuery({ name: 'status', required: false })
+  @ApiQuery({ name: 'search', required: false })
   async getAllStudents(
     @CurrentUser() { id }: InfoUserInterface,
     @Param('courseId') courseId: string,
     @Query('status', OptionalBooleanPipe) status: boolean,
+    @Query('search') search?: string,
   ) {
-    return { data: await this.service.getAllMyStudents(id, courseId, status) };
+    return {
+      data: await this.service.getAllMyStudents(id, courseId, status, search),
+    };
   }
 
   @Patch(':studentId')
@@ -59,9 +63,23 @@ export class StudentsController {
     return await this.service.updateStudent(data, studentId);
   }
 
-  @Patch(':studentId/status')
+  @Patch(':studentId/:courseId/status')
   @Role(RoleEnum.TEACHER)
-  async changeStatus(@Param('studentId') studentId: string) {
-    return await this.service.updateStudentStatus(studentId);
+  async changeStatus(
+    @Param('studentId') studentId: string,
+    @Param('courseId') courseId: string,
+  ) {
+    return await this.service.updateStudentStatus(studentId, courseId);
+  }
+
+  @Get(':identification/by-identification')
+  @Role(RoleEnum.TEACHER)
+  async getStudentByIdentification(
+    @Param('identification') identification: string,
+  ) {
+    return {
+      data: await this.service.getStudentByIdentification(identification),
+      message: 'Se buscó al estudiante correctamente',
+    };
   }
 }
