@@ -1,5 +1,5 @@
 import { ApiProperty, OmitType } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
+// import { Transform } from 'class-transformer';
 import {
   IsDateString,
   IsNotEmpty,
@@ -46,7 +46,7 @@ export class CreateStudentDto {
 
   @ApiProperty()
   @IsNumber()
-  @Transform(({ value }) => parseInt(value))
+  // @Transform(({ value }) => parseInt(value))
   grade: number;
 
   @ApiProperty()
@@ -66,7 +66,6 @@ export class CreateStudentDto {
 }
 
 export class UpdateStudentDto extends OmitType(CreateStudentDto, [
-  'courseId',
   'identification',
   'genre',
 ]) {}

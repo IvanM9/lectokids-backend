@@ -101,29 +101,44 @@ export class StudentsService {
   }
 
   async updateStudent(data: UpdateStudentDto, studentId: string) {
-    await this.db.courseStudent
+    const courseStudentId = await this.db.courseStudent
+      .findFirst({
+        where: { studentId, courseId: data.courseId, status: true },
+        select: { id: true },
+      })
+      .catch(() => {
+        throw new NotFoundException('No se encontró el estudiante');
+      });
+
+    await this.db.student
       .update({
         where: { id: studentId },
         data: {
-          grade: data.grade,
-          customPrompt: data.customPrompt,
-          problems: data.problems,
-          student: {
+          user: {
             update: {
-              birthDate: data.birthDate,
-              city: data.city,
-              interests: data.interests,
-              user: {
-                update: {
-                  firstName: data.firstName,
-                  lastName: data.lastName,
-                },
+              firstName: data.firstName,
+              lastName: data.lastName,
+            },
+          },
+          birthDate: data.birthDate,
+          city: data.city,
+          interests: data.interests,
+          coursesStudent: {
+            update: {
+              where: {
+                id: courseStudentId.id,
+              },
+              data: {
+                grade: data.grade,
+                customPrompt: data.customPrompt,
+                problems: data.problems,
               },
             },
           },
         },
       })
-      .catch(() => {
+      .catch((e) => {
+        console.error(e);
         throw new BadRequestException('No se pudo actualizar el estudiante');
       });
 
@@ -147,5 +162,15 @@ export class StudentsService {
       });
 
     return { message: 'Estudiante actualizado correctamente' };
+  }
+
+  async deleteStudent(studentId: string) {
+    await this.db.courseStudent
+      .delete({ where: { id: studentId } })
+      .catch(() => {
+        throw new BadRequestException('No se pudo eliminar el estudiante');
+      });
+
+    return { message: 'Estudiante eliminado correctamente' };
   }
 }
