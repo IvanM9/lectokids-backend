@@ -43,15 +43,21 @@ export class StudentsController {
   @Role(RoleEnum.TEACHER)
   @ApiQuery({ name: 'status', required: false })
   @ApiQuery({ name: 'search', required: false })
+  @ApiQuery({ name: 'page', required: false })
   async getAllStudents(
     @CurrentUser() { id }: InfoUserInterface,
     @Param('courseId') courseId: string,
     @Query('status', OptionalBooleanPipe) status: boolean,
     @Query('search') search?: string,
+    @Query('page') page?: number,
   ) {
-    return {
-      data: await this.service.getAllMyStudents(id, courseId, status, search),
-    };
+    return await this.service.getAllMyStudents(
+      id,
+      courseId,
+      status,
+      search,
+      page,
+    );
   }
 
   @Patch(':studentId')

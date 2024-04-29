@@ -65,15 +65,9 @@ export class StudentsService {
     courseId: string,
     status?: boolean,
     search?: string,
+    page?: number,
   ) {
-    const searchQuery = search
-      ? [
-          { firstName: { contains: search, mode: 'insensitive' } },
-          { lastName: { contains: search, mode: 'insensitive' } },
-        ]
-      : undefined;
-
-    return await this.db.student.findMany({
+    const data = await this.db.student.findMany({
       where: {
         coursesStudent: {
           some: {
@@ -82,7 +76,10 @@ export class StudentsService {
           },
         },
         user: {
-          OR: searchQuery,
+          OR: [
+            { firstName: { contains: search, mode: 'insensitive' } },
+            { lastName: { contains: search, mode: 'insensitive' } },
+          ],
         },
       },
       select: {
@@ -108,7 +105,28 @@ export class StudentsService {
           },
         },
       },
+      skip: page ? (page - 1) * 5 : 0,
+      take: 5,
     });
+
+    const total = await this.db.student.count({
+      where: {
+        coursesStudent: {
+          some: {
+            course: { teacher: { userId: teacherId }, id: courseId },
+            status,
+          },
+        },
+        user: {
+          OR: [
+            { firstName: { contains: search, mode: 'insensitive' } },
+            { lastName: { contains: search, mode: 'insensitive' } },
+          ],
+        },
+      },
+    });
+
+    return { data: { students: data, total } };
   }
 
   async updateStudent(data: UpdateStudentDto, studentId: string) {

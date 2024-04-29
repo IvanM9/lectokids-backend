@@ -6,6 +6,7 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  Length,
 } from 'class-validator';
 
 export class CreateStudentDto {
@@ -22,6 +23,7 @@ export class CreateStudentDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
+  @Length(10, 15)
   identification: string;
 
   @ApiProperty()
