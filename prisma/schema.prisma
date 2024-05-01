@@ -111,7 +111,7 @@ model CourseStudent {
   createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt    DateTime? @updatedAt @map("updated_at") @db.Timestamptz()
 
-  detailLectures DetailLecture[]
+  detailReadings DetailReading[]
 
   @@map("courses_students")
 }
@@ -144,12 +144,12 @@ model Reading {
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamptz()
 
-  detailLectures DetailLecture[]
+  detailReadings DetailReading[]
 
   @@map("readings")
 }
 
-model DetailLecture {
+model DetailReading {
   id              String        @id @default(cuid())
   reading         Reading       @relation(fields: [readingId], references: [id])
   readingId       String        @map("lecture_id")
@@ -162,13 +162,13 @@ model DetailLecture {
   activities      Activity[]
   contentsLecture ContentLecture[]
 
-  @@map("detail_lectures")
+  @@map("detail_readings")
 }
 
 model ContentLecture {
   id              String        @id @default(cuid())
-  detailLecture   DetailLecture @relation(fields: [detailLectureId], references: [id])
-  detailLectureId String        @map("detail_lecture_id")
+  detailReading   DetailReading @relation(fields: [detailReadingId], references: [id])
+  detailReadingId String        @map("detail_lecture_id")
   positionPage    Int           @map("position_page") @db.SmallInt
   status          Boolean       @default(true)
   content         String        @db.Text
@@ -205,8 +205,8 @@ model Activity {
   typeActivityId  String        @map("type_activity_id")
   createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt       DateTime?     @updatedAt @map("updated_at") @db.Timestamptz()
-  detailLecture   DetailLecture @relation(fields: [detailLectureId], references: [id])
-  detailLectureId String        @map("detail_lecture_id")
+  detailReading   DetailReading @relation(fields: [detailReadingId], references: [id])
+  detailReadingId String        @map("detail_lecture_id")
   status          Boolean       @default(true)
 
   questionActivities QuestionActivity[]
@@ -256,7 +256,9 @@ model Multimedia {
   updatedAt   DateTime? @updatedAt @map("updated_at") @db.Timestamptz()
 
   imageActivities ImageActivity[]
-  frontPages      DetailLecture[]
+  frontPages      DetailReading[]
+
+  @@map("multimedia")
 }
 
 model Score {
