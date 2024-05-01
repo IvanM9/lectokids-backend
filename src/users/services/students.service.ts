@@ -105,8 +105,13 @@ export class StudentsService {
           },
         },
       },
-      skip: page ? (page - 1) * 5 : 0,
-      take: 5,
+      skip: page ? (page - 1) * 10 : 0,
+      take: 10,
+      orderBy: {
+        user: {
+          firstName: 'asc',
+        },
+      },
     });
 
     const total = await this.db.student.count({
