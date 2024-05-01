@@ -68,6 +68,40 @@ export class ContentsService {
   }
 
   async delete(id: string) {
+    const contentToDelete = await this.db.contentLecture
+      .findUniqueOrThrow({
+        where: {
+          id,
+        },
+      })
+      .catch(() => {
+        throw new NotFoundException('No se encontró el contenido');
+      });
+
+    const contentsToUpdate = await this.db.contentLecture.findMany({
+      where: {
+        detailReading: {
+          id: contentToDelete.detailReadingId,
+        },
+        positionPage: {
+          gt: contentToDelete.positionPage,
+        },
+      },
+    });
+
+    const updatePromises = contentsToUpdate.map((content) => {
+      return this.db.contentLecture.update({
+        where: {
+          id: content.id,
+        },
+        data: {
+          positionPage: content.positionPage - 1,
+        },
+      });
+    });
+
+    await Promise.all(updatePromises);
+
     await this.db.contentLecture
       .delete({
         where: {
@@ -156,5 +190,28 @@ export class ContentsService {
     });
 
     return { message: 'Contenido movido correctamente' };
+  }
+
+  async update(contentId: string, content: string) {
+    await this.db.contentLecture
+      .findUniqueOrThrow({
+        where: {
+          id: contentId,
+        },
+      })
+      .catch(() => {
+        throw new NotFoundException('No se encontró el contenido');
+      });
+
+    await this.db.contentLecture.update({
+      where: {
+        id: contentId,
+      },
+      data: {
+        content,
+      },
+    });
+
+    return { message: 'Contenido actualizado correctamente' };
   }
 }

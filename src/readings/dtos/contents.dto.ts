@@ -1,6 +1,6 @@
-import { ApiProperty, OmitType } from '@nestjs/swagger';
+import { ApiProperty, OmitType, PickType } from '@nestjs/swagger';
 import { TypeContent } from '@prisma/client';
-import { IsEnum, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 export class CreateContentDto {
   @ApiProperty()
@@ -12,9 +12,9 @@ export class CreateContentDto {
   @IsString()
   detailReadingId: string;
 
-  @ApiProperty({ enum: TypeContent })
-  @IsEnum(TypeContent)
-  type: TypeContent;
+  // @ApiProperty({ enum: TypeContent })
+  // @IsEnum(TypeContent)
+  type?: TypeContent;
 }
 
 export class CreateContentForAllDto extends OmitType(CreateContentDto, [
@@ -34,3 +34,5 @@ export class MoveContentDto {
   @IsNumber()
   positionTo: number;
 }
+
+export class UpdateContentDto extends PickType(CreateContentDto, ['content']) {}
