@@ -165,15 +165,20 @@ model DetailReading {
   @@map("detail_readings")
 }
 
+enum TypeContent {
+  TEXT
+  IMAGE
+}
 model ContentLecture {
-  id              String        @id @default(cuid())
-  detailReading   DetailReading @relation(fields: [detailReadingId], references: [id])
-  detailReadingId String        @map("detail_lecture_id")
-  positionPage    Int           @map("position_page") @db.SmallInt
-  status          Boolean       @default(true)
-  content         String        @db.Text
-  createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt       DateTime?     @updatedAt @map("updated_at") @db.Timestamptz()
+  id              String         @id @default(cuid())
+  detailReading   DetailReading  @relation(fields: [detailReadingId], references: [id])
+  detailReadingId String         @map("detail_lecture_id")
+  positionPage    Int            @map("position_page") @db.SmallInt
+  status          Boolean        @default(true)
+  type            TypeContent
+  content         String         @db.Text
+  createdAt       DateTime       @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt       DateTime?      @updatedAt @map("updated_at") @db.Timestamptz()
 
   @@map("contents_lecture")
 }
@@ -247,13 +252,20 @@ model ImageActivity {
   @@map("image_activities")
 }
 
+enum TypeMultimedia {
+  IMAGE
+  VIDEO
+  AUDIO
+}
+
 model Multimedia {
-  id          String    @id @default(cuid())
-  url         String    @db.Text
-  description String?   @db.Text
-  status      Boolean   @default(true)
-  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt   DateTime? @updatedAt @map("updated_at") @db.Timestamptz()
+  id          String         @id @default(cuid())
+  url         String         @db.Text
+  description String?        @db.Text
+  type        TypeMultimedia
+  status      Boolean        @default(true)
+  createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt   DateTime?      @updatedAt @map("updated_at") @db.Timestamptz()
 
   imageActivities ImageActivity[]
   frontPages      DetailReading[]

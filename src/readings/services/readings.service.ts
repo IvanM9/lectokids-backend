@@ -1,5 +1,9 @@
 import { PrismaService } from '@/prisma.service';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateReadingDto } from '../dtos/readings.dto';
 
 @Injectable()
@@ -97,36 +101,41 @@ export class ReadingsService {
   }
 
   async getReadingById(readingId: string) {
-    const data = await this.db.reading.findFirstOrThrow({
-      where: { id: readingId },
-      select: {
-        title: true,
-        goals: true,
-        type: true,
-        length: true,
-        detailReadings: {
-          select: {
-            id: true,
-            contentsLecture: {
-              select: {
-                id: true,
-                positionPage: true,
+    const data = await this.db.reading
+      .findFirstOrThrow({
+        where: { id: readingId },
+        select: {
+          title: true,
+          goals: true,
+          type: true,
+          length: true,
+          detailReadings: {
+            select: {
+              id: true,
+              contentsLecture: {
+                select: {
+                  id: true,
+                  positionPage: true,
+                },
+                orderBy: {
+                  positionPage: 'asc',
+                },
               },
-            },
-            activities: {
-              select: {
-                id: true,
+              activities: {
+                select: {
+                  id: true,
+                },
               },
-            },
-            student: {
-              select: {
-                id: true,
-                student: {
-                  select: {
-                    user: {
-                      select: {
-                        firstName: true,
-                        lastName: true,
+              student: {
+                select: {
+                  id: true,
+                  student: {
+                    select: {
+                      user: {
+                        select: {
+                          firstName: true,
+                          lastName: true,
+                        },
                       },
                     },
                   },
@@ -135,8 +144,10 @@ export class ReadingsService {
             },
           },
         },
-      },
-    });
+      })
+      .catch(() => {
+        throw new NotFoundException('No se encontró la lectura');
+      });
 
     return { data };
   }
