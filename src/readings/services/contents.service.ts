@@ -214,4 +214,33 @@ export class ContentsService {
 
     return { message: 'Contenido actualizado correctamente' };
   }
+
+  async getContentsByDetailReadingId(detailReadingId: string) {
+    const contents = await this.db.contentLecture.findMany({
+      where: {
+        detailReading: {
+          id: detailReadingId,
+        },
+      },
+      orderBy: {
+        positionPage: 'asc',
+      },
+    });
+
+    return { data: contents };
+  }
+
+  async getContentById(contentId: string) {
+    const content = await this.db.contentLecture
+      .findUniqueOrThrow({
+        where: {
+          id: contentId,
+        },
+      })
+      .catch(() => {
+        throw new NotFoundException('No se encontró el contenido');
+      });
+
+    return { data: content };
+  }
 }

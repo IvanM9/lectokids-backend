@@ -24,11 +24,11 @@ import { RoleEnum } from '@/security/jwt-strategy/role.enum';
 @UseInterceptors(ResponseHttpInterceptor)
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RoleGuard)
+@Role(RoleEnum.TEACHER)
 export class ReadingsController {
   constructor(private service: ReadingsService) {}
 
   @Post('create')
-  @Role(RoleEnum.TEACHER)
   async createReading(
     @Body() data: CreateReadingDto,
     @CurrentUser() { id }: InfoUserInterface,
@@ -37,7 +37,6 @@ export class ReadingsController {
   }
 
   @Get()
-  @Role(RoleEnum.TEACHER)
   @ApiQuery({ name: 'levelId', required: false })
   async getReadings(
     @CurrentUser() { id }: InfoUserInterface,

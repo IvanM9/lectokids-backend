@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   Param,
   Patch,
   Post,
@@ -56,5 +57,16 @@ export class ContentsController {
   @Patch('update/text/:id')
   async updateContent(@Param('id') id: string, @Body() data: UpdateContentDto) {
     return this.service.update(id, data.content);
+  }
+
+  @Get('by-reading/:detailReadingId')
+  @Role(RoleEnum.TEACHER, RoleEnum.STUDENT)
+  async getByReading(@Param('detailReadingId') detailReadingId: string) {
+    return this.service.getContentsByDetailReadingId(detailReadingId);
+  }
+
+  @Get('by-id/:id')
+  async getById(@Param('id') id: string) {
+    return this.service.getContentById(id);
   }
 }

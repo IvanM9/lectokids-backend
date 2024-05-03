@@ -66,6 +66,7 @@ export class ReadingsService {
       return {
         courseStudentId: student.id,
         readingId: reading.id,
+        // TODO: Cambiar por el id de la página de inicio
         frontPageId: '1',
       };
     });
