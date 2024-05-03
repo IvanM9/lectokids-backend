@@ -12,6 +12,8 @@ import { UsersModule } from './users/users.module';
 import { CoursesModule } from './courses/courses.module';
 import { ReadingsModule } from './readings/readings.module';
 import { AiModule } from './ai/ai.module';
+import { ActivitiesModule } from './activities/activities.module';
+import { MultimediaModule } from './multimedia/multimedia.module';
 
 @Module({
   imports: [
@@ -39,6 +41,8 @@ import { AiModule } from './ai/ai.module';
     CoursesModule,
     ReadingsModule,
     AiModule,
+    ActivitiesModule,
+    MultimediaModule,
   ],
   controllers: [AppController],
   providers: [
