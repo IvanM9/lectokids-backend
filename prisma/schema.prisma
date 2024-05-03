@@ -183,31 +183,32 @@ model ContentLecture {
   @@map("contents_lecture")
 }
 
-// enum TypeActivity {
-//   YES_NO
-//   QUIZ
-//   OPEN_ANSWERS
-//   OPEN_TEXT
-//   CROSSWORD
-// }
-
-model TypeActivity {
-  id          String    @id @default(cuid())
-  name        String    @db.VarChar(50)
-  description String?   @db.Text
-  status      Boolean   @default(true)
-  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt   DateTime? @updatedAt @map("updated_at") @db.Timestamptz()
-
-  activities Activity[]
-
-  @@map("types_activities")
+enum TypeActivity {
+  YES_NO
+  QUIZ
+  OPEN_ANSWERS
+  OPEN_TEXT
+  CROSSWORD
+  SORT_IMAGES
 }
+
+// model TypeActivity {
+//   id          String    @id @default(cuid())
+//   name        String    @db.VarChar(50)
+//   description String?   @db.Text
+//   status      Boolean   @default(true)
+//   createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+//   updatedAt   DateTime? @updatedAt @map("updated_at") @db.Timestamptz()
+
+//   activities Activity[]
+
+//   @@map("types_activities")
+// }
 
 model Activity {
   id              String        @id @default(cuid())
-  typeActivity    TypeActivity  @relation(fields: [typeActivityId], references: [id])
-  typeActivityId  String        @map("type_activity_id")
+  typeActivity    TypeActivity  @map("type_activity")
+  // typeActivityId  String        @map("type_activity_id")
   createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt       DateTime?     @updatedAt @map("updated_at") @db.Timestamptz()
   detailReading   DetailReading @relation(fields: [detailReadingId], references: [id])
@@ -248,6 +249,7 @@ model ImageActivity {
   multimediaId String     @map("multimedia_id")
   activity     Activity   @relation(fields: [activityId], references: [id])
   activityId   String     @map("activity_id")
+  order        Int        @db.SmallInt
 
   @@map("image_activities")
 }
