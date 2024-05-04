@@ -1,0 +1,61 @@
+import { PrismaService } from '@/prisma.service';
+import { ENVIRONMENT } from '@/shared/constants/environment';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { TypeMultimedia } from '@prisma/client';
+import firebase from 'firebase-admin';
+import * as fs from 'fs';
+
+@Injectable()
+export class MultimediaService {
+  constructor(private db: PrismaService) {
+    firebase.initializeApp({
+      credential: firebase.credential.cert(ENVIRONMENT.FIREBASE_CONFIG),
+    });
+  }
+
+  async createMultimedia(files: Express.Multer.File[], extraData?: any) {
+    const data = await Promise.all(
+      files.map(async (file) => {
+        await firebase
+          .storage()
+          .bucket(ENVIRONMENT.BUCKET_NAME)
+          .upload(file.path, {
+            destination: file.filename,
+          })
+          .catch((e) => {
+            console.error(e);
+            throw new BadRequestException(
+              'Error al guardar los archivos en el servidor',
+            );
+          });
+
+        const object = {
+          url: file.path,
+          type: extraData?.type || TypeMultimedia.IMAGE,
+          description: extraData?.description,
+        };
+
+        fs.unlink(file.path, (err) => {
+          if (err) {
+            console.error(err);
+          }
+        });
+
+        return object;
+      }),
+    );
+
+    await this.db.multimedia
+      .createMany({
+        data,
+      })
+      .catch((e) => {
+        console.error(e);
+        throw new BadRequestException(
+          'Error al guardar los archivos en la base de datos',
+        );
+      });
+
+    return { message: 'Multimedia creado con éxito' };
+  }
+}
