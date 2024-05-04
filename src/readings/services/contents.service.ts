@@ -9,10 +9,15 @@ import {
   CreateContentForAllDto,
   MoveContentDto,
 } from '../dtos/contents.dto';
+import { AiService } from '@/ai/services/ai/ai.service';
+import { GenerateReadingDto } from '@/ai/ai.dto';
 
 @Injectable()
 export class ContentsService {
-  constructor(private db: PrismaService) {}
+  constructor(
+    private db: PrismaService,
+    private ai: AiService,
+  ) {}
 
   async create(data: CreateContentDto) {
     const position = await this.db.contentLecture.count({
@@ -242,5 +247,93 @@ export class ContentsService {
       });
 
     return { data: content };
+  }
+
+  async createCustomReading(readingId: string) {
+    const students = await this.db.detailReading.findMany({
+      where: {
+        readingId,
+      },
+      select: {
+        student: {
+          select: {
+            student: {
+              select: {
+                city: true,
+                comprensionLevelHistory: {
+                  select: {
+                    level: true,
+                  },
+                },
+                user: {
+                  select: {
+                    genre: true,
+                    birthDate: true,
+                  },
+                },
+                interests: true,
+              },
+            },
+            customPrompt: true,
+            grade: true,
+            problems: true,
+          },
+        },
+        reading: {
+          select: {
+            title: true,
+            goals: true,
+            length: true,
+          },
+        },
+      },
+    });
+
+    const readings = await Promise.all(
+      this.createParamsCustomReading(students).map(async (params) => {
+        const reading = await this.ai.generateReadingService(params);
+        return this.separatePages(reading);
+      }),
+    );
+
+    console.log(readings);
+
+    return {
+      message: `Contenido agregado correctamente a la lectura`,
+      data: readings,
+    };
+  }
+
+  private createParamsCustomReading(students: any): GenerateReadingDto[] {
+    return students.map((student) => {
+      let comprensionLevel = null;
+      student.student.student.comprensionLevelHistory.forEach((element) => {
+        comprensionLevel += `${element.level}, `;
+      });
+
+      return {
+        age:
+          new Date().getFullYear() -
+          student.student.student.user.birthDate.getFullYear(),
+        title: student.reading.title,
+        goals: student.reading.goals,
+        lenght: student.reading.length,
+        comprensionLevel,
+        interests: student.student.student.interests,
+        city: student.student.student.city,
+        problems: student.student.problems,
+        preferences: student.student.customPrompt,
+        genre: student.student.student.user.genre,
+        grade: student.student.grade,
+      };
+    });
+  }
+
+  private separatePages(content: string) {
+    // La expresión regular busca la palabra "Página" seguida de un espacio y uno o más dígitos
+    const regex = /Página \d+/g;
+    // Dividimos el texto en un array de subcadenas utilizando el patrón como separador
+    const pages = content.split(regex);
+    return pages.slice(1);
   }
 }

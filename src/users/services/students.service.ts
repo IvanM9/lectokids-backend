@@ -23,6 +23,35 @@ export class StudentsService {
         );
       });
 
+    let student = await this.db.student.findFirst({
+      where: { user: { identification: data.identification } },
+    });
+
+    if (!student) {
+      student = await this.db.student
+        .create({
+          data: {
+            user: {
+              create: {
+                firstName: data.firstName,
+                lastName: data.lastName,
+                identification: data.identification,
+                genre: data.genre,
+                birthDate: data.birthDate,
+                password: hashSync(data.identification, 10),
+                role: RoleEnum.STUDENT,
+                user: data.identification,
+              },
+            },
+            interests: data.interests,
+            city: data.city,
+          },
+        })
+        .catch(() => {
+          throw new BadRequestException('No se pudo crear el estudiante');
+        });
+    }
+
     await this.db.courseStudent
       .create({
         data: {
@@ -30,22 +59,7 @@ export class StudentsService {
             connect: { id: data.courseId },
           },
           student: {
-            create: {
-              user: {
-                create: {
-                  firstName: data.firstName,
-                  lastName: data.lastName,
-                  role: RoleEnum.STUDENT,
-                  genre: data.genre,
-                  user: data.identification,
-                  password: hashSync(data.identification, 10),
-                  identification: data.identification,
-                  birthDate: data.birthDate,
-                },
-              },
-              city: data.city,
-              interests: data.interests,
-            },
+            connect: { id: student.id },
           },
           grade: data.grade,
           customPrompt: data.customPrompt,

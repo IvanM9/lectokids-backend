@@ -69,4 +69,9 @@ export class ContentsController {
   async getById(@Param('id') id: string) {
     return this.service.getContentById(id);
   }
+
+  @Post('generate-reading/:readingId')
+  async generateReading(@Param('readingId') readingId: string) {
+    return this.service.createCustomReading(readingId);
+  }
 }
