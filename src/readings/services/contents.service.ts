@@ -2,6 +2,7 @@ import { PrismaService } from '@/prisma.service';
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import {
@@ -10,7 +11,7 @@ import {
   MoveContentDto,
 } from '../dtos/contents.dto';
 import { AiService } from '@/ai/services/ai/ai.service';
-import { GenerateReadingDto } from '@/ai/ai.dto';
+import { TypeContent } from '@prisma/client';
 
 @Injectable()
 export class ContentsService {
@@ -255,6 +256,7 @@ export class ContentsService {
         readingId,
       },
       select: {
+        id: true,
         student: {
           select: {
             student: {
@@ -290,28 +292,32 @@ export class ContentsService {
     });
 
     const readings = await Promise.all(
-      this.createParamsCustomReading(students).map(async (params) => {
-        const reading = await this.ai.generateReadingService(params);
-        return this.separatePages(reading);
-      }),
+      this.createParamsCustomReading(students),
     );
 
-    console.log(readings);
+    readings.forEach(async (reading) => {
+      await reading.reading.forEach(async (content) => {
+        await this.create({
+          content,
+          detailReadingId: reading.detailReadingId,
+          type: TypeContent.TEXT,
+        });
+      });
+    });
 
     return {
-      message: `Contenido agregado correctamente a la lectura`,
-      data: readings,
+      message: `Contenido agregado correctamente a las lecturas`,
     };
   }
 
-  private createParamsCustomReading(students: any): GenerateReadingDto[] {
-    return students.map((student) => {
+  private createParamsCustomReading(students: any) {
+    return students.map(async (student) => {
       let comprensionLevel = null;
       student.student.student.comprensionLevelHistory.forEach((element) => {
         comprensionLevel += `${element.level}, `;
       });
 
-      return {
+      const params = {
         age:
           new Date().getFullYear() -
           student.student.student.user.birthDate.getFullYear(),
@@ -326,14 +332,15 @@ export class ContentsService {
         genre: student.student.student.user.genre,
         grade: student.student.grade,
       };
-    });
-  }
 
-  private separatePages(content: string) {
-    // La expresión regular busca la palabra "Página" seguida de un espacio y uno o más dígitos
-    const regex = /Página \d+/g;
-    // Dividimos el texto en un array de subcadenas utilizando el patrón como separador
-    const pages = content.split(regex);
-    return pages.slice(1);
+      const reading = await this.ai.generateReadingService(params).catch(() => {
+        throw new InternalServerErrorException('Error al generar la lectura');
+      });
+
+      return {
+        reading: JSON.parse(reading).lectura,
+        detailReadingId: student.id,
+      };
+    });
   }
 }

@@ -4,9 +4,11 @@ import { ActivitiesService } from './services/activities.service';
 import { ScoresService } from './services/scores.service';
 import { ScoresController } from './controllers/scores.controller';
 import { PrismaService } from '@/prisma.service';
+import { AiModule } from '@/ai/ai.module';
 
 @Module({
   controllers: [ActivitiesController, ScoresController],
   providers: [ActivitiesService, ScoresService, PrismaService],
+  imports: [AiModule],
 })
 export class ActivitiesModule {}
