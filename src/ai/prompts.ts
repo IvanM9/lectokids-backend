@@ -28,14 +28,17 @@ export function generateReading2(params: GenerateReadingDto) {
   
   La lectura debe estar diseñada para mejorar la comprensión lectora del estudiante (sin hacerle preguntas de compresión lectora), con un lenguaje apropiado para su edad y nivel. Utiliza un estilo narrativo atractivo y envolvente para mantener al estudiante interesado. Divide la lectura en páginas lógicas, como si fuera un libro físico.
   
-  Devuelve la lectura en un JSON con la siguiente estructura (estríctamente que sea JSON):
+  Devuelve la lectura en un JSON con la siguiente estructura:
   {
-  "lectura": [
-  "Página 1 del contenido de la lectura",
-  "Página 2 del contenido de la lectura",
+  "readings": [
+    {"content": "contenido de la lectura", "page": 1},
+    {"content": "contenido de la lectura", "page": 2},
+    {"content": "contenido de la lectura", "page": 3},
   ...
   ]
   }
-  
-  No incluyas la palabra "Página" en cada elemento del array, sólo el contenido de la página. `;
+
+  El número de páginas no debe ser fijo, sino que debe ser dinámico en función de la longitud de la lectura.
+  El número de página debe ser un número entero que comience en 1 y aumente en 1 por cada página.
+  Importante: solo devuelva una única pieza de texto JSON válido.`;
 }

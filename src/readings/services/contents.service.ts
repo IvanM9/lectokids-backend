@@ -21,15 +21,11 @@ export class ContentsService {
   ) {}
 
   async create(data: CreateContentDto) {
-    const position = await this.db.contentLecture.count({
-      where: { detailReading: { id: data.detailReadingId } },
-    });
-
     await this.db.contentLecture
       .create({
         data: {
           content: data.content,
-          positionPage: position + 1,
+          positionPage: data.positionPage,
           detailReading: {
             connect: {
               id: data.detailReadingId,
@@ -67,6 +63,7 @@ export class ContentsService {
         content: data.content,
         detailReadingId: element.id,
         type: data.type,
+        positionPage: data.positionPage,
       });
     });
 
@@ -298,15 +295,17 @@ export class ContentsService {
     readings.forEach(async (reading) => {
       await reading.reading.forEach(async (content) => {
         await this.create({
-          content,
+          content: content.content,
           detailReadingId: reading.detailReadingId,
           type: TypeContent.TEXT,
+          positionPage: content.page,
         });
       });
     });
 
     return {
       message: `Contenido agregado correctamente a las lecturas`,
+      data: readings,
     };
   }
 
@@ -333,12 +332,21 @@ export class ContentsService {
         grade: student.student.grade,
       };
 
-      const reading = await this.ai.generateReadingService(params).catch(() => {
-        throw new InternalServerErrorException('Error al generar la lectura');
-      });
+      let readingJSON = '';
+      try {
+        const reading = await this.ai.generateReadingService(params);
+
+        console.log(reading);
+        readingJSON = JSON.parse(reading).readings;
+      } catch (error) {
+        console.error(error);
+        throw new InternalServerErrorException(
+          'Error al generar la lectura. Por favor, intente nuevamente.',
+        );
+      }
 
       return {
-        reading: JSON.parse(reading).lectura,
+        reading: readingJSON,
         detailReadingId: student.id,
       };
     });

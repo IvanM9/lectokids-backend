@@ -506,6 +506,11 @@
     teeny-request "^9.0.0"
     uuid "^8.0.0"
 
+"@google/generative-ai@^0.10.0":
+  version "0.10.0"
+  resolved "https://registry.yarnpkg.com/@google/generative-ai/-/generative-ai-0.10.0.tgz#35dc78fd76481b8f1e79dfe46b1e7a12df9a2c1d"
+  integrity sha512-fZJEL8DcDgvBCguLdaAdBBEoh+83LDXK3m9rVh5iksvwVJDgZqkpsLGKJuM5FEBKltWhbJ62WSyMEUGgy8eMUg==
+
 "@grpc/grpc-js@~1.10.3":
   version "1.10.7"
   resolved "https://registry.yarnpkg.com/@grpc/grpc-js/-/grpc-js-1.10.7.tgz#1abce1a8c4c90b79dbbe57d7e4310f3b0ce72899"

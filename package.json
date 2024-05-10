@@ -23,6 +23,7 @@
     "build:swc": "nest build -b swc"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.10.0",
     "@nestjs/cache-manager": "^2.2.2",
     "@nestjs/common": "^10.0.0",
     "@nestjs/core": "^10.0.0",

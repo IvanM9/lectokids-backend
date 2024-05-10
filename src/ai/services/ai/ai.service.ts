@@ -1,5 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
+// import { GoogleGenerativeAI } from '@google/generative-ai';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 import { ENVIRONMENT } from '@/shared/constants/environment';
 import { generateReading2 } from '@/ai/prompts';
 import { GenerateReadingDto } from '@/ai/ai.dto';
@@ -8,14 +10,23 @@ export class AiService {
   genAI = new GoogleGenerativeAI(ENVIRONMENT.API_KEY_AI);
   model = this.genAI.getGenerativeModel({
     model: 'gemini-pro',
-    generationConfig: { maxOutputTokens: 500000 },
   });
 
   async generateReadingService(params: GenerateReadingDto) {
     const prompt = generateReading2(params);
 
-    const result = await this.model.generateContent(prompt);
-    const response = result.response;
-    return response.text();
+    try {
+      // const result = await this.model.generateContent({
+      //   contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      //   generationConfig: {
+      //     responseMimeType: 'application/json',
+      //   },
+      // });
+      const result = await this.model.generateContent(prompt);
+      const response = result.response;
+      return response.text();
+    } catch (error) {
+      throw new InternalServerErrorException('Error al generar contenido');
+    }
   }
 }
