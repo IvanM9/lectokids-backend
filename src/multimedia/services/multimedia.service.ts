@@ -9,7 +9,9 @@ import * as fs from 'fs';
 export class MultimediaService {
   constructor(private db: PrismaService) {
     firebase.initializeApp({
-      credential: firebase.credential.cert(ENVIRONMENT.FIREBASE_CONFIG),
+      credential: firebase.credential.cert(
+        JSON.parse(ENVIRONMENT.FIREBASE_CONFIG),
+      ),
     });
   }
 
