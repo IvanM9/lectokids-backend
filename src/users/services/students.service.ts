@@ -45,6 +45,7 @@ export class StudentsService {
             },
             interests: data.interests,
             city: data.city,
+            haveDyslexia: data.haveDyslexia,
           },
         })
         .catch(() => {
@@ -183,6 +184,7 @@ export class StudentsService {
               },
             },
           },
+          haveDyslexia: data.haveDyslexia,
         },
       })
       .catch((e) => {
@@ -231,6 +233,7 @@ export class StudentsService {
         },
         city: true,
         interests: true,
+        haveDyslexia: true,
       },
     });
   }

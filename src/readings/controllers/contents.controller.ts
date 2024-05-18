@@ -16,7 +16,7 @@ import {
   MoveContentDto,
   UpdateContentDto,
 } from '../dtos/contents.dto';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiParam, ApiTags } from '@nestjs/swagger';
 import { ResponseHttpInterceptor } from '@/shared/interceptors/response-http.interceptor';
 import { JwtAuthGuard } from '@/security/jwt-strategy/jwt-auth.guard';
 import { RoleGuard } from '@/security/jwt-strategy/roles.guard';
@@ -61,6 +61,11 @@ export class ContentsController {
 
   @Get('by-reading/:detailReadingId')
   @Role(RoleEnum.TEACHER, RoleEnum.STUDENT)
+  @ApiParam({
+    name: 'detailReadingId',
+    type: 'string',
+    description: 'Id de la lectura para un estudiante',
+  })
   async getByReading(@Param('detailReadingId') detailReadingId: string) {
     return this.service.getContentsByDetailReadingId(detailReadingId);
   }

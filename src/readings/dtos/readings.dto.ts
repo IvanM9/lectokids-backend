@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateReadingDto {
   @ApiProperty()
@@ -29,4 +29,8 @@ export class CreateReadingDto {
   @ApiProperty()
   @IsString()
   courseId: string;
+
+  @ApiProperty()
+  @IsBoolean()
+  autogenerate: boolean;
 }

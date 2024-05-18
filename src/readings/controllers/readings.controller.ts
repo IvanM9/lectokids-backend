@@ -33,7 +33,7 @@ export class ReadingsController {
     @Body() data: CreateReadingDto,
     @CurrentUser() { id }: InfoUserInterface,
   ) {
-    return this.service.create(data, false, id);
+    return this.service.create(data, id);
   }
 
   @Get()

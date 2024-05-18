@@ -56,11 +56,11 @@ model Student {
   id     String @id @default(cuid())
   user   user   @relation(fields: [userId], references: [id])
   userId String @unique @map("user_id")
-
   city      String    @db.VarChar(150)
   interests String?   @db.Text
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamptz()
+  haveDyslexia Boolean @default(false) @map("have_dyslexia")
 
   comprensionLevelHistory ComprensionLevelHistory[]
   coursesStudent          CourseStudent[]
@@ -143,6 +143,7 @@ model Reading {
   levelId   String    @map("level_id")
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamptz()
+  autogenerate Boolean  @default(false)
 
   detailReadings DetailReading[]
 

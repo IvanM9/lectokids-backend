@@ -10,7 +10,7 @@ import { CreateReadingDto } from '../dtos/readings.dto';
 export class ReadingsService {
   constructor(private db: PrismaService) {}
 
-  async create(data: CreateReadingDto, generated: boolean, userId: string) {
+  async create(data: CreateReadingDto, userId: string) {
     await this.db.level
       .findFirstOrThrow({
         where: {
@@ -40,6 +40,7 @@ export class ReadingsService {
             },
           },
           type: data.type,
+          autogenerate: data.autogenerate,
         },
         select: {
           id: true,
@@ -144,6 +145,7 @@ export class ReadingsService {
               },
             },
           },
+          autogenerate: true,
         },
       })
       .catch(() => {

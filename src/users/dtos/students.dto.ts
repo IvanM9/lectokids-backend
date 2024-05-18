@@ -1,6 +1,7 @@
 import { ApiProperty, OmitType } from '@nestjs/swagger';
 // import { Transform } from 'class-transformer';
 import {
+  IsBoolean,
   IsDateString,
   IsNotEmpty,
   IsNumber,
@@ -65,6 +66,11 @@ export class CreateStudentDto {
   @IsString()
   @IsNotEmpty()
   courseId: string;
+
+  @ApiProperty()
+  @IsBoolean()
+  @IsOptional()
+  haveDyslexia?: boolean;
 }
 
 export class UpdateStudentDto extends OmitType(CreateStudentDto, [
