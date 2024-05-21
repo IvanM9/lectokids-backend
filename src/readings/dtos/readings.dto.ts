@@ -19,11 +19,6 @@ export class CreateReadingDto {
 
   @ApiProperty()
   @IsString()
-  @IsOptional()
-  type?: string;
-
-  @ApiProperty()
-  @IsString()
   levelId: string;
 
   @ApiProperty()

@@ -288,32 +288,18 @@ export class ContentsService {
       },
     });
 
-    const readings = await Promise.all(
-      this.createParamsCustomReading(students),
-    );
-
-    readings.forEach(async (reading) => {
-      await reading.reading.forEach(async (content) => {
-        await this.create({
-          content: content.content,
-          detailReadingId: reading.detailReadingId,
-          type: TypeContent.TEXT,
-          positionPage: content.page,
-        });
-      });
-    });
+    await Promise.all(this.createParamsCustomReading(students));
 
     return {
       message: `Contenido agregado correctamente a las lecturas`,
-      data: readings,
     };
   }
 
   private createParamsCustomReading(students: any) {
     return students.map(async (student) => {
-      let comprensionLevel = null;
+      let comprehensionLevel = null;
       student.student.student.comprensionLevelHistory.forEach((element) => {
-        comprensionLevel += `${element.level}, `;
+        comprehensionLevel += `${element.level}, `;
       });
 
       const params = {
@@ -322,8 +308,8 @@ export class ContentsService {
           student.student.student.user.birthDate.getFullYear(),
         title: student.reading.title,
         goals: student.reading.goals,
-        lenght: student.reading.length,
-        comprensionLevel,
+        length: student.reading.length,
+        comprehensionLevel,
         interests: student.student.student.interests,
         city: student.student.student.city,
         problems: student.student.problems,
@@ -332,23 +318,35 @@ export class ContentsService {
         grade: student.student.grade,
       };
 
-      let readingJSON = '';
       try {
-        const reading = await this.ai.generateReadingService(params);
+        let exit = false;
+        let contents = null;
 
-        console.log(reading);
-        readingJSON = JSON.parse(reading).readings;
+        while (!exit) {
+          const reading = await this.ai.generateReadingService(params);
+
+          try {
+            contents = JSON.parse(reading);
+            exit = true;
+          } catch {
+            exit = false;
+          }
+        }
+
+        contents.map(async (element) => {
+          await this.create({
+            content: element.content,
+            detailReadingId: student.id,
+            type: TypeContent.TEXT,
+            positionPage: element.page,
+          });
+        });
       } catch (error) {
         console.error(error);
         throw new InternalServerErrorException(
           'Error al generar la lectura. Por favor, intente nuevamente.',
         );
       }
-
-      return {
-        reading: readingJSON,
-        detailReadingId: student.id,
-      };
     });
   }
 }

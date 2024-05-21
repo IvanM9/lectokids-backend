@@ -2,8 +2,8 @@ export interface GenerateReadingDto {
   age: number;
   title: string;
   goals: string;
-  lenght: string;
-  comprensionLevel: string;
+  length: string;
+  comprehensionLevel: string;
   interests: string;
   city: string;
   problems: string;

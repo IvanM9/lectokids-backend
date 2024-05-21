@@ -1,44 +1,26 @@
 import { GenerateReadingDto } from './ai.dto';
-
-export function generateReading(params: GenerateReadingDto) {
-  return `Genera una lectura para un estudiante de ${params.age} años, que está en ${params.grade}° grado de educación básica en una escuela del Ecuador. Este estudiante es ${params.genre == 'm' ? 'un niño' : 'una niña'}.
-  La lectura está titulada como "${params.title}" (no incluyas este título en la generación), y tiene como objetivo: ${params.goals}. 
-  La lectura debe ser de longitud ${params.lenght} y dividirse en varias páginas, como si fuera un libro físico. Adapta el contenido y estilo de la siguiente manera:
-
-  Nivel de comprensión lectora del estudiante que ha ido de la siguiente manera: ${params.comprensionLevel ?? 'Ninguno'}
-  Intereses/gustos del estudiante: ${params.interests}
-  Ciudad donde vive: ${params.city}, Ecuador
-  Problemas de aprendizaje (si aplica): ${params.problems ?? 'Ninguno'}
-  Preferencias adicionales: ${params.preferences ?? 'Ninguna'}
-  
-  La lectura debe estar diseñada para mejorar la comprensión lectora del estudiante (sin hacerle preguntas de compresión lectora), con un lenguaje apropiado para su edad y nivel. Utiliza un estilo narrativo atractivo y envolvente para mantener al estudiante interesado. Divide la lectura en páginas lógicas, como si fuera un libro físico.
-  También quiero que los separadores de páginas sólo digan "Página" y no incluyas el número de la página. Por ejemplo, si la lectura tiene 5 páginas, los separadores deben decir "Página", "Página", "Página", "Página", "Página". Además, la palabra "Página" no debe estar en negrita, ni tener salto de línea antes o después de ella.`;
-}
-
 export function generateReading2(params: GenerateReadingDto) {
-  return `Genera una lectura para un estudiante de ${params.age} años, que está en ${params.grade}° grado de educación básica en una escuela del Ecuador. Este estudiante es ${params.genre == 'm' ? 'un niño' : 'una niña'}.
-  La lectura está titulada como "${params.title}" (no incluyas este título en la generación), y tiene como objetivo: ${params.goals}. 
-  La lectura debe ser de longitud ${params.lenght} y dividirse en varias páginas, como si fuera un libro físico. Adapta el contenido y estilo de la siguiente manera:
+  return `Generates a reading for a student of ${params.age} years old, who is in ${params.grade}th grade of basic education in a school in Ecuador. This student is ${params.genre == 'm' ? 'a boy' : 'a girl'}.
+  This reading must be in Latin American Spanish, it is specific, as it is spoken in Ecuador.
+  
+  The read is titled "${params.title}" (do not include this title in the generation), and targets: ${params.goals}.
+  The read should be of length ${params.length} and divided into multiple pages, as if it were a physical book. Adapt the content and style as follows:
 
-  Nivel de comprensión lectora del estudiante que ha ido de la siguiente manera: ${params.comprensionLevel ?? 'Ninguno'}
-  Intereses/gustos del estudiante: ${params.interests}
-  Ciudad donde vive: ${params.city}, Ecuador
-  Problemas de aprendizaje (si aplica): ${params.problems ?? 'Ninguno'}
-  Preferencias adicionales: ${params.preferences ?? 'Ninguna'}
-  
-  La lectura debe estar diseñada para mejorar la comprensión lectora del estudiante (sin hacerle preguntas de compresión lectora), con un lenguaje apropiado para su edad y nivel. Utiliza un estilo narrativo atractivo y envolvente para mantener al estudiante interesado. Divide la lectura en páginas lógicas, como si fuera un libro físico.
-  
-  Devuelve la lectura en un JSON con la siguiente estructura:
-  {
-  "readings": [
-    {"content": "contenido de la lectura", "page": 1},
-    {"content": "contenido de la lectura", "page": 2},
-    {"content": "contenido de la lectura", "page": 3},
-  ...
+  Student's reading comprehension level that has gone as follows: ${params.comprehensionLevel ?? 'None'}
+  Student interests/likes: ${params.interests}
+  City where you live: ${params.city}, Ecuador
+  Learning problems (if applicable): ${params.problems ?? 'None'}
+  Additional preferences: ${params.preferences ?? 'None'}
+ 
+  Reading should be designed to improve the student's reading comprehension (without asking reading comprehension questions), with language appropriate for the student's age and level. Use an engaging and immersive narrative style to keep the student interested. Divide the reading into logical pages, as if it were a physical book.
+ 
+  Returns the reading in a JSON Array with the following structure:
+ 
+  [
+    {"content": "string", "page": "number"}
   ]
-  }
-
-  El número de páginas no debe ser fijo, sino que debe ser dinámico en función de la longitud de la lectura.
-  El número de página debe ser un número entero que comience en 1 y aumente en 1 por cada página.
-  Importante: solo devuelva una única pieza de texto JSON válido.`;
+ 
+  The number of pages should not be fixed, but should be dynamic depending on the length of the reading.
+  The page number must be an integer that starts at 1 and increments by 1 for each page.
+  Important: Only return a single piece of valid JSON text.`;
 }

@@ -39,7 +39,6 @@ export class ReadingsService {
               id: data.levelId,
             },
           },
-          type: data.type,
           autogenerate: data.autogenerate,
         },
         select: {
@@ -109,7 +108,6 @@ export class ReadingsService {
         select: {
           title: true,
           goals: true,
-          type: true,
           length: true,
           detailReadings: {
             select: {

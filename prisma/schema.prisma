@@ -136,7 +136,6 @@ model Reading {
   id        String    @id @default(cuid())
   title     String    @db.VarChar(150)
   goals     String    @db.Text
-  type      String?   @db.VarChar(50)
   length    String?   @db.VarChar(50)
   status    Boolean   @default(true)
   level     Level     @relation(fields: [levelId], references: [id])
