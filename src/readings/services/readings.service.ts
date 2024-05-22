@@ -66,8 +66,7 @@ export class ReadingsService {
       return {
         courseStudentId: student.id,
         readingId: reading.id,
-        // TODO: Cambiar por el id de la página de inicio
-        frontPageId: '1',
+        frontPageId: data.imageId,
       };
     });
 
@@ -81,7 +80,7 @@ export class ReadingsService {
         );
       });
 
-    return { message: 'Lecturas creadas con éxito' };
+    return { message: 'Lecturas creadas con éxito', data: reading.id };
   }
 
   async getReadings(userId: string, levelId?: string) {

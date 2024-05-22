@@ -28,4 +28,8 @@ export class CreateReadingDto {
   @ApiProperty()
   @IsBoolean()
   autogenerate: boolean;
+
+  @ApiProperty()
+  @IsString()
+  imageId: string;
 }

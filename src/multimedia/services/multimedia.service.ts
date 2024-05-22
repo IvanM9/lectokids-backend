@@ -16,7 +16,7 @@ export class MultimediaService {
   }
 
   async createMultimedia(files: Express.Multer.File[], extraData?: any) {
-    const data = await Promise.all(
+    const uploaded = await Promise.all(
       files.map(async (file) => {
         await firebase
           .storage()
@@ -43,21 +43,22 @@ export class MultimediaService {
           }
         });
 
-        return object;
+        return await this.db.multimedia
+          .create({
+            data: object,
+            select: {
+              id: true,
+            },
+          })
+          .catch((e) => {
+            console.error(e);
+            throw new BadRequestException(
+              'Error al guardar los archivos en la base de datos',
+            );
+          });
       }),
     );
 
-    await this.db.multimedia
-      .createMany({
-        data,
-      })
-      .catch((e) => {
-        console.error(e);
-        throw new BadRequestException(
-          'Error al guardar los archivos en la base de datos',
-        );
-      });
-
-    return { message: 'Multimedia creado con éxito' };
+    return { message: 'Multimedia creado con éxito', data: uploaded };
   }
 }
