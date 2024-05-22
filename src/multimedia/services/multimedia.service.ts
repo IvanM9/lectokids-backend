@@ -33,7 +33,7 @@ export class MultimediaService {
 
         // TODO: Revisar la url que se guarda en la base de datos
         const object = {
-          url: file.path,
+          url: file.filename,
           type: extraData?.type || TypeMultimedia.IMAGE,
           description: extraData?.description,
         };
