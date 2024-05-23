@@ -149,6 +149,17 @@ export class ReadingsService {
         throw new NotFoundException('No se encontró la lectura');
       });
 
+    if (!data.autogenerate) {
+      data.detailReadings = [
+        {
+          contentsLecture: data.detailReadings[0].contentsLecture,
+          activities: data.detailReadings[0].activities,
+          student: undefined,
+          id: undefined,
+        },
+      ];
+    }
+
     return { data };
   }
 }
