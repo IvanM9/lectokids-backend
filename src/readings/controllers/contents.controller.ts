@@ -13,7 +13,6 @@ import { ContentsService } from '../services/contents.service';
 import {
   CreateContentDto,
   CreateContentForAllDto,
-  MoveContentDto,
   UpdateContentDto,
 } from '../dtos/contents.dto';
 import { ApiBearerAuth, ApiParam, ApiTags } from '@nestjs/swagger';
@@ -44,10 +43,10 @@ export class ContentsController {
     return this.service.create(data);
   }
 
-  @Patch('move')
-  async moveContent(@Body() data: MoveContentDto) {
-    return this.service.movePosition(data);
-  }
+  // @Patch('move')
+  // async moveContent(@Body() data: MoveContentDto) {
+  //   return this.service.movePosition(data);
+  // }
 
   @Delete('delete/:id')
   async deleteContent(@Param('id') id: string) {

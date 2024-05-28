@@ -8,7 +8,6 @@ import {
 import {
   CreateContentDto,
   CreateContentForAllDto,
-  MoveContentDto,
   UpdateContentDto,
 } from '../dtos/contents.dto';
 import { AiService } from '@/ai/services/ai/ai.service';
@@ -26,7 +25,6 @@ export class ContentsService {
       .create({
         data: {
           content: data.content,
-          positionPage: data.positionPage,
           detailReading: {
             connect: {
               id: data.detailReadingId,
@@ -72,7 +70,7 @@ export class ContentsService {
   }
 
   async delete(id: string) {
-    const contentToDelete = await this.db.contentLecture
+    await this.db.contentLecture
       .findUniqueOrThrow({
         where: {
           id,
@@ -82,29 +80,29 @@ export class ContentsService {
         throw new NotFoundException('No se encontró el contenido');
       });
 
-    const contentsToUpdate = await this.db.contentLecture.findMany({
-      where: {
-        detailReading: {
-          id: contentToDelete.detailReadingId,
-        },
-        positionPage: {
-          gt: contentToDelete.positionPage,
-        },
-      },
-    });
+    // const contentsToUpdate = await this.db.contentLecture.findMany({
+    //   where: {
+    //     detailReading: {
+    //       id: contentToDelete.detailReadingId,
+    //     },
+    //     positionPage: {
+    //       gt: contentToDelete.positionPage,
+    //     },
+    //   },
+    // });
 
-    const updatePromises = contentsToUpdate.map((content) => {
-      return this.db.contentLecture.update({
-        where: {
-          id: content.id,
-        },
-        data: {
-          positionPage: content.positionPage - 1,
-        },
-      });
-    });
+    // const updatePromises = contentsToUpdate.map((content) => {
+    //   return this.db.contentLecture.update({
+    //     where: {
+    //       id: content.id,
+    //     },
+    //     data: {
+    //       positionPage: content.positionPage - 1,
+    //     },
+    //   });
+    // });
 
-    await Promise.all(updatePromises);
+    // await Promise.all(updatePromises);
 
     await this.db.contentLecture
       .delete({
@@ -119,82 +117,82 @@ export class ContentsService {
     return { message: `Contenido eliminado correctamente` };
   }
 
-  async movePosition(data: MoveContentDto) {
-    const currentContent = await this.db.contentLecture.findUnique({
-      where: {
-        id: data.contentLectureId,
-      },
-    });
+  // async movePosition(data: MoveContentDto) {
+  //   const currentContent = await this.db.contentLecture.findUnique({
+  //     where: {
+  //       id: data.contentLectureId,
+  //     },
+  //   });
 
-    if (!currentContent) {
-      throw new NotFoundException('No se encontró el contenido');
-    }
+  //   if (!currentContent) {
+  //     throw new NotFoundException('No se encontró el contenido');
+  //   }
 
-    let contentsToUpdate;
-    if (data.positionTo > currentContent.positionPage) {
-      contentsToUpdate = await this.db.contentLecture.findMany({
-        where: {
-          detailReading: {
-            id: currentContent.detailReadingId,
-          },
-          positionPage: {
-            lte: data.positionTo,
-            gte: currentContent.positionPage,
-          },
-        },
-        orderBy: {
-          positionPage: 'asc',
-        },
-      });
-    } else {
-      contentsToUpdate = await this.db.contentLecture.findMany({
-        where: {
-          detailReading: {
-            id: currentContent.detailReadingId,
-          },
-          positionPage: {
-            gte: data.positionTo,
-            lt: currentContent.positionPage,
-          },
-        },
-        orderBy: {
-          positionPage: 'asc',
-        },
-      });
-    }
+  //   let contentsToUpdate;
+  //   if (data.positionTo > currentContent.positionPage) {
+  //     contentsToUpdate = await this.db.contentLecture.findMany({
+  //       where: {
+  //         detailReading: {
+  //           id: currentContent.detailReadingId,
+  //         },
+  //         positionPage: {
+  //           lte: data.positionTo,
+  //           gte: currentContent.positionPage,
+  //         },
+  //       },
+  //       orderBy: {
+  //         positionPage: 'asc',
+  //       },
+  //     });
+  //   } else {
+  //     contentsToUpdate = await this.db.contentLecture.findMany({
+  //       where: {
+  //         detailReading: {
+  //           id: currentContent.detailReadingId,
+  //         },
+  //         positionPage: {
+  //           gte: data.positionTo,
+  //           lt: currentContent.positionPage,
+  //         },
+  //       },
+  //       orderBy: {
+  //         positionPage: 'asc',
+  //       },
+  //     });
+  //   }
 
-    const lastContent = contentsToUpdate[contentsToUpdate.length - 1];
+  //   const lastContent = contentsToUpdate[contentsToUpdate.length - 1];
 
-    if (data.positionTo < 1 || data.positionTo > lastContent.positionPage) {
-      throw new BadRequestException('La posición deseada no es válida');
-    }
+  //   if (data.positionTo < 1 || data.positionTo > lastContent.positionPage) {
+  //     throw new BadRequestException('La posición deseada no es válida');
+  //   }
 
-    const updatePromises = contentsToUpdate.map((content) => {
-      return this.db.contentLecture.update({
-        where: {
-          id: content.id,
-        },
-        data: {
-          positionPage:
-            content.positionPage +
-            (data.positionTo > currentContent.positionPage ? -1 : 1),
-        },
-      });
-    });
+  //   const updatePromises = contentsToUpdate.map((content) => {
+  //     return this.db.contentLecture.update({
+  //       where: {
+  //         id: content.id,
+  //       },
+  //       data: {
+  //         positionPage:
+  //           content.positionPage +
+  //           (data.positionTo > currentContent.positionPage ? -1 : 1),
+  //       },
+  //     });
+  //   });
 
-    await Promise.all(updatePromises);
+  //   await Promise.all(updatePromises);
 
-    await this.db.contentLecture.update({
-      where: {
-        id: data.contentLectureId,
-      },
-      data: {
-        positionPage: data.positionTo,
-      },
-    });
+  //   await this.db.contentLecture.update({
+  //     where: {
+  //       id: data.contentLectureId,
+  //     },
+  //     data: {
+  //       positionPage: data.positionTo,
+  //     },
+  //   });
 
-    return { message: 'Contenido movido correctamente' };
-  }
+  //   return { message: 'Contenido movido correctamente' };
+  // }
 
   async update(contentId: string, content: UpdateContentDto) {
     await this.db.contentLecture
@@ -226,9 +224,6 @@ export class ContentsService {
         detailReading: {
           id: detailReadingId,
         },
-      },
-      orderBy: {
-        positionPage: 'asc',
       },
     });
 
@@ -297,7 +292,7 @@ export class ContentsService {
     };
   }
 
-  private createParamsCustomReading(students: any) {
+  private createParamsCustomReading(students: any[]) {
     return students.map(async (student) => {
       let comprehensionLevel = null;
       student.student.student.comprensionLevelHistory.forEach((element) => {

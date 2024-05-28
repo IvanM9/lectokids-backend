@@ -17,10 +17,8 @@ export function generateReading2(params: GenerateReadingDto) {
   Returns the reading in a JSON Array with the following structure:
  
   [
-    {"content": "string", "page": "number"}
+    {"content": "string"}
   ]
  
-  The number of pages should not be fixed, but should be dynamic depending on the length of the reading.
-  The page number must be an integer that starts at 1 and increments by 1 for each page.
   Important: Only return a single piece of valid JSON text.`;
 }

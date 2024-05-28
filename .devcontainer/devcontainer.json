@@ -12,7 +12,9 @@
 		"dbaeumer.vscode-eslint", 
 		"ms-vscode.vscode-typescript-next", 
 		"github.copilot", 
-		"mhutchie.git-graph"
+		"mhutchie.git-graph",
+		"prisma.prisma",
+		"cweijan.vscode-database-client2"
 	]}},
 	"forwardPorts": [4000, 5432],
 	"postCreateCommand": "yarn install"

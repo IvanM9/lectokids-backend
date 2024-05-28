@@ -114,10 +114,6 @@ export class ReadingsService {
               contentsLecture: {
                 select: {
                   id: true,
-                  positionPage: true,
-                },
-                orderBy: {
-                  positionPage: 'asc',
                 },
               },
               activities: {

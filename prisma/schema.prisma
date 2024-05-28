@@ -169,11 +169,11 @@ enum TypeContent {
   TEXT
   IMAGE
 }
+
 model ContentLecture {
   id              String         @id @default(cuid())
   detailReading   DetailReading  @relation(fields: [detailReadingId], references: [id])
   detailReadingId String         @map("detail_lecture_id")
-  positionPage    Int            @map("position_page") @db.SmallInt
   status          Boolean        @default(true)
   type            TypeContent
   content         String         @db.Text
