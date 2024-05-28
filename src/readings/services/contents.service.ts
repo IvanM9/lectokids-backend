@@ -9,6 +9,7 @@ import {
   CreateContentDto,
   CreateContentForAllDto,
   MoveContentDto,
+  UpdateContentDto,
 } from '../dtos/contents.dto';
 import { AiService } from '@/ai/services/ai/ai.service';
 import { TypeContent } from '@prisma/client';
@@ -195,7 +196,7 @@ export class ContentsService {
     return { message: 'Contenido movido correctamente' };
   }
 
-  async update(contentId: string, content: string) {
+  async update(contentId: string, content: UpdateContentDto) {
     await this.db.contentLecture
       .findUniqueOrThrow({
         where: {
@@ -211,7 +212,8 @@ export class ContentsService {
         id: contentId,
       },
       data: {
-        content,
+        content: content.content,
+        type: content.type,
       },
     });
 

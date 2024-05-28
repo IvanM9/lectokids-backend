@@ -54,9 +54,9 @@ export class ContentsController {
     return this.service.delete(id);
   }
 
-  @Patch('update/text/:id')
+  @Patch('update/:id')
   async updateContent(@Param('id') id: string, @Body() data: UpdateContentDto) {
-    return this.service.update(id, data.content);
+    return this.service.update(id, data);
   }
 
   @Get('by-reading/:detailReadingId')
