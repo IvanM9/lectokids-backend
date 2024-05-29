@@ -106,6 +106,7 @@ export class StudentsService {
             status: true,
             birthDate: true,
             identification: true,
+            genre: true,
           },
         },
         city: true,
