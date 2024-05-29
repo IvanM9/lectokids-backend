@@ -31,6 +31,7 @@ export class ContentsService {
             },
           },
           type: data.type,
+          createdAt: new Date(),
         },
       })
       .catch(() => {
@@ -62,7 +63,6 @@ export class ContentsService {
         content: data.content,
         detailReadingId: element.id,
         type: data.type,
-        positionPage: data.positionPage,
       });
     });
 
@@ -225,9 +225,28 @@ export class ContentsService {
           id: detailReadingId,
         },
       },
+      orderBy: {
+        createdAt: 'asc',
+      },
     });
 
-    return { data: contents };
+    const student = await this.db.detailReading.findFirstOrThrow({
+      select: {
+        student: {
+          select: {
+            student: {
+              select: {
+                haveDyslexia: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return {
+      data: { contents, haveDyslexia: student.student.student.haveDyslexia },
+    };
   }
 
   async getContentById(contentId: string) {
@@ -280,6 +299,7 @@ export class ContentsService {
             title: true,
             goals: true,
             length: true,
+            customPrompt: true,
           },
         },
       },
@@ -313,6 +333,7 @@ export class ContentsService {
         preferences: student.student.customPrompt,
         genre: student.student.student.user.genre,
         grade: student.student.grade,
+        customPrompt: student.reading.customPrompt,
       };
 
       try {
@@ -330,14 +351,13 @@ export class ContentsService {
           }
         }
 
-        contents.map(async (element) => {
+        for (const element of contents) {
           await this.create({
             content: element.content,
             detailReadingId: student.id,
             type: TypeContent.TEXT,
-            positionPage: element.page,
           });
-        });
+        }
       } catch (error) {
         console.error(error);
         throw new InternalServerErrorException(

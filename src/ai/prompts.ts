@@ -12,6 +12,7 @@ export function generateReading2(params: GenerateReadingDto) {
   Learning problems (if applicable): ${params.problems ?? 'None'}
   Additional preferences: ${params.preferences ?? 'None'}
  
+  Also, take into account this personalization of the reading (if applicable): ${params.customPrompt ?? 'None'}
   Reading should be designed to improve the student's reading comprehension (without asking reading comprehension questions), with language appropriate for the student's age and level. Use an engaging and immersive narrative style to keep the student interested. Divide the reading into logical pages, as if it were a physical book.
  
   Returns the reading in a JSON Array with the following structure:

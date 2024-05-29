@@ -10,4 +10,5 @@ export interface GenerateReadingDto {
   preferences: string;
   genre: string;
   grade: string;
+  customPrompt: string;
 }

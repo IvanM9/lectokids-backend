@@ -12,10 +12,6 @@ export class CreateContentDto {
   @IsString()
   detailReadingId: string;
 
-  @ApiProperty()
-  @IsNumber()
-  positionPage: number;
-
   // @ApiProperty({ enum: TypeContent })
   // @IsEnum(TypeContent)
   type?: TypeContent;

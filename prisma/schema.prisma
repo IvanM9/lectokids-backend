@@ -143,6 +143,7 @@ model Reading {
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamptz()
   autogenerate Boolean  @default(false)
+  customPrompt String?   @map("custom_prompt")
 
   detailReadings DetailReading[]
 

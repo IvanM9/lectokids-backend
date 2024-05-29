@@ -32,4 +32,8 @@ export class CreateReadingDto {
   @ApiProperty()
   @IsString()
   imageId: string;
+
+  @ApiProperty()
+  @IsString()
+  customPrompt: string;
 }

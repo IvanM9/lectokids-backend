@@ -40,6 +40,7 @@ export class ReadingsService {
             },
           },
           autogenerate: data.autogenerate,
+          customPrompt: data.customPrompt,
         },
         select: {
           id: true,
