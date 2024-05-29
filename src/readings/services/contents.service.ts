@@ -219,6 +219,7 @@ export class ContentsService {
   }
 
   async getContentsByDetailReadingId(detailReadingId: string) {
+    console.log(detailReadingId);
     const contents = await this.db.contentLecture.findMany({
       where: {
         detailReading: {
@@ -230,13 +231,16 @@ export class ContentsService {
       },
     });
 
-    const student = await this.db.detailReading.findFirstOrThrow({
+    const student = await this.db.student.findFirstOrThrow({
       select: {
-        student: {
-          select: {
-            student: {
-              select: {
-                haveDyslexia: true,
+        haveDyslexia: true,
+      },
+      where: {
+        coursesStudent: {
+          some: {
+            detailReadings: {
+              some: {
+                id: detailReadingId,
               },
             },
           },
@@ -245,7 +249,7 @@ export class ContentsService {
     });
 
     return {
-      data: { contents, haveDyslexia: student.student.student.haveDyslexia },
+      data: { contents, haveDyslexia: student.haveDyslexia },
     };
   }
 
@@ -305,19 +309,19 @@ export class ContentsService {
       },
     });
 
-    await Promise.all(this.createParamsCustomReading(students));
+    await this.createParamsCustomReading(students);
 
     return {
       message: `Contenido agregado correctamente a las lecturas`,
     };
   }
 
-  private createParamsCustomReading(students: any[]) {
-    return students.map(async (student) => {
+  private async createParamsCustomReading(students: any[]) {
+    for (const student of students) {
       let comprehensionLevel = null;
-      student.student.student.comprensionLevelHistory.forEach((element) => {
+      for (const element of student.student.student.comprensionLevelHistory) {
         comprehensionLevel += `${element.level}, `;
-      });
+      }
 
       const params = {
         age:
@@ -364,6 +368,6 @@ export class ContentsService {
           'Error al generar la lectura. Por favor, intente nuevamente.',
         );
       }
-    });
+    }
   }
 }

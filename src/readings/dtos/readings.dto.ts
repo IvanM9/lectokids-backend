@@ -35,5 +35,6 @@ export class CreateReadingDto {
 
   @ApiProperty()
   @IsString()
+  @IsOptional()
   customPrompt: string;
 }
