@@ -112,6 +112,7 @@ export class StudentsService {
         createdAt: true,
         updatedAt: true,
         interests: true,
+        haveDyslexia: true,
         coursesStudent: {
           select: {
             grade: true,
