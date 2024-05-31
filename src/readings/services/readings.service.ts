@@ -63,23 +63,84 @@ export class ReadingsService {
       distinct: 'studentId',
     });
 
-    const dataDetailReading = students.map((student) => {
-      return {
-        courseStudentId: student.id,
-        readingId: reading.id,
-        frontPageId: data.imageId,
-      };
-    });
+    if (!data.autogenerate) {
+      for (const student of students) {
+        await this.db.detailReading
+          .create({
+            data: {
+              reading: {
+                connect: {
+                  id: reading.id,
+                },
+              },
+              studentsOnReadings: {
+                create: {
+                  courseStudent: {
+                    connect: {
+                      id: student.id,
+                    },
+                  },
+                },
+              },
+              frontPage: {
+                connect: {
+                  id: data.imageId,
+                },
+              },
+            },
+          })
+          .catch(() => {
+            throw new BadRequestException(
+              `Hubo errores al crear las lecturas para algunos estudiantes`,
+            );
+          });
+      }
+    } else {
+      const detailReadingCreated = await this.db.detailReading
+        .create({
+          data: {
+            reading: {
+              connect: {
+                id: reading.id,
+              },
+            },
+            frontPage: {
+              connect: {
+                id: data.imageId,
+              },
+            },
+          },
+          select: {
+            id: true,
+          },
+        })
+        .catch(() => {
+          throw new BadRequestException('No se pudo crear la lectura');
+        });
 
-    await this.db.detailReading
-      .createMany({
-        data: dataDetailReading,
-      })
-      .catch(() => {
-        throw new BadRequestException(
-          `Hubo errores al crear las lecturas para algunos estudiantes`,
-        );
-      });
+      for (const student of students) {
+        await this.db.studentsOnReadings
+          .create({
+            data: {
+              detailReading: {
+                connect: {
+                  id: detailReadingCreated.id,
+                },
+              },
+              courseStudent: {
+                connect: {
+                  id: student.id,
+                },
+              },
+            },
+          })
+          .catch(() => {
+            throw new BadRequestException(
+              `Hubo errores al crear las lecturas para algunos estudiantes`,
+            );
+          });
+      }
+    }
 
     return { message: 'Lecturas creadas con éxito', data: reading.id };
   }
@@ -122,15 +183,19 @@ export class ReadingsService {
                   id: true,
                 },
               },
-              student: {
+              studentsOnReadings: {
                 select: {
-                  id: true,
-                  student: {
+                  courseStudent: {
                     select: {
-                      user: {
+                      id: true,
+                      student: {
                         select: {
-                          firstName: true,
-                          lastName: true,
+                          user: {
+                            select: {
+                              firstName: true,
+                              lastName: true,
+                            },
+                          },
                         },
                       },
                     },
@@ -151,8 +216,8 @@ export class ReadingsService {
         {
           contentsLecture: data.detailReadings[0].contentsLecture,
           activities: data.detailReadings[0].activities,
-          student: undefined,
-          id: undefined,
+          studentsOnReadings: undefined,
+          id: data.detailReadings[0].id,
         },
       ];
     }

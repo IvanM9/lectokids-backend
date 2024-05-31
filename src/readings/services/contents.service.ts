@@ -58,13 +58,13 @@ export class ContentsService {
         'No se encontraron lecturas asociadas a la lectura',
       );
 
-    detailReadings.forEach(async (element) => {
-      this.create({
+    for (const element of detailReadings) {
+      await this.create({
         content: data.content,
         detailReadingId: element.id,
         type: data.type,
       });
-    });
+    }
 
     return { message: `Contenido agregado correctamente a la lectura` };
   }
@@ -219,7 +219,6 @@ export class ContentsService {
   }
 
   async getContentsByDetailReadingId(detailReadingId: string) {
-    console.log(detailReadingId);
     const contents = await this.db.contentLecture.findMany({
       where: {
         detailReading: {
@@ -238,9 +237,9 @@ export class ContentsService {
       where: {
         coursesStudent: {
           some: {
-            detailReadings: {
+            studentsOnReadings: {
               some: {
-                id: detailReadingId,
+                detailReadingId,
               },
             },
           },
@@ -274,28 +273,32 @@ export class ContentsService {
       },
       select: {
         id: true,
-        student: {
+        studentsOnReadings: {
           select: {
-            student: {
+            courseStudent: {
               select: {
-                city: true,
-                comprensionLevelHistory: {
+                student: {
                   select: {
-                    level: true,
+                    city: true,
+                    comprensionLevelHistory: {
+                      select: {
+                        level: true,
+                      },
+                    },
+                    user: {
+                      select: {
+                        genre: true,
+                        birthDate: true,
+                      },
+                    },
+                    interests: true,
                   },
                 },
-                user: {
-                  select: {
-                    genre: true,
-                    birthDate: true,
-                  },
-                },
-                interests: true,
+                customPrompt: true,
+                grade: true,
+                problems: true,
               },
             },
-            customPrompt: true,
-            grade: true,
-            problems: true,
           },
         },
         reading: {
