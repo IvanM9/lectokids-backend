@@ -267,46 +267,50 @@ export class ContentsService {
   }
 
   async createCustomReading(readingId: string) {
-    const students = await this.db.detailReading.findMany({
-      where: {
-        readingId,
-      },
+    const students = await this.db.studentsOnReadings.findMany({
       select: {
-        id: true,
-        studentsOnReadings: {
+        courseStudent: {
           select: {
-            courseStudent: {
+            student: {
               select: {
-                student: {
+                city: true,
+                comprensionLevelHistory: {
                   select: {
-                    city: true,
-                    comprensionLevelHistory: {
-                      select: {
-                        level: true,
-                      },
-                    },
-                    user: {
-                      select: {
-                        genre: true,
-                        birthDate: true,
-                      },
-                    },
-                    interests: true,
+                    level: true,
                   },
                 },
+                user: {
+                  select: {
+                    genre: true,
+                    birthDate: true,
+                  },
+                },
+                interests: true,
+              },
+            },
+            customPrompt: true,
+            grade: true,
+            problems: true,
+          },
+        },
+        detailReading: {
+          select: {
+            id: true,
+            reading: {
+              select: {
+                title: true,
+                goals: true,
+                length: true,
                 customPrompt: true,
-                grade: true,
-                problems: true,
               },
             },
           },
         },
-        reading: {
-          select: {
-            title: true,
-            goals: true,
-            length: true,
-            customPrompt: true,
+      },
+      where: {
+        detailReading: {
+          reading: {
+            id: readingId,
           },
         },
       },
@@ -322,25 +326,26 @@ export class ContentsService {
   private async createParamsCustomReading(students: any[]) {
     for (const student of students) {
       let comprehensionLevel = null;
-      for (const element of student.student.student.comprensionLevelHistory) {
+      for (const element of student.courseStudent.student
+        .comprensionLevelHistory) {
         comprehensionLevel += `${element.level}, `;
       }
 
       const params = {
         age:
           new Date().getFullYear() -
-          student.student.student.user.birthDate.getFullYear(),
-        title: student.reading.title,
-        goals: student.reading.goals,
-        length: student.reading.length,
+          student.courseStudent.student.user.birthDate.getFullYear(),
+        title: student.detailReading.reading.title,
+        goals: student.detailReading.reading.goals,
+        length: student.detailReading.reading.length,
         comprehensionLevel,
-        interests: student.student.student.interests,
-        city: student.student.student.city,
-        problems: student.student.problems,
-        preferences: student.student.customPrompt,
-        genre: student.student.student.user.genre,
-        grade: student.student.grade,
-        customPrompt: student.reading.customPrompt,
+        interests: student.courseStudent.student.interests,
+        city: student.courseStudent.student.city,
+        problems: student.courseStudent.problems,
+        preferences: student.courseStudent.customPrompt,
+        genre: student.courseStudent.student.user.genre,
+        grade: student.courseStudent.grade,
+        customPrompt: student.detailReading.reading.customPrompt,
       };
 
       try {
@@ -361,7 +366,7 @@ export class ContentsService {
         for (const element of contents) {
           await this.create({
             content: element.content,
-            detailReadingId: student.id,
+            detailReadingId: student.detailReading.id,
             type: TypeContent.TEXT,
           });
         }

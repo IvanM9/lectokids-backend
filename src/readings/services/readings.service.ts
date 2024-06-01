@@ -63,7 +63,7 @@ export class ReadingsService {
       distinct: 'studentId',
     });
 
-    if (!data.autogenerate) {
+    if (data.autogenerate) {
       for (const student of students) {
         await this.db.detailReading
           .create({
