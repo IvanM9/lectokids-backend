@@ -1,6 +1,10 @@
 import { PrismaService } from '@/prisma.service';
 import { ENVIRONMENT } from '@/shared/constants/environment';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { TypeMultimedia } from '@prisma/client';
 import firebase from 'firebase-admin';
 import * as fs from 'fs';
@@ -61,5 +65,66 @@ export class MultimediaService {
     );
 
     return { message: 'Multimedia creado con éxito', data: uploaded };
+  }
+
+  async deleteMultimedia(id: string) {
+    const multimedia = await this.db.multimedia.findUnique({
+      where: {
+        id,
+      },
+      select: {
+        url: true,
+      },
+    });
+
+    if (!multimedia) {
+      throw new BadRequestException('Multimedia no encontrado');
+    }
+
+    await firebase
+      .storage()
+      .bucket(ENVIRONMENT.BUCKET_NAME)
+      .file(multimedia.url)
+      .delete()
+      .catch((e) => {
+        console.error(e);
+        throw new BadRequestException('Error al eliminar el archivo');
+      });
+
+    await this.db.multimedia
+      .delete({
+        where: {
+          id,
+        },
+      })
+      .catch((e) => {
+        console.error(e);
+        throw new BadRequestException('Error al eliminar el archivo');
+      });
+
+    return { message: 'Multimedia eliminado con éxito' };
+  }
+
+  async getMultimedia(id: string) {
+    const multimedia = await this.db.multimedia
+      .findUniqueOrThrow({
+        where: {
+          id,
+        },
+      })
+      .catch(() => {
+        throw new NotFoundException('Multimedia no encontrado');
+      });
+
+    const file = await firebase
+      .storage()
+      .bucket(ENVIRONMENT.BUCKET_NAME)
+      .file(multimedia.url)
+      .download()
+      .catch(() => {
+        throw new NotFoundException('Multimedia no encontrado');
+      });
+
+    return { buffer: file[0], name: multimedia.url };
   }
 }

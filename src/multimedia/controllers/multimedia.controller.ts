@@ -6,7 +6,11 @@ import { ResponseHttpInterceptor } from '@/shared/interceptors/response-http.int
 import {
   Body,
   Controller,
+  Delete,
+  Get,
+  Param,
   Post,
+  Res,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
@@ -15,6 +19,7 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { CreateMultimediaDto } from '../dtos/multimedia.dto';
 import { MultimediaService } from '../services/multimedia.service';
+import { Response } from 'express';
 
 @Controller('multimedia')
 @ApiTags('multimedia')
@@ -33,5 +38,22 @@ export class MultimediaController {
     @Body() data: CreateMultimediaDto,
   ) {
     return this.service.createMultimedia(files, data);
+  }
+
+  @Delete(':id')
+  async deleteMultimedia(@Param('id') id: string) {
+    return this.service.deleteMultimedia(id);
+  }
+
+  @Get(':id')
+  async getMultimedia(@Param('id') id: string, @Res() res: Response) {
+    const file = await this.service.getMultimedia(id);
+
+    res.set({
+      'Content-Type': 'application/octet-stream',
+      'Content-Disposition': `attachment; filename= ${file.name}`,
+      'x-processed-filename': `${file.name}`,
+    });
+    res.send(file.buffer);
   }
 }

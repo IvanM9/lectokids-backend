@@ -28,39 +28,49 @@ export class ReadingsService {
         );
       });
 
-    const reading = await this.db.reading
-      .create({
-        data: {
-          goals: data.goals,
-          title: data.title,
-          length: data.length,
-          level: {
-            connect: {
-              id: data.levelId,
+    const { reading, students } = await this.db.$transaction(async (db) => {
+      const reading = await db.reading
+        .create({
+          data: {
+            goals: data.goals,
+            title: data.title,
+            length: data.length,
+            level: {
+              connect: {
+                id: data.levelId,
+              },
             },
+            autogenerate: data.autogenerate,
+            customPrompt: data.customPrompt,
           },
-          autogenerate: data.autogenerate,
-          customPrompt: data.customPrompt,
+          select: {
+            id: true,
+          },
+        })
+        .catch(() => {
+          throw new BadRequestException('No se pudo crear la lectura');
+        });
+
+      const students = await db.courseStudent.findMany({
+        where: {
+          course: {
+            id: data.courseId,
+          },
+          status: true,
         },
         select: {
           id: true,
         },
-      })
-      .catch(() => {
-        throw new BadRequestException('No se pudo crear la lectura');
+        distinct: 'studentId',
       });
 
-    const students = await this.db.courseStudent.findMany({
-      where: {
-        course: {
-          id: data.courseId,
-        },
-        status: true,
-      },
-      select: {
-        id: true,
-      },
-      distinct: 'studentId',
+      if (students.length === 0) {
+        throw new BadRequestException(
+          'No se pudo registrar la lectura porque no hay estudiantes en el curso',
+        );
+      }
+
+      return { reading, students };
     });
 
     if (data.autogenerate) {
@@ -94,9 +104,11 @@ export class ReadingsService {
               `Hubo errores al crear las lecturas para algunos estudiantes`,
             );
           });
+
+        console.log('Lectura creada con éxito');
       }
     } else {
-      const detailReadingCreated = await this.db.detailReading
+      await this.db.detailReading
         .create({
           data: {
             reading: {
@@ -109,37 +121,22 @@ export class ReadingsService {
                 id: data.imageId,
               },
             },
+            studentsOnReadings: {
+              createMany: {
+                data: students.map((student) => ({
+                  courseStudentId: student.id,
+                })),
+              },
+            },
           },
           select: {
             id: true,
           },
         })
-        .catch(() => {
+        .catch((error) => {
+          console.log(error);
           throw new BadRequestException('No se pudo crear la lectura');
         });
-
-      for (const student of students) {
-        await this.db.studentsOnReadings
-          .create({
-            data: {
-              detailReading: {
-                connect: {
-                  id: detailReadingCreated.id,
-                },
-              },
-              courseStudent: {
-                connect: {
-                  id: student.id,
-                },
-              },
-            },
-          })
-          .catch(() => {
-            throw new BadRequestException(
-              `Hubo errores al crear las lecturas para algunos estudiantes`,
-            );
-          });
-      }
     }
 
     return { message: 'Lecturas creadas con éxito', data: reading.id };
