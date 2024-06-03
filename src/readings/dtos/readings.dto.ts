@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, OmitType } from '@nestjs/swagger';
 import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateReadingDto {
@@ -38,3 +38,9 @@ export class CreateReadingDto {
   @IsOptional()
   customPrompt: string;
 }
+
+export class UpdateReadingDto extends OmitType(CreateReadingDto, [
+  'courseId',
+  'imageId',
+  'levelId',
+]) {}

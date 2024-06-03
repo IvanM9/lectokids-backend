@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateReadingDto } from '../dtos/readings.dto';
+import { CreateReadingDto, UpdateReadingDto } from '../dtos/readings.dto';
 
 @Injectable()
 export class ReadingsService {
@@ -205,6 +205,7 @@ export class ReadingsService {
             },
           },
           autogenerate: true,
+          customPrompt: true,
         },
       })
       .catch(() => {
@@ -223,5 +224,49 @@ export class ReadingsService {
     }
 
     return { data };
+  }
+
+  async updateReading(
+    readingId: string,
+    data: UpdateReadingDto,
+    userId: string,
+  ) {
+    await this.db.reading
+      .findFirstOrThrow({
+        where: {
+          id: readingId,
+          level: {
+            course: {
+              teacher: {
+                userId,
+              },
+            },
+          },
+        },
+      })
+      .catch(() => {
+        throw new BadRequestException(
+          'La lectura no existe o no le pertenece a este usuario',
+        );
+      });
+
+    const reading = await this.db.reading
+      .update({
+        where: { id: readingId },
+        data: {
+          goals: data.goals,
+          title: data.title,
+          length: data.length,
+          customPrompt: data.customPrompt,
+        },
+        select: {
+          id: true,
+        },
+      })
+      .catch(() => {
+        throw new BadRequestException('No se pudo actualizar la lectura');
+      });
+
+    return { message: 'Lectura actualizada con éxito', data: reading.id };
   }
 }
