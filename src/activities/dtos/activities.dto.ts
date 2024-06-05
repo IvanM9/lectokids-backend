@@ -6,6 +6,8 @@ import {
   IsObject,
   IsOptional,
   IsString,
+  registerDecorator,
+  ValidationOptions,
 } from 'class-validator';
 
 export class CreateSortImagesActivityDto {
@@ -42,5 +44,31 @@ export class CreateQuestionActivityDto {
 
   @ApiProperty({ enum: TypeActivity, required: true })
   @IsEnum(TypeActivity)
+  @IsAllowedQuestionsActivities({
+    message: 'El tipo de actividad no está permitido',
+  })
   typeActivity: TypeActivity;
+}
+
+function IsAllowedQuestionsActivities(validationOptions?: ValidationOptions) {
+  return function (object: any, propertyName: string) {
+    registerDecorator({
+      name: 'IsAllowedActivityType',
+      target: object.constructor,
+      propertyName: propertyName,
+      options: validationOptions,
+      validator: {
+        validate(value: any) {
+          // Aquí puedes especificar los tipos de actividad permitidos
+          const allowedTypes = [
+            TypeActivity.OPEN_ANSWERS,
+            TypeActivity.OPEN_TEXT,
+            TypeActivity.YES_NO,
+            TypeActivity.QUIZ,
+          ];
+          return allowedTypes.includes(value);
+        },
+      },
+    });
+  };
 }

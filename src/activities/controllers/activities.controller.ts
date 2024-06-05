@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -15,6 +16,7 @@ import { JwtAuthGuard } from '@/security/jwt-strategy/jwt-auth.guard';
 import { RoleGuard } from '@/security/jwt-strategy/roles.guard';
 import { Role } from '@/security/jwt-strategy/roles.decorator';
 import { RoleEnum } from '@/security/jwt-strategy/role.enum';
+import { TypeActivity } from '@prisma/client';
 
 @Controller('activities')
 @ApiTags('activities')
@@ -37,6 +39,15 @@ export class ActivitiesController {
 
   @Post('create-question')
   async createQuestionActivity(@Body() data: CreateQuestionActivityDto) {
+    // if (
+    //   data.typeActivity == TypeActivity.SORT_IMAGES ||
+    //   data.typeActivity == TypeActivity.CROSSWORD ||
+    //   data.typeActivity == TypeActivity.ALPHABET_SOUP
+    // )
+    //   throw new BadRequestException(
+    //     'Tipo de actividad no permitido para esta ruta',
+    //   );
+
     return await this.activitiesService.createQuestionActivity(data);
   }
 }
