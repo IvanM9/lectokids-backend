@@ -80,30 +80,6 @@ export class ContentsService {
         throw new NotFoundException('No se encontró el contenido');
       });
 
-    // const contentsToUpdate = await this.db.contentLecture.findMany({
-    //   where: {
-    //     detailReading: {
-    //       id: contentToDelete.detailReadingId,
-    //     },
-    //     positionPage: {
-    //       gt: contentToDelete.positionPage,
-    //     },
-    //   },
-    // });
-
-    // const updatePromises = contentsToUpdate.map((content) => {
-    //   return this.db.contentLecture.update({
-    //     where: {
-    //       id: content.id,
-    //     },
-    //     data: {
-    //       positionPage: content.positionPage - 1,
-    //     },
-    //   });
-    // });
-
-    // await Promise.all(updatePromises);
-
     await this.db.contentLecture
       .delete({
         where: {
@@ -116,83 +92,6 @@ export class ContentsService {
 
     return { message: `Contenido eliminado correctamente` };
   }
-
-  // async movePosition(data: MoveContentDto) {
-  //   const currentContent = await this.db.contentLecture.findUnique({
-  //     where: {
-  //       id: data.contentLectureId,
-  //     },
-  //   });
-
-  //   if (!currentContent) {
-  //     throw new NotFoundException('No se encontró el contenido');
-  //   }
-
-  //   let contentsToUpdate;
-  //   if (data.positionTo > currentContent.positionPage) {
-  //     contentsToUpdate = await this.db.contentLecture.findMany({
-  //       where: {
-  //         detailReading: {
-  //           id: currentContent.detailReadingId,
-  //         },
-  //         positionPage: {
-  //           lte: data.positionTo,
-  //           gte: currentContent.positionPage,
-  //         },
-  //       },
-  //       orderBy: {
-  //         positionPage: 'asc',
-  //       },
-  //     });
-  //   } else {
-  //     contentsToUpdate = await this.db.contentLecture.findMany({
-  //       where: {
-  //         detailReading: {
-  //           id: currentContent.detailReadingId,
-  //         },
-  //         positionPage: {
-  //           gte: data.positionTo,
-  //           lt: currentContent.positionPage,
-  //         },
-  //       },
-  //       orderBy: {
-  //         positionPage: 'asc',
-  //       },
-  //     });
-  //   }
-
-  //   const lastContent = contentsToUpdate[contentsToUpdate.length - 1];
-
-  //   if (data.positionTo < 1 || data.positionTo > lastContent.positionPage) {
-  //     throw new BadRequestException('La posición deseada no es válida');
-  //   }
-
-  //   const updatePromises = contentsToUpdate.map((content) => {
-  //     return this.db.contentLecture.update({
-  //       where: {
-  //         id: content.id,
-  //       },
-  //       data: {
-  //         positionPage:
-  //           content.positionPage +
-  //           (data.positionTo > currentContent.positionPage ? -1 : 1),
-  //       },
-  //     });
-  //   });
-
-  //   await Promise.all(updatePromises);
-
-  //   await this.db.contentLecture.update({
-  //     where: {
-  //       id: data.contentLectureId,
-  //     },
-  //     data: {
-  //       positionPage: data.positionTo,
-  //     },
-  //   });
-
-  //   return { message: 'Contenido movido correctamente' };
-  // }
 
   async update(contentId: string, content: UpdateContentDto) {
     await this.db.contentLecture

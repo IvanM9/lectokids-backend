@@ -43,11 +43,6 @@ export class ContentsController {
     return this.service.create(data);
   }
 
-  // @Patch('move')
-  // async moveContent(@Body() data: MoveContentDto) {
-  //   return this.service.movePosition(data);
-  // }
-
   @Delete('delete/:id')
   async deleteContent(@Param('id') id: string) {
     return this.service.delete(id);

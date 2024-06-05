@@ -104,8 +104,6 @@ export class ReadingsService {
               `Hubo errores al crear las lecturas para algunos estudiantes`,
             );
           });
-
-        console.log('Lectura creada con éxito');
       }
     } else {
       await this.db.detailReading
