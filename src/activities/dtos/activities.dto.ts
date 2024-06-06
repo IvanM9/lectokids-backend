@@ -27,20 +27,25 @@ class CreateAnswerActivityDto {
   @IsBoolean()
   isCorrect: boolean;
 }
-
-export class CreateQuestionActivityDto {
+class QuestionActivity {
   @ApiProperty()
   @IsString()
   question: string;
 
+  @ApiProperty({ type: [CreateAnswerActivityDto], required: false })
+  @IsOptional()
+  @IsObject({ each: true })
+  answers: CreateAnswerActivityDto[];
+}
+
+export class CreateQuestionActivityDto {
   @ApiProperty()
   @IsString()
   detailReadingId: string;
 
-  @ApiProperty({ type: [CreateAnswerActivityDto], required: false })
-  @IsOptional()
+  @ApiProperty({ type: [QuestionActivity], required: true })
   @IsObject({ each: true })
-  answerActivity: CreateAnswerActivityDto[];
+  questions: QuestionActivity[];
 
   @ApiProperty({ enum: TypeActivity, required: true })
   @IsEnum(TypeActivity)

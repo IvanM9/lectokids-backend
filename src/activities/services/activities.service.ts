@@ -92,20 +92,22 @@ export class ActivitiesService {
       data.typeActivity,
     );
 
-    const answerActivityData = data.answerActivity?.map((answer) => ({
-      answer: answer.answer,
-      isCorrect: answer.isCorrect,
-    }));
+    for (const question of data.questions) {
+      const answerActivityData = question.answers?.map((answer) => ({
+        answer: answer.answer,
+        isCorrect: answer.isCorrect,
+      }));
 
-    await this.db.questionActivity.create({
-      data: {
-        question: data.question,
-        activityId: activity.id,
-        answerActivity: {
-          create: answerActivityData,
+      await this.db.questionActivity.create({
+        data: {
+          question: question.question,
+          activityId: activity.id,
+          answerActivity: {
+            create: answerActivityData,
+          },
         },
-      },
-    });
+      });
+    }
 
     return { message: 'Actividad creada correctamente' };
   }

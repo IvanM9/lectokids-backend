@@ -176,6 +176,7 @@ export class ReadingsService {
               activities: {
                 select: {
                   id: true,
+                  typeActivity: true,
                 },
               },
               studentsOnReadings: {
