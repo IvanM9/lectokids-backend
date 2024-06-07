@@ -1,12 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { TypeActivity } from '@prisma/client';
+import { Type } from 'class-transformer';
 import {
   IsBoolean,
   IsEnum,
-  IsObject,
+  IsNotEmpty,
   IsOptional,
   IsString,
   registerDecorator,
+  ValidateNested,
   ValidationOptions,
 } from 'class-validator';
 
@@ -21,6 +23,7 @@ export class CreateSortImagesActivityDto {
 class CreateAnswerActivityDto {
   @ApiProperty()
   @IsString()
+  @IsNotEmpty({ always: true })
   answer: string;
 
   @ApiProperty()
@@ -30,21 +33,25 @@ class CreateAnswerActivityDto {
 class QuestionActivity {
   @ApiProperty()
   @IsString()
+  @IsNotEmpty({ always: true })
   question: string;
 
   @ApiProperty({ type: [CreateAnswerActivityDto], required: false })
   @IsOptional()
-  @IsObject({ each: true })
+  @Type(() => CreateAnswerActivityDto)
+  @ValidateNested({ always: true, each: true })
   answers: CreateAnswerActivityDto[];
 }
 
 export class CreateQuestionActivityDto {
   @ApiProperty()
   @IsString()
+  @IsNotEmpty()
   detailReadingId: string;
 
   @ApiProperty({ type: [QuestionActivity], required: true })
-  @IsObject({ each: true })
+  @Type(() => QuestionActivity)
+  @ValidateNested({ each: true })
   questions: QuestionActivity[];
 
   @ApiProperty({ enum: TypeActivity, required: true })

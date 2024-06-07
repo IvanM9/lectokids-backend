@@ -118,6 +118,23 @@ export class ContentsService {
   }
 
   async getContentsByDetailReadingId(detailReadingId: string) {
+    const reading = await this.db.detailReading
+      .findUniqueOrThrow({
+        where: {
+          id: detailReadingId,
+        },
+        select: {
+          reading: {
+            select: {
+              title: true,
+            },
+          },
+        },
+      })
+      .catch(() => {
+        throw new NotFoundException('No se encontró la lectura');
+      });
+
     const contents = await this.db.contentLecture.findMany({
       where: {
         detailReading: {
@@ -129,25 +146,33 @@ export class ContentsService {
       },
     });
 
-    const student = await this.db.student.findFirstOrThrow({
-      select: {
-        haveDyslexia: true,
-      },
-      where: {
-        coursesStudent: {
-          some: {
-            studentsOnReadings: {
-              some: {
-                detailReadingId,
+    const student = await this.db.student
+      .findFirstOrThrow({
+        select: {
+          haveDyslexia: true,
+        },
+        where: {
+          coursesStudent: {
+            some: {
+              studentsOnReadings: {
+                some: {
+                  detailReadingId,
+                },
               },
             },
           },
         },
-      },
-    });
+      })
+      .catch(() => {
+        throw new NotFoundException('No se encontró el estudiante');
+      });
 
     return {
-      data: { contents, haveDyslexia: student.haveDyslexia },
+      data: {
+        contents,
+        haveDyslexia: student.haveDyslexia,
+        title: reading.reading.title,
+      },
     };
   }
 
