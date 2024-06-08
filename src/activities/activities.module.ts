@@ -10,5 +10,6 @@ import { AiModule } from '@/ai/ai.module';
   controllers: [ActivitiesController, ScoresController],
   providers: [ActivitiesService, ScoresService, PrismaService],
   imports: [AiModule],
+  exports: [ActivitiesService],
 })
 export class ActivitiesModule {}

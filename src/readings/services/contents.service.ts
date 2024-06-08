@@ -12,12 +12,14 @@ import {
 } from '../dtos/contents.dto';
 import { AiService } from '@/ai/services/ai/ai.service';
 import { TypeContent } from '@prisma/client';
+import { ActivitiesService } from '@/activities/services/activities.service';
 
 @Injectable()
 export class ContentsService {
   constructor(
     private db: PrismaService,
     private ai: AiService,
+    private activitiesService: ActivitiesService,
   ) {}
 
   async create(data: CreateContentDto) {
@@ -215,6 +217,7 @@ export class ContentsService {
             customPrompt: true,
             grade: true,
             problems: true,
+            id: true,
           },
         },
         detailReading: {
@@ -294,6 +297,11 @@ export class ContentsService {
             type: TypeContent.TEXT,
           });
         }
+
+        await this.activitiesService.generateActivities({
+          detailReadingId: student.detailReading.id,
+          courseStudentId: student.courseStudent.id,
+        });
       } catch (error) {
         console.error(error);
         throw new InternalServerErrorException(
