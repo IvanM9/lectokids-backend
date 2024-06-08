@@ -1,4 +1,8 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 // import { GoogleGenerativeAI } from '@google/generative-ai';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { GoogleGenerativeAI } = require('@google/generative-ai');
@@ -19,6 +23,8 @@ import {
 import { TypeActivity } from '@prisma/client';
 @Injectable()
 export class AiService {
+  constructor(private readonly logger: Logger) {}
+
   genAI = new GoogleGenerativeAI(ENVIRONMENT.API_KEY_AI);
 
   model = this.genAI.getGenerativeModel({
@@ -33,8 +39,8 @@ export class AiService {
       const result = await this.model.generateContent(prompt);
       const response = result.response;
       return response.text();
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      this.logger.error(err.message, err.stack, AiService.name);
       throw new InternalServerErrorException('Error al generar contenido');
     }
   }
@@ -61,7 +67,10 @@ export class AiService {
       case TypeActivity.OPEN_ANSWERS:
         prompt = generateOpenAnswers(params);
       default:
-        console.log('Tipo de actividad no permitido');
+        this.logger.warn(
+          `Tipo de actividad no soportado: ${type}`,
+          AiService.name,
+        );
         break;
     }
 
@@ -69,8 +78,8 @@ export class AiService {
       const result = await this.model.generateContent(prompt);
       const response = result.response;
       return JSON.parse(response.text());
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      this.logger.error(err.message, err.stack, AiService.name);
       throw new InternalServerErrorException('Error al generar contenido');
     }
   }
@@ -82,8 +91,8 @@ export class AiService {
       const result = await this.model.generateContent(prompt);
       const response = result.response;
       return JSON.parse(response.text());
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      this.logger.error(err.message, err.stack, AiService.name);
       throw new InternalServerErrorException('Error al generar contenido');
     }
   }
