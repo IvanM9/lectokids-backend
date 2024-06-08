@@ -20,6 +20,18 @@ export class CreateSortImagesActivityDto {
   multimediaId: string;
 }
 
+export class CreateAutoGenerateActivitiesDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  detailReadingId: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  courseStudentId: string;
+}
+
 class CreateAnswerActivityDto {
   @ApiProperty()
   @IsString()

@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Get,
@@ -9,14 +8,16 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { ActivitiesService } from '../services/activities.service';
-import { CreateQuestionActivityDto } from '../dtos/activities.dto';
+import {
+  CreateAutoGenerateActivitiesDto,
+  CreateQuestionActivityDto,
+} from '../dtos/activities.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { ResponseHttpInterceptor } from '@/shared/interceptors/response-http.interceptor';
 import { JwtAuthGuard } from '@/security/jwt-strategy/jwt-auth.guard';
 import { RoleGuard } from '@/security/jwt-strategy/roles.guard';
 import { Role } from '@/security/jwt-strategy/roles.decorator';
 import { RoleEnum } from '@/security/jwt-strategy/role.enum';
-import { TypeActivity } from '@prisma/client';
 
 @Controller('activities')
 @ApiTags('activities')
@@ -49,5 +50,10 @@ export class ActivitiesController {
     //   );
 
     return await this.activitiesService.createQuestionActivity(data);
+  }
+
+  @Post('generate-activities')
+  async generateActivities(@Body() data: CreateAutoGenerateActivitiesDto) {
+    return await this.activitiesService.generateActivities(data);
   }
 }

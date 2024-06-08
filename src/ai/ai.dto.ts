@@ -9,6 +9,12 @@ export interface GenerateReadingDto {
   problems: string;
   preferences: string;
   genre: string;
-  grade: string;
+  grade: number;
   customPrompt: string;
+}
+
+export interface GenerateQuestionsActivitiesDto {
+  age: number;
+  grade: number;
+  reading: string;
 }
