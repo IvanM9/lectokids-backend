@@ -23,7 +23,14 @@ export function generateReading2(params: GenerateReadingDto) {
     { "content": "string" }
   ]
  
-  Important: Only return a single piece of valid JSON text. Return it as text, not block code syntax.`;
+  Important: Only return a single piece of valid JSON text. Return it as text, not block code syntax.
+  
+  Example Output:
+  [
+    { "content": "Había una vez un pequeño pueblo donde todos los habitantes eran muy amables y trabajadores. Un día, un forastero llegó al pueblo y trajo consigo noticias de tierras lejanas." },
+    { "content": "Los habitantes del pueblo estaban emocionados por las noticias del forastero y se reunieron en la plaza para escucharlo." },
+    { "content": "El forastero les contó sobre las tierras lejanas y las maravillas que había visto en su viaje." }
+  ]`;
 }
 
 export function generateQuiz(params: GenerateQuestionsActivitiesDto) {

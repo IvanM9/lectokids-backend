@@ -68,7 +68,6 @@ export class AiService {
     try {
       const result = await this.model.generateContent(prompt);
       const response = result.response;
-      console.log(response.text());
       return JSON.parse(response.text());
     } catch (error) {
       console.error(error);

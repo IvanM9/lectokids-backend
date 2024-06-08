@@ -132,32 +132,34 @@ export class ActivitiesService {
     const typeActivities =
       await this.ai.determineTypeActivities(generateActivityDto);
 
-    const activities = [];
     for (const element of typeActivities) {
+      // TODO: modificar para generar actividades de ordenar imágenes
       if (element.activityType !== TypeActivity.SORT_IMAGES) {
         let isGenerated = false;
 
+        let question = null;
         while (!isGenerated) {
           try {
-            const questions = await this.ai.generateQuizService(
+            question = await this.ai.generateQuizService(
               generateActivityDto,
               element.activityType,
             );
-
-            activities.push({
-              typeActivity: element.activityType,
-              questions,
-            });
 
             isGenerated = true;
           } catch (error) {
             console.log('Error generating activity', error);
           }
         }
+
+        await this.createQuestionActivity({
+          detailReadingId: payload.detailReadingId,
+          questions: question,
+          typeActivity: element.activityType,
+        });
       }
     }
 
-    return { data: activities };
+    return { message: 'Actividades generadas correctamente' };
   }
 
   private async getGenerateActivityDto(
@@ -185,6 +187,16 @@ export class ActivitiesService {
   }
 
   async createQuestionActivity(data: CreateQuestionActivityDto) {
+    await this.db.detailReading
+      .findUniqueOrThrow({
+        where: {
+          id: data.detailReadingId,
+        },
+      })
+      .catch(() => {
+        throw new NotFoundException('La lectura no existe');
+      });
+
     const activity = await this.createActivity(
       data.detailReadingId,
       data.typeActivity,
