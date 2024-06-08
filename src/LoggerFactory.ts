@@ -39,7 +39,15 @@ export const LoggerFactory = (appName: string) => {
     level: DEBUG ? 'debug' : 'info',
     transports: [
       new transports.Console({ format: consoleFormat }),
-      new transports.File({ filename: 'logs/error.log', level: 'error' }),
+      new transports.File({
+        filename: 'logs/error.log',
+        level: 'error',
+        format: format.combine(
+          format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+          format.errors({ stack: true }),
+          format.json(),
+        ),
+      }),
     ],
     exceptionHandlers: [
       new transports.File({ filename: 'logs/exceptions.log' }),

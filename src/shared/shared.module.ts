@@ -1,6 +1,9 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { DateFormatInterceptor } from './interceptors/date-format.interceptor';
+import { TerminusModule } from '@nestjs/terminus';
+import { HealthController } from './controllers/health.controller';
+import { PrismaService } from '@/prisma.service';
 
 @Module({
   providers: [
@@ -8,6 +11,13 @@ import { DateFormatInterceptor } from './interceptors/date-format.interceptor';
       provide: APP_INTERCEPTOR,
       useClass: DateFormatInterceptor,
     },
+    PrismaService,
   ],
+  imports: [
+    TerminusModule.forRoot({
+      logger: Logger,
+    }),
+  ],
+  controllers: [HealthController],
 })
 export class SharedModule {}

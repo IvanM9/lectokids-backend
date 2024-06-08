@@ -43,6 +43,7 @@ async function bootstrap() {
   app.use('/api', helmet());
 
   app.setGlobalPrefix('api');
+  app.enableShutdownHooks();
   await app.listen(4000);
 }
 bootstrap();
