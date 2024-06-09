@@ -4,6 +4,7 @@ import {
   Get,
   Param,
   Post,
+  Put,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -11,6 +12,7 @@ import { ActivitiesService } from '../services/activities.service';
 import {
   CreateAutoGenerateActivitiesDto,
   CreateQuestionActivityDto,
+  UpdateQuestionActivityDto,
 } from '../dtos/activities.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { ResponseHttpInterceptor } from '@/shared/interceptors/response-http.interceptor';
@@ -38,7 +40,7 @@ export class ActivitiesController {
     return await this.activitiesService.getOneActivity(id);
   }
 
-  @Post('create-question')
+  @Post('create-questions')
   async createQuestionActivity(@Body() data: CreateQuestionActivityDto) {
     // if (
     //   data.typeActivity == TypeActivity.SORT_IMAGES ||
@@ -55,5 +57,13 @@ export class ActivitiesController {
   @Post('generate-activities')
   async generateActivities(@Body() data: CreateAutoGenerateActivitiesDto) {
     return await this.activitiesService.generateActivities(data);
+  }
+
+  @Put('update-questions/:id')
+  async updateQuestionActivity(
+    @Param('id') id: string,
+    @Body() data: UpdateQuestionActivityDto,
+  ) {
+    return await this.activitiesService.updateQuestionActivity(id, data);
   }
 }

@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, PickType } from '@nestjs/swagger';
 import { TypeActivity } from '@prisma/client';
 import { Type } from 'class-transformer';
 import {
@@ -72,6 +72,34 @@ export class CreateQuestionActivityDto {
     message: 'El tipo de actividad no está permitido',
   })
   typeActivity: TypeActivity;
+}
+
+export class UpdateAnswerActivityDto extends CreateAnswerActivityDto {
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  id: string;
+}
+
+export class UpdateQuestionsDto extends PickType(QuestionActivity, [
+  'question',
+]) {
+  @ApiProperty({ type: [UpdateAnswerActivityDto], required: false })
+  @Type(() => UpdateAnswerActivityDto)
+  @ValidateNested({ each: true })
+  answers: UpdateAnswerActivityDto[];
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  id: string;
+}
+
+export class UpdateQuestionActivityDto {
+  @ApiProperty({ type: [UpdateQuestionsDto], required: true })
+  @Type(() => UpdateQuestionsDto)
+  @ValidateNested({ each: true })
+  questions: UpdateQuestionsDto[];
 }
 
 function IsAllowedQuestionsActivities(validationOptions?: ValidationOptions) {

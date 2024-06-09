@@ -4,6 +4,7 @@ import { TypeActivity, TypeContent } from '@prisma/client';
 import {
   CreateAutoGenerateActivitiesDto,
   CreateQuestionActivityDto,
+  UpdateQuestionActivityDto,
 } from '../dtos/activities.dto';
 import { GenerateQuestionsActivitiesDto } from '@/ai/ai.dto';
 import { AiService } from '@/ai/services/ai/ai.service';
@@ -220,5 +221,76 @@ export class ActivitiesService {
     }
 
     return { message: 'Actividad creada correctamente' };
+  }
+
+  async updateQuestionActivity(
+    activityId: string,
+    data: UpdateQuestionActivityDto,
+  ) {
+    const activities = await this.db.activity
+      .findUniqueOrThrow({
+        where: {
+          id: activityId,
+        },
+        include: {
+          questionActivities: {
+            select: {
+              id: true,
+            },
+          },
+          imageActivities: {
+            select: {
+              id: true,
+            },
+          },
+        },
+      })
+      .catch(() => {
+        throw new NotFoundException('La actividad no existe');
+      });
+
+    for (const activity of data.questions) {
+      const activityData = activities.questionActivities.find(
+        (item) => item.id === activity.id,
+      );
+
+      if (activityData) {
+        for (const answer of activity.answers) {
+          if (answer.id) {
+            await this.db.answerActivity.update({
+              where: {
+                id: answer.id,
+              },
+              data: {
+                answer: answer.answer,
+                isCorrect: answer.isCorrect,
+              },
+            });
+          } else {
+            await this.db.answerActivity.create({
+              data: {
+                answer: answer.answer,
+                isCorrect: answer.isCorrect,
+                questionId: activity.id,
+              },
+            });
+          }
+        }
+      } else {
+        await this.db.questionActivity.create({
+          data: {
+            question: activity.question,
+            activityId,
+            answerActivity: {
+              create: activity.answers.map((answer) => ({
+                answer: answer.answer,
+                isCorrect: answer.isCorrect,
+              })),
+            },
+          },
+        });
+      }
+    }
+    return { message: 'Actividad actualizada correctamente' };
   }
 }

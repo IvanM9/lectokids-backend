@@ -329,3 +329,65 @@ Example Output:
 ]
 `;
 }
+
+export function generateCrossword(params: GenerateQuestionsActivitiesDto) {
+  return `You are an educational assistant tasked with creating a crossword puzzle to help a school child improve their reading comprehension. Based on the provided reading text, generate words that can be used in the crossword. Each word should be relevant to the text. The output should be in Spanish (Ecuadorian). Also, consider the child's age and grade when selecting the words to ensure they are appropriate.
+
+Parameters:
+- Reading text: "${params.reading}"
+- Student Age: ${params.age}
+- Grade Level: ${params.grade}
+
+Output format (in JSON):
+[
+    {
+      "question": "string",
+      "answers": [
+        {
+          "answer": "string",
+          "isCorrect": true
+        }
+      ]
+    }
+]
+
+Important: Only return a single piece of valid JSON text. Return it as text, not block code syntax.
+
+Example:
+Input:
+Reading text: "Los animales del bosque se preparan para el invierno. El oso recolecta bayas, el zorro construye su madriguera y el ciervo busca un lugar seguro."
+Student Age: 10
+Grade Level: 4
+
+Output:
+[
+    {
+      "question": "oso",
+      "answers": [
+        {
+          "answer": "Animal que recolecta bayas",
+          "isCorrect": true
+        }
+      ]
+    },
+    {
+      "question": "zorro",
+      "answers": [
+        {
+          "answer": "Animal que construye su madriguera",
+          "isCorrect": true
+        }
+      ]
+    },
+    {
+      "question": "ciervo",
+      "answers": [
+        {
+          "answer": "Animal que busca un lugar seguro",
+          "isCorrect": true
+        }
+      ]
+    }
+]
+`;
+}
