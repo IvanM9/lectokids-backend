@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Param,
+  Patch,
   Post,
   Put,
   UseGuards,
@@ -31,6 +32,7 @@ export class ActivitiesController {
   constructor(private readonly activitiesService: ActivitiesService) {}
 
   @Get('by-reading/:detailReadingId')
+  @Role(RoleEnum.TEACHER, RoleEnum.STUDENT)
   async getActivities(@Param('detailReadingId') detailReadingId: string) {
     return await this.activitiesService.getActivities(detailReadingId);
   }
@@ -42,15 +44,6 @@ export class ActivitiesController {
 
   @Post('create-questions')
   async createQuestionActivity(@Body() data: CreateQuestionActivityDto) {
-    // if (
-    //   data.typeActivity == TypeActivity.SORT_IMAGES ||
-    //   data.typeActivity == TypeActivity.CROSSWORD ||
-    //   data.typeActivity == TypeActivity.ALPHABET_SOUP
-    // )
-    //   throw new BadRequestException(
-    //     'Tipo de actividad no permitido para esta ruta',
-    //   );
-
     return await this.activitiesService.createQuestionActivity(data);
   }
 
@@ -65,5 +58,10 @@ export class ActivitiesController {
     @Body() data: UpdateQuestionActivityDto,
   ) {
     return await this.activitiesService.updateQuestionActivity(id, data);
+  }
+
+  @Patch('update-status/:activityId')
+  async updateStatusActivity(@Param('activityId') id: string) {
+    return await this.activitiesService.updateStatusQuestionActivity(id);
   }
 }

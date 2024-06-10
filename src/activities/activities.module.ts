@@ -5,10 +5,13 @@ import { ScoresService } from './services/scores.service';
 import { ScoresController } from './controllers/scores.controller';
 import { PrismaService } from '@/prisma.service';
 import { AiModule } from '@/ai/ai.module';
+import { AnswersActivitiesService } from './services/answers-activities.service';
+import { QuestionsActivitiesService } from './services/questions-activities.service';
+import { AnswersActivitiesController } from './controllers/answers-activities.controller';
 
 @Module({
-  controllers: [ActivitiesController, ScoresController],
-  providers: [ActivitiesService, ScoresService, PrismaService],
+  controllers: [ActivitiesController, ScoresController, AnswersActivitiesController],
+  providers: [ActivitiesService, ScoresService, PrismaService, AnswersActivitiesService, QuestionsActivitiesService],
   imports: [AiModule],
   exports: [ActivitiesService],
 })

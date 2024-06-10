@@ -172,11 +172,17 @@ export class ReadingsService {
                 select: {
                   id: true,
                 },
+                where: {
+                  status: true,
+                },
               },
               activities: {
                 select: {
                   id: true,
                   typeActivity: true,
+                },
+                where: {
+                  status: true,
                 },
               },
               studentsOnReadings: {

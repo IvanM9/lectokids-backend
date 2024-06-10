@@ -1,5 +1,9 @@
 import { PrismaService } from '@/prisma.service';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { TypeActivity, TypeContent } from '@prisma/client';
 import {
   CreateAutoGenerateActivitiesDto,
@@ -292,5 +296,37 @@ export class ActivitiesService {
       }
     }
     return { message: 'Actividad actualizada correctamente' };
+  }
+
+  async updateStatusQuestionActivity(activityId: string) {
+    const activity = await this.db.activity
+      .findUniqueOrThrow({
+        where: {
+          id: activityId,
+        },
+        select: {
+          status: true,
+        },
+      })
+      .catch(() => {
+        throw new NotFoundException('La actividad no existe');
+      });
+
+    await this.db.activity
+      .update({
+        where: {
+          id: activityId,
+        },
+        data: {
+          status: !activity.status,
+        },
+      })
+      .catch(() => {
+        throw new BadRequestException(
+          'Error al actualizar el estado de la actividad',
+        );
+      });
+
+    return { message: 'Actividad eliminada correctamente' };
   }
 }
