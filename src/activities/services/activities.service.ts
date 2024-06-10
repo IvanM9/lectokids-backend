@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { TypeActivity, TypeContent } from '@prisma/client';
 import {
+  AutoGenerateQuestionActivityDto,
   CreateAutoGenerateActivitiesDto,
   CreateQuestionActivityDto,
   UpdateQuestionActivityDto,
@@ -99,6 +100,76 @@ export class ActivitiesService {
     });
   }
 
+  async generateActivityByType(
+    payload: AutoGenerateQuestionActivityDto,
+    generateActivityDto?: GenerateQuestionsActivitiesDto,
+  ) {
+    if (!generateActivityDto) {
+      const student = await this.db.courseStudent
+        .findUniqueOrThrow({
+          where: {
+            id: payload.courseStudentId,
+            studentsOnReadings: {
+              some: {
+                detailReadingId: payload.detailReadingId,
+              },
+            },
+          },
+          select: {
+            student: {
+              select: {
+                user: {
+                  select: {
+                    birthDate: true,
+                  },
+                },
+              },
+            },
+            grade: true,
+          },
+        })
+        .catch(() => {
+          throw new NotFoundException(
+            'El estudiante no está inscrito en la lectura',
+          );
+        });
+
+      generateActivityDto = await this.getGenerateActivityDto(
+        payload.detailReadingId,
+        student,
+      );
+    }
+
+    let activityId = null;
+    if (payload.typeActivity !== TypeActivity.SORT_IMAGES) {
+      let isGenerated = false;
+
+      let question = null;
+      while (!isGenerated) {
+        try {
+          question = await this.ai.generateQuizService(
+            generateActivityDto,
+            payload.typeActivity,
+          );
+
+          isGenerated = true;
+        } catch (error) {
+          console.log('Error generating activity', error);
+        }
+      }
+
+      activityId = (
+        await this.createQuestionActivity({
+          detailReadingId: payload.detailReadingId,
+          questions: question,
+          typeActivity: payload.typeActivity,
+        })
+      ).data;
+    }
+
+    return { message: 'Actividad generada correctamente', data: activityId };
+  }
+
   async generateActivities(payload: CreateAutoGenerateActivitiesDto) {
     const student = await this.db.courseStudent
       .findUniqueOrThrow({
@@ -139,29 +210,14 @@ export class ActivitiesService {
 
     for (const element of typeActivities) {
       // TODO: modificar para generar actividades de ordenar imágenes
-      if (element.activityType !== TypeActivity.SORT_IMAGES) {
-        let isGenerated = false;
-
-        let question = null;
-        while (!isGenerated) {
-          try {
-            question = await this.ai.generateQuizService(
-              generateActivityDto,
-              element.activityType,
-            );
-
-            isGenerated = true;
-          } catch (error) {
-            console.log('Error generating activity', error);
-          }
-        }
-
-        await this.createQuestionActivity({
+      await this.generateActivityByType(
+        {
+          courseStudentId: payload.courseStudentId,
           detailReadingId: payload.detailReadingId,
-          questions: question,
-          typeActivity: element.activityType,
-        });
-      }
+          typeActivity: element,
+        },
+        generateActivityDto,
+      );
     }
 
     return { message: 'Actividades generadas correctamente' };
@@ -224,7 +280,7 @@ export class ActivitiesService {
       });
     }
 
-    return { message: 'Actividad creada correctamente' };
+    return { message: 'Actividad creada correctamente', data: activity.id };
   }
 
   async updateQuestionActivity(
@@ -327,6 +383,6 @@ export class ActivitiesService {
         );
       });
 
-    return { message: 'Actividad eliminada correctamente' };
+    return { message: 'Estado de la actividad actualizada correctamente' };
   }
 }

@@ -289,7 +289,7 @@ Example Output:
 }
 
 export function getTypeActivities(params: GenerateQuestionsActivitiesDto) {
-  return `You are an educational content planner. I will provide you with a reading passage, the age of the student, and the grade level. Based on this information, determine the types of activities that are appropriate for the student's comprehension and engagement. The types of activities are: YES_NO (True or False), QUIZ (Multiple Choice), OPEN_ANSWERS (Open-ended Questions), OPEN_TEXT (Free Text Question), ALPHABET_SOUP (Word Search), SORT_IMAGES (Order Images). The output should be in JSON format as follows:
+  return `You are an educational content planner. I will provide you with a reading passage, the age of the student, and the grade level. Based on this information, determine the types of activities that are appropriate for the student's comprehension and engagement. The types of activities are: YES_NO (True or False), QUIZ (Multiple Choice), OPEN_ANSWERS (Open-ended Questions), OPEN_TEXT (Free Text Question), ALPHABET_SOUP (Word Search), SORT_IMAGES (Order Images), CROSSWORD. The output should be in JSON format as follows:
 
 [
     {

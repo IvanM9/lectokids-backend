@@ -32,6 +32,15 @@ export class CreateAutoGenerateActivitiesDto {
   courseStudentId: string;
 }
 
+export class AutoGenerateQuestionActivityDto extends CreateAutoGenerateActivitiesDto {
+  @ApiProperty({ enum: TypeActivity, required: true })
+  @IsEnum(TypeActivity)
+  @IsAllowedQuestionsActivities({
+    message: 'El tipo de actividad no está permitido',
+  })
+  typeActivity: TypeActivity;
+}
+
 class CreateAnswerActivityDto {
   @ApiProperty()
   @IsString()
@@ -117,6 +126,8 @@ function IsAllowedQuestionsActivities(validationOptions?: ValidationOptions) {
             TypeActivity.OPEN_TEXT,
             TypeActivity.YES_NO,
             TypeActivity.QUIZ,
+            TypeActivity.CROSSWORD,
+            TypeActivity.ALPHABET_SOUP,
           ];
           return allowedTypes.includes(value);
         },

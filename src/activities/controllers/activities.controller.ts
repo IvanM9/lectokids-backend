@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { ActivitiesService } from '../services/activities.service';
 import {
+  AutoGenerateQuestionActivityDto,
   CreateAutoGenerateActivitiesDto,
   CreateQuestionActivityDto,
   UpdateQuestionActivityDto,
@@ -50,6 +51,13 @@ export class ActivitiesController {
   @Post('generate-activities')
   async generateActivities(@Body() data: CreateAutoGenerateActivitiesDto) {
     return await this.activitiesService.generateActivities(data);
+  }
+
+  @Post('generate-questions')
+  async generateQuestionsActivities(
+    @Body() data: AutoGenerateQuestionActivityDto,
+  ) {
+    return await this.activitiesService.generateActivityByType(data);
   }
 
   @Put('update-questions/:id')

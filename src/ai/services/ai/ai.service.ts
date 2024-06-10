@@ -9,6 +9,7 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 import { ENVIRONMENT } from '@/shared/constants/environment';
 import {
   generateAlphabetSoup,
+  generateCrossword,
   generateOpenAnswers,
   generateOpenText,
   generateQuiz,
@@ -66,6 +67,10 @@ export class AiService {
         break;
       case TypeActivity.OPEN_ANSWERS:
         prompt = generateOpenAnswers(params);
+        break;
+      case TypeActivity.CROSSWORD:
+        prompt = generateCrossword(params);
+        break;
       default:
         this.logger.warn(
           `Tipo de actividad no soportado: ${type}`,
