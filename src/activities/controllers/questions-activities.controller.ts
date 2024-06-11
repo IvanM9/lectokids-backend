@@ -1,7 +1,18 @@
-import { Controller, Patch, Param } from '@nestjs/common';
+import { Controller, Patch, Param, UseInterceptors, UseGuards } from '@nestjs/common';
 import { QuestionsActivitiesService } from '../services/questions-activities.service';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ResponseHttpInterceptor } from '@/shared/interceptors/response-http.interceptor';
+import { RoleGuard } from '@/security/jwt-strategy/roles.guard';
+import { JwtAuthGuard } from '@/security/jwt-strategy/jwt-auth.guard';
+import { Role } from '@/security/jwt-strategy/roles.decorator';
+import { RoleEnum } from '@/security/jwt-strategy/role.enum';
 
 @Controller('questions-activities')
+@ApiTags('questions-activities')
+@UseInterceptors(ResponseHttpInterceptor)
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard, RoleGuard)
+@Role(RoleEnum.TEACHER)
 export class QuestionsActivitiesController {
     constructor(private service: QuestionsActivitiesService) {}
 

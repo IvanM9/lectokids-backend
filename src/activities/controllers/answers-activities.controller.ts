@@ -42,6 +42,7 @@ export class AnswersActivitiesController {
   }
 
   @Patch('status/:answerActivityId')
+  @Role(RoleEnum.TEACHER)
   async updateStatusAnswerActivity(
     @Param('answerActivityId') answerActivityId: string,
   ) {

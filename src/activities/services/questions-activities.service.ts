@@ -52,5 +52,7 @@ export class QuestionsActivitiesService {
       .catch(() => {
         throw new NotFoundException('La pregunta no existe');
       });
+
+    return { message: 'Estado de la pregunta actualizado' };
   }
 }

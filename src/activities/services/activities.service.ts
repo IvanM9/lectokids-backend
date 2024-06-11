@@ -66,6 +66,7 @@ export class ActivitiesService {
       activityData = await this.db.questionActivity.findMany({
         where: {
           activityId,
+          status: true,
         },
         select: {
           id: true,
@@ -75,6 +76,9 @@ export class ActivitiesService {
               answer: true,
               isCorrect: true,
               id: true,
+            },
+            where: {
+              status: true,
             },
           },
         },
@@ -336,6 +340,15 @@ export class ActivitiesService {
             });
           }
         }
+
+        await this.db.questionActivity.update({
+          where: {
+            id: activity.id,
+          },
+          data: {
+            question: activity.question,
+          },
+        });
       } else {
         await this.db.questionActivity.create({
           data: {
