@@ -31,4 +31,34 @@ export class AnswersActivitiesService {
         throw new NotFoundException('La respuesta no existe');
       });
   }
+
+  async updateStatusAnswerActivity(answerActivityId: string) {
+    const answerActivity = await this.db.answerActivity
+      .findUniqueOrThrow({
+        where: {
+          id: answerActivityId,
+        },
+        select: {
+          status: true,
+        },
+      })
+      .catch(() => {
+        throw new NotFoundException('La respuesta no existe');
+      });
+
+    await this.db.answerActivity
+      .update({
+        where: {
+          id: answerActivityId,
+        },
+        data: {
+          status: !answerActivity.status,
+        },
+      })
+      .catch(() => {
+        throw new NotFoundException('La respuesta no existe');
+      });
+
+    return { message: 'Estado de la respuesta actualizada correctamente' };
+  }
 }

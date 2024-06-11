@@ -242,6 +242,7 @@ model QuestionActivity {
   question   String   @db.VarChar(255)
   activity   Activity @relation(fields: [activityId], references: [id])
   activityId String   @map("activity_id")
+  status     Boolean  @default(true)
 
   answerActivity AnswerActivity[]
 
@@ -254,6 +255,7 @@ model AnswerActivity {
   isCorrect  Boolean?         @default(false) @map("is_correct")
   question   QuestionActivity @relation(fields: [questionId], references: [id])
   questionId String           @map("question_id")
+  status     Boolean  @default(true)
 
   @@map("answer_activities")
 }
@@ -265,6 +267,7 @@ model ImageActivity {
   activity     Activity   @relation(fields: [activityId], references: [id])
   activityId   String     @map("activity_id")
   order        Int        @db.SmallInt
+  status     Boolean  @default(true)
 
   @@map("image_activities")
 }

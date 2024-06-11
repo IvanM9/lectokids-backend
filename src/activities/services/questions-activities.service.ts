@@ -25,4 +25,32 @@ export class QuestionsActivitiesService {
         throw new NotFoundException('La pregunta no existe');
       });
   }
+
+  async updateStatusQuestionActivity(questionActivityId: string) {
+    const questionActivity = await this.db.questionActivity
+      .findUniqueOrThrow({
+        where: {
+          id: questionActivityId,
+        },
+        select: {
+          status: true,
+        },
+      })
+      .catch(() => {
+        throw new NotFoundException('La pregunta no existe');
+      });
+
+    await this.db.questionActivity
+      .update({
+        where: {
+          id: questionActivityId,
+        },
+        data: {
+          status: !questionActivity.status,
+        },
+      })
+      .catch(() => {
+        throw new NotFoundException('La pregunta no existe');
+      });
+  }
 }

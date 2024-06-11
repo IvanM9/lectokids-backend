@@ -8,9 +8,10 @@ import { AiModule } from '@/ai/ai.module';
 import { AnswersActivitiesService } from './services/answers-activities.service';
 import { QuestionsActivitiesService } from './services/questions-activities.service';
 import { AnswersActivitiesController } from './controllers/answers-activities.controller';
+import { QuestionsActivitiesController } from './controllers/questions-activities.controller';
 
 @Module({
-  controllers: [ActivitiesController, ScoresController, AnswersActivitiesController],
+  controllers: [ActivitiesController, ScoresController, AnswersActivitiesController, QuestionsActivitiesController],
   providers: [ActivitiesService, ScoresService, PrismaService, AnswersActivitiesService, QuestionsActivitiesService],
   imports: [AiModule],
   exports: [ActivitiesService],

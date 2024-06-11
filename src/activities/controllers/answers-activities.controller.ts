@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Param,
+  Patch,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -36,6 +37,15 @@ export class AnswersActivitiesController {
     @Param('answerActivityId') answerActivityId: string,
   ) {
     return await this.answersActivitiesService.getOneAnswerActivity(
+      answerActivityId,
+    );
+  }
+
+  @Patch('status/:answerActivityId')
+  async updateStatusAnswerActivity(
+    @Param('answerActivityId') answerActivityId: string,
+  ) {
+    return await this.answersActivitiesService.updateStatusAnswerActivity(
       answerActivityId,
     );
   }
