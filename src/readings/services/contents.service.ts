@@ -278,16 +278,23 @@ export class ContentsService {
       try {
         let exit = false;
         let contents = null;
+        let attempts = 5;
 
-        while (!exit) {
+        while (!exit && attempts-- > 0) {
           const reading = await this.ai.generateReadingService(params);
 
           try {
             contents = JSON.parse(reading);
             exit = true;
           } catch {
-            exit = false;
+            console.error('Error al generar la lectura');
           }
+        }
+
+        if (!exit) {
+          throw new InternalServerErrorException(
+            'Error al generar la lectura. Por favor, intente nuevamente.',
+          );
         }
 
         for (const element of contents) {

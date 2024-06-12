@@ -2,6 +2,7 @@ import { PrismaService } from '@/prisma.service';
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { TypeActivity, TypeContent } from '@prisma/client';
@@ -144,14 +145,14 @@ export class ActivitiesService {
       );
     }
 
-    let activityId = null;
+    // let activityId = null;
+    let questions = null;
     if (payload.typeActivity !== TypeActivity.SORT_IMAGES) {
       let isGenerated = false;
-
-      let question = null;
-      while (!isGenerated) {
+      let attempts = 5;
+      while (!isGenerated || attempts-- > 0) {
         try {
-          question = await this.ai.generateQuizService(
+          questions = await this.ai.generateQuizService(
             generateActivityDto,
             payload.typeActivity,
           );
@@ -162,16 +163,22 @@ export class ActivitiesService {
         }
       }
 
-      activityId = (
-        await this.createQuestionActivity({
-          detailReadingId: payload.detailReadingId,
-          questions: question,
-          typeActivity: payload.typeActivity,
-        })
-      ).data;
+      if (!isGenerated) {
+        throw new InternalServerErrorException(
+          'Error al generar la actividad. Por favor, intente nuevamente',
+        );
+      }
+
+      // activityId = (
+      //   await this.createQuestionActivity({
+      //     detailReadingId: payload.detailReadingId,
+      //     questions,
+      //     typeActivity: payload.typeActivity,
+      //   })
+      // ).data;
     }
 
-    return { message: 'Actividad generada correctamente', data: activityId };
+    return { message: 'Actividad generada correctamente', data: questions };
   }
 
   async generateActivities(payload: CreateAutoGenerateActivitiesDto) {
@@ -214,14 +221,20 @@ export class ActivitiesService {
 
     for (const element of typeActivities) {
       // TODO: modificar para generar actividades de ordenar imágenes
-      await this.generateActivityByType(
+      const questions = (await this.generateActivityByType(
         {
           courseStudentId: payload.courseStudentId,
           detailReadingId: payload.detailReadingId,
           typeActivity: element,
         },
         generateActivityDto,
-      );
+      )).data;
+
+        await this.createQuestionActivity({
+          detailReadingId: payload.detailReadingId,
+          questions,
+          typeActivity: element,
+        })
     }
 
     return { message: 'Actividades generadas correctamente' };
