@@ -280,7 +280,7 @@ export class ContentsService {
         let contents = null;
         let attempts = 5;
 
-        while (!exit && attempts-- > 0) {
+        while (!exit && (attempts-- > 0)) {
           const reading = await this.ai.generateReadingService(params);
 
           try {

@@ -150,7 +150,7 @@ export class ActivitiesService {
     if (payload.typeActivity !== TypeActivity.SORT_IMAGES) {
       let isGenerated = false;
       let attempts = 5;
-      while (!isGenerated || attempts-- > 0) {
+      while (!isGenerated && (attempts-- > 0)) {
         try {
           questions = await this.ai.generateQuizService(
             generateActivityDto,
@@ -225,16 +225,18 @@ export class ActivitiesService {
         {
           courseStudentId: payload.courseStudentId,
           detailReadingId: payload.detailReadingId,
-          typeActivity: element,
+          typeActivity: element.activityType,
         },
         generateActivityDto,
       )).data;
 
+      if(element.activityType !== TypeActivity.SORT_IMAGES){
         await this.createQuestionActivity({
           detailReadingId: payload.detailReadingId,
           questions,
-          typeActivity: element,
+          typeActivity: element.activityType,
         })
+      }
     }
 
     return { message: 'Actividades generadas correctamente' };

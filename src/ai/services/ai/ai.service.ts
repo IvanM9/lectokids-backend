@@ -79,6 +79,10 @@ export class AiService {
         break;
     }
 
+    if(!prompt) {
+      throw new InternalServerErrorException('Tipo de actividad no soportado');
+    }
+
     try {
       const result = await this.model.generateContent(prompt);
       const response = result.response;
