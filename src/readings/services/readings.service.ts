@@ -203,8 +203,20 @@ export class ReadingsService {
                     },
                   },
                 },
+                orderBy: {
+                  courseStudent: {
+                    student: {
+                      user: {
+                        firstName: 'asc',
+                      },
+                    },
+                  },
+                },
               },
             },
+            where: {
+              status: true,
+            }
           },
           autogenerate: true,
           customPrompt: true,
