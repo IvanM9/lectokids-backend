@@ -283,6 +283,7 @@ model Multimedia {
   url         String         @db.Text
   description String?        @db.Text
   type        TypeMultimedia
+  fileName    String?         @map("file_name")
   status      Boolean        @default(true)
   createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt   DateTime?      @updatedAt @map("updated_at") @db.Timestamptz()

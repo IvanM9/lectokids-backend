@@ -3,15 +3,17 @@ import { ENVIRONMENT } from '@/shared/constants/environment';
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { TypeMultimedia } from '@prisma/client';
 import firebase from 'firebase-admin';
 import * as fs from 'fs';
+import { CreateLinkMultimediaDto } from '../dtos/multimedia.dto';
 
 @Injectable()
 export class MultimediaService {
-  constructor(private db: PrismaService) {
+  constructor(private db: PrismaService, private readonly logger: Logger) {
     firebase.initializeApp({
       credential: firebase.credential.cert(
         JSON.parse(ENVIRONMENT.FIREBASE_CONFIG),
@@ -22,29 +24,30 @@ export class MultimediaService {
   async createMultimedia(files: Express.Multer.File[], extraData?: any) {
     const uploaded = await Promise.all(
       files.map(async (file) => {
-        await firebase
+        const uploaded = await firebase
           .storage()
           .bucket(ENVIRONMENT.BUCKET_NAME)
           .upload(file.path, {
             destination: file.filename,
+            public: true,
           })
           .catch((e) => {
-            console.error(e);
+            this.logger.error(e.message, e.stack, MultimediaService.name);
             throw new BadRequestException(
               'Error al guardar los archivos en el servidor',
             );
           });
 
-        // TODO: Revisar la url que se guarda en la base de datos
         const object = {
-          url: file.filename,
-          type: extraData?.type || TypeMultimedia.IMAGE,
+          url: uploaded[0].publicUrl(),
+          fileName: file.filename,
+          type: extraData?.type ?? TypeMultimedia.IMAGE,
           description: extraData?.description,
         };
 
         fs.unlink(file.path, (err) => {
           if (err) {
-            console.error(err);
+            this.logger.error(err.message, err.stack, MultimediaService.name);
           }
         });
 
@@ -56,7 +59,7 @@ export class MultimediaService {
             },
           })
           .catch((e) => {
-            console.error(e);
+            this.logger.error(e.message, e.stack, MultimediaService.name);
             throw new BadRequestException(
               'Error al guardar los archivos en la base de datos',
             );
@@ -68,28 +71,28 @@ export class MultimediaService {
   }
 
   async deleteMultimedia(id: string) {
-    const multimedia = await this.db.multimedia.findUnique({
+    const multimedia = await this.db.multimedia.findUniqueOrThrow({
       where: {
         id,
       },
       select: {
-        url: true,
+        fileName: true,
       },
+    }).catch(() => {
+      throw new NotFoundException('Multimedia no encontrado');
     });
 
-    if (!multimedia) {
-      throw new BadRequestException('Multimedia no encontrado');
+    if (multimedia.fileName) {
+      await firebase
+        .storage()
+        .bucket(ENVIRONMENT.BUCKET_NAME)
+        .file(multimedia.fileName)
+        .delete()
+        .catch((e) => {
+          this.logger.error(e.message, e.stack, MultimediaService.name);
+          throw new BadRequestException('Error al eliminar el archivo');
+        });
     }
-
-    await firebase
-      .storage()
-      .bucket(ENVIRONMENT.BUCKET_NAME)
-      .file(multimedia.url)
-      .delete()
-      .catch((e) => {
-        console.error(e);
-        throw new BadRequestException('Error al eliminar el archivo');
-      });
 
     await this.db.multimedia
       .delete({
@@ -98,11 +101,39 @@ export class MultimediaService {
         },
       })
       .catch((e) => {
-        console.error(e);
+        this.logger.error(e.message, e.stack, MultimediaService.name);
         throw new BadRequestException('Error al eliminar el archivo');
       });
 
+
     return { message: 'Multimedia eliminado con éxito' };
+  }
+
+  async downloadMultimedia(id: string) {
+    const multimedia = await this.db.multimedia
+      .findUniqueOrThrow({
+        where: {
+          id,
+          fileName: {
+            not: null,
+          },
+        },
+      })
+      .catch(() => {
+        throw new NotFoundException('Multimedia no encontrado o no es descargable');
+      });
+
+    const file = await firebase
+      .storage()
+      .bucket(ENVIRONMENT.BUCKET_NAME)
+      .file(multimedia.fileName)
+      .download()
+      .catch((err) => {
+        this.logger.error(err.message, err.stack, MultimediaService.name);
+        throw new NotFoundException('Multimedia no encontrado');
+      });
+
+    return { buffer: file[0], name: multimedia.url };
   }
 
   async getMultimedia(id: string) {
@@ -111,20 +142,37 @@ export class MultimediaService {
         where: {
           id,
         },
+        select: {
+          url: true,
+          type: true,
+          description: true,
+        }
       })
       .catch(() => {
         throw new NotFoundException('Multimedia no encontrado');
       });
 
-    const file = await firebase
-      .storage()
-      .bucket(ENVIRONMENT.BUCKET_NAME)
-      .file(multimedia.url)
-      .download()
-      .catch(() => {
-        throw new NotFoundException('Multimedia no encontrado');
+    return { data: multimedia };
+  }
+
+  async uploadUrl(payload: CreateLinkMultimediaDto) {
+    const uploaded = await this.db.multimedia
+      .create({
+        data: {
+          url: payload.url,
+          type: payload.type ?? TypeMultimedia.IMAGE,
+          description: payload.description,
+        },
+        select: {
+          id: true,
+        },
+      })
+      .catch((e) => {
+        throw new BadRequestException(
+          'Error al guardar los archivos en la base de datos',
+        );
       });
 
-    return { buffer: file[0], name: multimedia.url };
+    return { message: 'Multimedia creado con éxito', data: uploaded };
   }
 }

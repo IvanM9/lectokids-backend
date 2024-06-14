@@ -1,6 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, OmitType } from '@nestjs/swagger';
 import { TypeMultimedia } from '@prisma/client';
-import { IsEnum, IsOptional } from 'class-validator';
+import { IsEnum, IsOptional, IsUrl } from 'class-validator';
 
 export class CreateMultimediaDto {
   @ApiProperty({
@@ -21,4 +21,12 @@ export class CreateMultimediaDto {
     maxItems: 5,
   })
   files: Array<Express.Multer.File>;
+}
+
+export class CreateLinkMultimediaDto extends OmitType(CreateMultimediaDto, [
+  'files',
+] as const) {
+  @ApiProperty()
+  @IsUrl()
+  url: string;
 }

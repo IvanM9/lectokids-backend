@@ -17,7 +17,7 @@ import {
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
-import { CreateMultimediaDto } from '../dtos/multimedia.dto';
+import { CreateLinkMultimediaDto, CreateMultimediaDto } from '../dtos/multimedia.dto';
 import { MultimediaService } from '../services/multimedia.service';
 import { Response } from 'express';
 
@@ -45,9 +45,9 @@ export class MultimediaController {
     return this.service.deleteMultimedia(id);
   }
 
-  @Get(':id')
+  @Get(':id/download')
   async getMultimedia(@Param('id') id: string, @Res() res: Response) {
-    const file = await this.service.getMultimedia(id);
+    const file = await this.service.downloadMultimedia(id);
 
     res.set({
       'Content-Type': 'application/octet-stream',
@@ -55,5 +55,16 @@ export class MultimediaController {
       'x-processed-filename': `${file.name}`,
     });
     res.send(file.buffer);
+  }
+
+  @Get(':id/get')
+  @Role(RoleEnum.TEACHER, RoleEnum.STUDENT)
+  async getMultimediaUrl(@Param('id') id: string) {
+    return this.service.getMultimedia(id);
+  }
+
+  @Post('link')
+  async createLinkMultimedia(@Body() data: CreateLinkMultimediaDto) {
+    return this.service.uploadUrl(data);
   }
 }
