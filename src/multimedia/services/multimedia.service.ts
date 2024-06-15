@@ -13,7 +13,10 @@ import { CreateLinkMultimediaDto } from '../dtos/multimedia.dto';
 
 @Injectable()
 export class MultimediaService {
-  constructor(private db: PrismaService, private readonly logger: Logger) {
+  constructor(
+    private db: PrismaService,
+    private readonly logger: Logger,
+  ) {
     firebase.initializeApp({
       credential: firebase.credential.cert(
         JSON.parse(ENVIRONMENT.FIREBASE_CONFIG),
@@ -71,16 +74,18 @@ export class MultimediaService {
   }
 
   async deleteMultimedia(id: string) {
-    const multimedia = await this.db.multimedia.findUniqueOrThrow({
-      where: {
-        id,
-      },
-      select: {
-        fileName: true,
-      },
-    }).catch(() => {
-      throw new NotFoundException('Multimedia no encontrado');
-    });
+    const multimedia = await this.db.multimedia
+      .findUniqueOrThrow({
+        where: {
+          id,
+        },
+        select: {
+          fileName: true,
+        },
+      })
+      .catch(() => {
+        throw new NotFoundException('Multimedia no encontrado');
+      });
 
     if (multimedia.fileName) {
       await firebase
@@ -105,7 +110,6 @@ export class MultimediaService {
         throw new BadRequestException('Error al eliminar el archivo');
       });
 
-
     return { message: 'Multimedia eliminado con éxito' };
   }
 
@@ -120,7 +124,9 @@ export class MultimediaService {
         },
       })
       .catch(() => {
-        throw new NotFoundException('Multimedia no encontrado o no es descargable');
+        throw new NotFoundException(
+          'Multimedia no encontrado o no es descargable',
+        );
       });
 
     const file = await firebase
@@ -146,7 +152,7 @@ export class MultimediaService {
           url: true,
           type: true,
           description: true,
-        }
+        },
       })
       .catch(() => {
         throw new NotFoundException('Multimedia no encontrado');

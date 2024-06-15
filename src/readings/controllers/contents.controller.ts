@@ -16,7 +16,13 @@ import {
   CreateContentForAllDto,
   UpdateContentDto,
 } from '../dtos/contents.dto';
-import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ResponseHttpInterceptor } from '@/shared/interceptors/response-http.interceptor';
 import { JwtAuthGuard } from '@/security/jwt-strategy/jwt-auth.guard';
 import { RoleGuard } from '@/security/jwt-strategy/roles.guard';
@@ -62,8 +68,11 @@ export class ContentsController {
     type: 'string',
     description: 'Id de la lectura para un estudiante',
   })
-  @ApiQuery({name: 'status', type: 'boolean', required: false})
-  async getByReading(@Param('detailReadingId') detailReadingId: string, @Query('status', OptionalBooleanPipe) status: boolean) {
+  @ApiQuery({ name: 'status', type: 'boolean', required: false })
+  async getByReading(
+    @Param('detailReadingId') detailReadingId: string,
+    @Query('status', OptionalBooleanPipe) status: boolean,
+  ) {
     return this.service.getContentsByDetailReadingId(detailReadingId, status);
   }
 
@@ -78,7 +87,10 @@ export class ContentsController {
   }
 
   @Post('generate-reading-by-detailReading/:detailReadingId')
-  @ApiOperation({ summary: 'Generar lectura personalizada', description: 'Generar lectura personalizada para detailReading' })
+  @ApiOperation({
+    summary: 'Generar lectura personalizada',
+    description: 'Generar lectura personalizada para detailReading',
+  })
   async generateContentsByDetailReading(
     @Param('detailReadingId') detailReadingId: string,
   ) {

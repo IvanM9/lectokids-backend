@@ -21,7 +21,7 @@ export class ContentsService {
     private db: PrismaService,
     private ai: AiService,
     private activitiesService: ActivitiesService,
-  ) { }
+  ) {}
 
   async create(data: CreateContentDto) {
     await this.db.contentLecture
@@ -120,7 +120,10 @@ export class ContentsService {
     return { message: 'Contenido actualizado correctamente' };
   }
 
-  async getContentsByDetailReadingId(detailReadingId: string, status?: boolean) {
+  async getContentsByDetailReadingId(
+    detailReadingId: string,
+    status?: boolean,
+  ) {
     const reading = await this.db.detailReading
       .findUniqueOrThrow({
         where: {
@@ -143,7 +146,7 @@ export class ContentsService {
         detailReading: {
           id: detailReadingId,
         },
-        status
+        status,
       },
       orderBy: {
         createdAt: 'asc',
@@ -231,56 +234,59 @@ export class ContentsService {
   }
 
   async generateContentsForOneStudent(detailReadingId: string) {
-    const student = await this.db.studentsOnReadings.findFirstOrThrow({
-      where: {
-        detailReadingId,
-      },
-      select: {
-        courseStudent: {
-          select: {
-            student: {
-              select: {
-                city: true,
-                comprensionLevelHistory: {
-                  select: {
-                    level: true,
-                  },
-                },
-                user: {
-                  select: {
-                    genre: true,
-                    birthDate: true,
-                  },
-                },
-                interests: true,
-              },
-            },
-            customPrompt: true,
-            grade: true,
-            problems: true,
-            id: true,
-          },
+    const student = await this.db.studentsOnReadings
+      .findFirstOrThrow({
+        where: {
+          detailReadingId,
         },
-        detailReading: {
-          select: {
-            id: true,
-            reading: {
-              select: {
-                title: true,
-                goals: true,
-                length: true,
-                customPrompt: true,
+        select: {
+          courseStudent: {
+            select: {
+              student: {
+                select: {
+                  city: true,
+                  comprensionLevelHistory: {
+                    select: {
+                      level: true,
+                    },
+                  },
+                  user: {
+                    select: {
+                      genre: true,
+                      birthDate: true,
+                    },
+                  },
+                  interests: true,
+                },
               },
+              customPrompt: true,
+              grade: true,
+              problems: true,
+              id: true,
             },
           },
+          detailReading: {
+            select: {
+              id: true,
+              reading: {
+                select: {
+                  title: true,
+                  goals: true,
+                  length: true,
+                  customPrompt: true,
+                },
+              },
+            },
+          },
         },
-      },
-    }).catch(() => {
-      throw new NotFoundException('No se encontró el estudiante');
-    });
+      })
+      .catch(() => {
+        throw new NotFoundException('No se encontró el estudiante');
+      });
 
     let comprehensionLevel = null;
-    for (const element of student.courseStudent.student.comprensionLevelHistory) {
+    for (const element of student.courseStudent.student
+      .comprensionLevelHistory) {
       comprehensionLevel += `${element.level}, `;
     }
 
@@ -335,21 +341,23 @@ export class ContentsService {
         customPrompt: true,
         goals: true,
         length: true,
-      }
+      },
     });
 
-    await this.db.contentLecture.updateMany({
-      where: {
-        detailReadingId
-      },
-      data: {
-        status: false,
-      },
-    }).catch(() => {
-      throw new InternalServerErrorException(
-        'Error al desactivar el contenido de la lectura',
-      );
-    });
+    await this.db.contentLecture
+      .updateMany({
+        where: {
+          detailReadingId,
+        },
+        data: {
+          status: false,
+        },
+      })
+      .catch(() => {
+        throw new InternalServerErrorException(
+          'Error al desactivar el contenido de la lectura',
+        );
+      });
 
     if (reading.autogenerate) {
       return this.generateContentsForOneStudent(detailReadingId);

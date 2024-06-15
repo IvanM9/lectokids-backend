@@ -151,7 +151,7 @@ export class ActivitiesService {
         generateActivityDto,
         payload.typeActivity,
       );
-      
+
       return { message: 'Actividad generada correctamente', data: questions };
     }
 
@@ -198,21 +198,23 @@ export class ActivitiesService {
 
     for (const element of typeActivities) {
       // TODO: modificar para generar actividades de ordenar imágenes
-      const questions = (await this.generateActivityByType(
-        {
-          courseStudentId: payload.courseStudentId,
-          detailReadingId: payload.detailReadingId,
-          typeActivity: element.activityType,
-        },
-        generateActivityDto,
-      )).data;
+      const questions = (
+        await this.generateActivityByType(
+          {
+            courseStudentId: payload.courseStudentId,
+            detailReadingId: payload.detailReadingId,
+            typeActivity: element.activityType,
+          },
+          generateActivityDto,
+        )
+      ).data;
 
-      if(element.activityType !== TypeActivity.SORT_IMAGES){
+      if (element.activityType !== TypeActivity.SORT_IMAGES) {
         await this.createQuestionActivity({
           detailReadingId: payload.detailReadingId,
           questions,
           typeActivity: element.activityType,
-        })
+        });
       }
     }
 

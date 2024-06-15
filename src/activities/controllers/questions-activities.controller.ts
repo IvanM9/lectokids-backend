@@ -1,4 +1,10 @@
-import { Controller, Patch, Param, UseInterceptors, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Patch,
+  Param,
+  UseInterceptors,
+  UseGuards,
+} from '@nestjs/common';
 import { QuestionsActivitiesService } from '../services/questions-activities.service';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { ResponseHttpInterceptor } from '@/shared/interceptors/response-http.interceptor';
@@ -14,14 +20,12 @@ import { RoleEnum } from '@/security/jwt-strategy/role.enum';
 @UseGuards(JwtAuthGuard, RoleGuard)
 @Role(RoleEnum.TEACHER)
 export class QuestionsActivitiesController {
-    constructor(private service: QuestionsActivitiesService) {}
+  constructor(private service: QuestionsActivitiesService) {}
 
-    @Patch('status/:questionActivityId')
-    async updateStatusQuestionActivity(
-        @Param('questionActivityId') questionActivityId: string,
-    ) {
-        return await this.service.updateStatusQuestionActivity(
-            questionActivityId,
-        );
-    }
+  @Patch('status/:questionActivityId')
+  async updateStatusQuestionActivity(
+    @Param('questionActivityId') questionActivityId: string,
+  ) {
+    return await this.service.updateStatusQuestionActivity(questionActivityId);
+  }
 }

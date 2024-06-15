@@ -11,8 +11,19 @@ import { AnswersActivitiesController } from './controllers/answers-activities.co
 import { QuestionsActivitiesController } from './controllers/questions-activities.controller';
 
 @Module({
-  controllers: [ActivitiesController, ScoresController, AnswersActivitiesController, QuestionsActivitiesController],
-  providers: [ActivitiesService, ScoresService, PrismaService, AnswersActivitiesService, QuestionsActivitiesService],
+  controllers: [
+    ActivitiesController,
+    ScoresController,
+    AnswersActivitiesController,
+    QuestionsActivitiesController,
+  ],
+  providers: [
+    ActivitiesService,
+    ScoresService,
+    PrismaService,
+    AnswersActivitiesService,
+    QuestionsActivitiesService,
+  ],
   imports: [AiModule],
   exports: [ActivitiesService],
 })

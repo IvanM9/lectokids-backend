@@ -17,7 +17,10 @@ import {
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
-import { CreateLinkMultimediaDto, CreateMultimediaDto } from '../dtos/multimedia.dto';
+import {
+  CreateLinkMultimediaDto,
+  CreateMultimediaDto,
+} from '../dtos/multimedia.dto';
 import { MultimediaService } from '../services/multimedia.service';
 import { Response } from 'express';
 

@@ -26,7 +26,7 @@ import {
 import { TypeActivity } from '@prisma/client';
 @Injectable()
 export class AiService {
-  constructor(private readonly logger: Logger) { }
+  constructor(private readonly logger: Logger) {}
 
   genAI = new GoogleGenerativeAI(ENVIRONMENT.API_KEY_AI);
 

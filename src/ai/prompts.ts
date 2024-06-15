@@ -1,4 +1,8 @@
-import { GenerateGeneralReadingDto, GenerateQuestionsActivitiesDto, GenerateReadingDto } from './ai.dto';
+import {
+  GenerateGeneralReadingDto,
+  GenerateQuestionsActivitiesDto,
+  GenerateReadingDto,
+} from './ai.dto';
 
 export function generateReading(params: GenerateGeneralReadingDto) {
   return `You are an educational content generator.
@@ -15,7 +19,7 @@ Output format:
 [
     { "content": "string" }
 ]
- Important: Only return a single piece of valid JSON text. Return it as text, not block code syntax. `
+ Important: Only return a single piece of valid JSON text. Return it as text, not block code syntax. `;
 }
 
 export function generateReading2(params: GenerateReadingDto) {
@@ -29,8 +33,8 @@ export function generateReading2(params: GenerateReadingDto) {
   ${params.comprehensionLevel ? 'Student is reading comprehension level that has gone as follows: ' + params.comprehensionLevel : ''}
   Student interests/likes: '${params.interests}'
   City where you live: ${params.city}, Ecuador
-  ${params.problems ? 'Learning problems: "' + params.problems + '"' :''}
-  ${params.preferences ? 'Additional preferences: "' + params.preferences + '"':''}
+  ${params.problems ? 'Learning problems: "' + params.problems + '"' : ''}
+  ${params.preferences ? 'Additional preferences: "' + params.preferences + '"' : ''}
 
   ${params.customPrompt ? 'Also, take into account this personalization of the reading: "' + params.customPrompt + '"' : ''}
   Reading should be designed to improve the student's reading comprehension (without asking reading comprehension questions), with language appropriate for the student's age and level. Use an engaging and immersive narrative style to keep the student interested. Divide the reading into logical pages, as if it were a physical book.

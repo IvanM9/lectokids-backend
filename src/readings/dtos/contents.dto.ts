@@ -1,6 +1,12 @@
 import { ApiProperty, OmitType, PickType } from '@nestjs/swagger';
 import { TypeContent } from '@prisma/client';
-import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class CreateContentDto {
   @ApiProperty()

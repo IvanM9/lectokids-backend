@@ -216,7 +216,7 @@ export class ReadingsService {
             },
             where: {
               status: true,
-            }
+            },
           },
           autogenerate: true,
           customPrompt: true,
