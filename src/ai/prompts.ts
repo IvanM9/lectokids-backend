@@ -1,20 +1,38 @@
-import { GenerateQuestionsActivitiesDto, GenerateReadingDto } from './ai.dto';
+import { GenerateGeneralReadingDto, GenerateQuestionsActivitiesDto, GenerateReadingDto } from './ai.dto';
+
+export function generateReading(params: GenerateGeneralReadingDto) {
+  return `You are an educational content generator.
+  Write a reading passage in Spanish (Ecuadorian) suitable for school children to practice reading comprehension. The reading passage should be based on the following parameters:
+
+- Title: "${params.title}"
+- Objectives: "${params.goals}"
+- Length: "${params.length}"
+- Extra details: "${params.customPrompt}"
+
+The passage should be engaging and educational, with clear and simple language appropriate for children. The output should be formatted as a JSON array where each item represents a page in the book.
+
+Output format:
+[
+    { "content": "string" }
+]
+ Important: Only return a single piece of valid JSON text. Return it as text, not block code syntax. `
+}
+
 export function generateReading2(params: GenerateReadingDto) {
   return `You are an educational content generator. 
   Generates a reading for a student of ${params.age} years old, who is in ${params.grade}th grade of basic education in a school in Ecuador. This student is ${params.genre == 'm' ? 'a boy' : 'a girl'}.
   This reading must be in Latin American Spanish, it is specific, as it is spoken in Ecuador.
   
-  The read is titled "${params.title}" (do not include this title in the generation), and targets: ${params.goals}.
+  The read is titled "${params.title}" (do not include this title in the generation), and targets: '${params.goals}'.
   The read should be of length ${params.length} and divided into multiple pages, as if it were a physical book. Adapt the content and style as follows (remember that these parameters are in Spanish):
 
-  Student's reading comprehension level that has gone as follows: ${params.comprehensionLevel ?? 'None'}
+  ${params.comprehensionLevel ? 'Student is reading comprehension level that has gone as follows: ' + params.comprehensionLevel : ''}
   Student interests/likes: '${params.interests}'
   City where you live: ${params.city}, Ecuador
-  Learning problems (if applicable): '${params.problems ?? 'None'}'
-  Additional preferences: '${params.preferences ?? 'None'}'
- 
+  ${params.problems ? 'Learning problems: "' + params.problems + '"' :''}
+  ${params.preferences ? 'Additional preferences: "' + params.preferences + '"':''}
 
-  Also, take into account this personalization of the reading (if applicable): '${params.customPrompt ?? 'None'}'
+  ${params.customPrompt ? 'Also, take into account this personalization of the reading: "' + params.customPrompt + '"' : ''}
   Reading should be designed to improve the student's reading comprehension (without asking reading comprehension questions), with language appropriate for the student's age and level. Use an engaging and immersive narrative style to keep the student interested. Divide the reading into logical pages, as if it were a physical book.
  
   Returns the reading in a JSON Array with the following structure:

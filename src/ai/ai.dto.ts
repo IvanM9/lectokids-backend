@@ -13,6 +13,13 @@ export interface GenerateReadingDto {
   customPrompt: string;
 }
 
+export interface GenerateGeneralReadingDto {
+  title: string;
+  goals: string;
+  length: string;
+  customPrompt: string;
+}
+
 export interface GenerateQuestionsActivitiesDto {
   age: number;
   grade: number;

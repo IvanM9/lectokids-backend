@@ -13,18 +13,20 @@ import {
   generateOpenAnswers,
   generateOpenText,
   generateQuiz,
+  generateReading,
   generateReading2,
   generateYesOrNot,
   getTypeActivities,
 } from '@/ai/prompts';
 import {
+  GenerateGeneralReadingDto,
   GenerateQuestionsActivitiesDto,
   GenerateReadingDto,
 } from '@/ai/ai.dto';
 import { TypeActivity } from '@prisma/client';
 @Injectable()
 export class AiService {
-  constructor(private readonly logger: Logger) {}
+  constructor(private readonly logger: Logger) { }
 
   genAI = new GoogleGenerativeAI(ENVIRONMENT.API_KEY_AI);
 
@@ -33,17 +35,38 @@ export class AiService {
     model: 'gemini-1.5-flash',
   });
 
+  private async generateJSON(prompt: string) {
+    let exit = false;
+    let contents = null;
+    let attempts = 5;
+
+    while (!exit && attempts-- > 0) {
+      try {
+        const result = await this.model.generateContent(prompt);
+        const response = result.response;
+        contents = JSON.parse(response.text());
+
+        exit = true;
+      } catch (err) {
+        this.logger.error(err.message, err.stack, AiService.name);
+      }
+    }
+
+    if (!contents) {
+      throw new InternalServerErrorException('No se pudo generar el contenido');
+    }
+
+    return contents;
+  }
+
   async generateReadingService(params: GenerateReadingDto) {
     const prompt = generateReading2(params);
+    return await this.generateJSON(prompt);
+  }
 
-    try {
-      const result = await this.model.generateContent(prompt);
-      const response = result.response;
-      return response.text();
-    } catch (err) {
-      this.logger.error(err.message, err.stack, AiService.name);
-      throw new InternalServerErrorException('Error al generar contenido');
-    }
+  async generateGeneralReadingService(params: GenerateGeneralReadingDto) {
+    const prompt = generateReading(params);
+    return await this.generateJSON(prompt);
   }
 
   async generateQuizService(
@@ -79,30 +102,15 @@ export class AiService {
         break;
     }
 
-    if(!prompt) {
+    if (!prompt) {
       throw new InternalServerErrorException('Tipo de actividad no soportado');
     }
 
-    try {
-      const result = await this.model.generateContent(prompt);
-      const response = result.response;
-      return JSON.parse(response.text());
-    } catch (err) {
-      this.logger.error(err.message, err.stack, AiService.name);
-      throw new InternalServerErrorException('Error al generar contenido');
-    }
+    return await this.generateJSON(prompt);
   }
 
   async determineTypeActivities(params: GenerateQuestionsActivitiesDto) {
     const prompt = getTypeActivities(params);
-
-    try {
-      const result = await this.model.generateContent(prompt);
-      const response = result.response;
-      return JSON.parse(response.text());
-    } catch (err) {
-      this.logger.error(err.message, err.stack, AiService.name);
-      throw new InternalServerErrorException('Error al generar contenido');
-    }
+    return await this.generateJSON(prompt);
   }
 }

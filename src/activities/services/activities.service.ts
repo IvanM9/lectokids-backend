@@ -146,39 +146,16 @@ export class ActivitiesService {
     }
 
     // let activityId = null;
-    let questions = null;
     if (payload.typeActivity !== TypeActivity.SORT_IMAGES) {
-      let isGenerated = false;
-      let attempts = 5;
-      while (!isGenerated && (attempts-- > 0)) {
-        try {
-          questions = await this.ai.generateQuizService(
-            generateActivityDto,
-            payload.typeActivity,
-          );
-
-          isGenerated = true;
-        } catch (error) {
-          console.log('Error generating activity', error);
-        }
-      }
-
-      if (!isGenerated) {
-        throw new InternalServerErrorException(
-          'Error al generar la actividad. Por favor, intente nuevamente',
-        );
-      }
-
-      // activityId = (
-      //   await this.createQuestionActivity({
-      //     detailReadingId: payload.detailReadingId,
-      //     questions,
-      //     typeActivity: payload.typeActivity,
-      //   })
-      // ).data;
+      let questions = await this.ai.generateQuizService(
+        generateActivityDto,
+        payload.typeActivity,
+      );
+      
+      return { message: 'Actividad generada correctamente', data: questions };
     }
 
-    return { message: 'Actividad generada correctamente', data: questions };
+    return { message: 'Actividad generada correctamente' };
   }
 
   async generateActivities(payload: CreateAutoGenerateActivitiesDto) {

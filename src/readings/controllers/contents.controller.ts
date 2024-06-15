@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -15,13 +16,14 @@ import {
   CreateContentForAllDto,
   UpdateContentDto,
 } from '../dtos/contents.dto';
-import { ApiBearerAuth, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { ResponseHttpInterceptor } from '@/shared/interceptors/response-http.interceptor';
 import { JwtAuthGuard } from '@/security/jwt-strategy/jwt-auth.guard';
 import { RoleGuard } from '@/security/jwt-strategy/roles.guard';
 import { TypeContent } from '@prisma/client';
 import { Role } from '@/security/jwt-strategy/roles.decorator';
 import { RoleEnum } from '@/security/jwt-strategy/role.enum';
+import { OptionalBooleanPipe } from '@/shared/pipes/optional-boolean.pipe';
 
 @Controller('contents')
 @ApiTags('contents readings')
@@ -60,8 +62,9 @@ export class ContentsController {
     type: 'string',
     description: 'Id de la lectura para un estudiante',
   })
-  async getByReading(@Param('detailReadingId') detailReadingId: string) {
-    return this.service.getContentsByDetailReadingId(detailReadingId);
+  @ApiQuery({name: 'status', type: 'boolean', required: false})
+  async getByReading(@Param('detailReadingId') detailReadingId: string, @Query('status', OptionalBooleanPipe) status: boolean) {
+    return this.service.getContentsByDetailReadingId(detailReadingId, status);
   }
 
   @Get('by-id/:id')
@@ -71,6 +74,14 @@ export class ContentsController {
 
   @Post('generate-reading/:readingId')
   async generateReading(@Param('readingId') readingId: string) {
-    return this.service.createCustomReading(readingId);
+    return this.service.createCustomReadingForAll(readingId);
+  }
+
+  @Post('generate-reading-by-detailReading/:detailReadingId')
+  @ApiOperation({ summary: 'Generar lectura personalizada', description: 'Generar lectura personalizada para detailReading' })
+  async generateContentsByDetailReading(
+    @Param('detailReadingId') detailReadingId: string,
+  ) {
+    return this.service.generateContentsByDetailReading(detailReadingId);
   }
 }

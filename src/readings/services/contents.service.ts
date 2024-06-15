@@ -13,6 +13,7 @@ import {
 import { AiService } from '@/ai/services/ai/ai.service';
 import { TypeContent } from '@prisma/client';
 import { ActivitiesService } from '@/activities/services/activities.service';
+import { GenerateReadingDto } from '@/ai/ai.dto';
 
 @Injectable()
 export class ContentsService {
@@ -20,7 +21,7 @@ export class ContentsService {
     private db: PrismaService,
     private ai: AiService,
     private activitiesService: ActivitiesService,
-  ) {}
+  ) { }
 
   async create(data: CreateContentDto) {
     await this.db.contentLecture
@@ -119,7 +120,7 @@ export class ContentsService {
     return { message: 'Contenido actualizado correctamente' };
   }
 
-  async getContentsByDetailReadingId(detailReadingId: string) {
+  async getContentsByDetailReadingId(detailReadingId: string, status?: boolean) {
     const reading = await this.db.detailReading
       .findUniqueOrThrow({
         where: {
@@ -142,6 +143,7 @@ export class ContentsService {
         detailReading: {
           id: detailReadingId,
         },
+        status
       },
       orderBy: {
         createdAt: 'asc',
@@ -192,8 +194,47 @@ export class ContentsService {
     return { data: content };
   }
 
-  async createCustomReading(readingId: string) {
+  async createCustomReadingForAll(readingId: string) {
     const students = await this.db.studentsOnReadings.findMany({
+      select: {
+        courseStudent: {
+          select: {
+            id: true,
+          },
+        },
+        detailReading: {
+          select: {
+            id: true,
+          },
+        },
+      },
+      where: {
+        detailReading: {
+          reading: {
+            id: readingId,
+          },
+        },
+      },
+    });
+
+    for (const student of students) {
+      await this.generateContentsForOneStudent(student.detailReading.id);
+
+      await this.activitiesService.generateActivities({
+        detailReadingId: student.detailReading.id,
+        courseStudentId: student.courseStudent.id,
+      });
+    }
+    return {
+      message: `Contenido agregado correctamente a las lecturas`,
+    };
+  }
+
+  async generateContentsForOneStudent(detailReadingId: string) {
+    const student = await this.db.studentsOnReadings.findFirstOrThrow({
+      where: {
+        detailReadingId,
+      },
       select: {
         courseStudent: {
           select: {
@@ -234,87 +275,103 @@ export class ContentsService {
           },
         },
       },
-      where: {
-        detailReading: {
-          reading: {
-            id: readingId,
-          },
-        },
-      },
+    }).catch(() => {
+      throw new NotFoundException('No se encontró el estudiante');
     });
 
-    await this.createParamsCustomReading(students);
+    let comprehensionLevel = null;
+    for (const element of student.courseStudent.student.comprensionLevelHistory) {
+      comprehensionLevel += `${element.level}, `;
+    }
+
+    const params: GenerateReadingDto = {
+      age:
+        new Date().getFullYear() -
+        student.courseStudent.student.user.birthDate.getFullYear(),
+      title: student.detailReading.reading.title,
+      goals: student.detailReading.reading.goals,
+      length: student.detailReading.reading.length,
+      comprehensionLevel,
+      interests: student.courseStudent.student.interests,
+      city: student.courseStudent.student.city,
+      problems: student.courseStudent.problems,
+      preferences: student.courseStudent.customPrompt,
+      genre: student.courseStudent.student.user.genre,
+      grade: student.courseStudent.grade,
+      customPrompt: student.detailReading.reading.customPrompt,
+    };
+
+    const contents = await this.ai.generateReadingService(params);
+
+    for (const element of contents) {
+      await this.create({
+        content: element.content,
+        detailReadingId: student.detailReading.id,
+        type: TypeContent.TEXT,
+      }).catch(() => {
+        throw new InternalServerErrorException(
+          'Error al agregar contenido a la lectura',
+        );
+      });
+    }
 
     return {
-      message: `Contenido agregado correctamente a las lecturas`,
+      message: `Contenido agregado correctamente a la lectura`,
     };
   }
 
-  private async createParamsCustomReading(students: any[]) {
-    for (const student of students) {
-      let comprehensionLevel = null;
-      for (const element of student.courseStudent.student
-        .comprensionLevelHistory) {
-        comprehensionLevel += `${element.level}, `;
+  async generateContentsByDetailReading(detailReadingId: string) {
+    const reading = await this.db.reading.findFirstOrThrow({
+      where: {
+        detailReadings: {
+          some: {
+            id: detailReadingId,
+          },
+        },
+      },
+      select: {
+        autogenerate: true,
+        title: true,
+        customPrompt: true,
+        goals: true,
+        length: true,
       }
+    });
 
-      const params = {
-        age:
-          new Date().getFullYear() -
-          student.courseStudent.student.user.birthDate.getFullYear(),
-        title: student.detailReading.reading.title,
-        goals: student.detailReading.reading.goals,
-        length: student.detailReading.reading.length,
-        comprehensionLevel,
-        interests: student.courseStudent.student.interests,
-        city: student.courseStudent.student.city,
-        problems: student.courseStudent.problems,
-        preferences: student.courseStudent.customPrompt,
-        genre: student.courseStudent.student.user.genre,
-        grade: student.courseStudent.grade,
-        customPrompt: student.detailReading.reading.customPrompt,
-      };
+    await this.db.contentLecture.updateMany({
+      where: {
+        detailReadingId
+      },
+      data: {
+        status: false,
+      },
+    }).catch(() => {
+      throw new InternalServerErrorException(
+        'Error al desactivar el contenido de la lectura',
+      );
+    });
 
-      try {
-        let exit = false;
-        let contents = null;
-        let attempts = 5;
-
-        while (!exit && (attempts-- > 0)) {
-          const reading = await this.ai.generateReadingService(params);
-
-          try {
-            contents = JSON.parse(reading);
-            exit = true;
-          } catch {
-            console.error('Error al generar la lectura');
-          }
-        }
-
-        if (!exit) {
-          throw new InternalServerErrorException(
-            'Error al generar la lectura. Por favor, intente nuevamente.',
-          );
-        }
-
-        for (const element of contents) {
-          await this.create({
-            content: element.content,
-            detailReadingId: student.detailReading.id,
-            type: TypeContent.TEXT,
-          });
-        }
-
-        await this.activitiesService.generateActivities({
-          detailReadingId: student.detailReading.id,
-          courseStudentId: student.courseStudent.id,
-        });
-      } catch (error) {
-        console.error(error);
-        throw new InternalServerErrorException(
-          'Error al generar la lectura. Por favor, intente nuevamente.',
-        );
-      }
+    if (reading.autogenerate) {
+      return this.generateContentsForOneStudent(detailReadingId);
     }
+
+    const contents = await this.ai.generateGeneralReadingService({
+      title: reading.title,
+      goals: reading.goals,
+      length: reading.length,
+      customPrompt: reading.customPrompt,
+    });
+
+    for (const element of contents) {
+      await this.create({
+        content: element.content,
+        detailReadingId,
+        type: TypeContent.TEXT,
+      });
+    }
+
+    return {
+      message: `Contenido agregado correctamente a la lectura`,
+    };
   }
 }
