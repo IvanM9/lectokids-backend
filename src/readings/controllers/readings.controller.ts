@@ -19,6 +19,7 @@ import { JwtAuthGuard } from '@/security/jwt-strategy/jwt-auth.guard';
 import { RoleGuard } from '@/security/jwt-strategy/roles.guard';
 import { Role } from '@/security/jwt-strategy/roles.decorator';
 import { RoleEnum } from '@/security/jwt-strategy/role.enum';
+import { OptionalBooleanPipe } from '@/shared/pipes/optional-boolean.pipe';
 
 @Controller('readings')
 @ApiTags('readings')
@@ -39,11 +40,13 @@ export class ReadingsController {
 
   @Get()
   @ApiQuery({ name: 'levelId', required: false })
+  @ApiQuery({ name: 'status', required: false })
   async getReadings(
     @CurrentUser() { id }: InfoUserInterface,
     @Query('levelId') levelId: string,
+    @Query('status', OptionalBooleanPipe) status: boolean,
   ) {
-    return await this.service.getReadings(id, levelId);
+    return await this.service.getReadings(id, status, levelId);
   }
 
   @Get(':id')
@@ -58,5 +61,13 @@ export class ReadingsController {
     @CurrentUser() user: InfoUserInterface,
   ) {
     return await this.service.updateReading(id, data, user.id);
+  }
+
+  @Patch(':id/update-status')
+  async updateStatusReading(
+    @Param('id') id: string,
+    @CurrentUser() user: InfoUserInterface,
+  ) {
+    return await this.service.updateStatusReading(id, user.id);
   }
 }

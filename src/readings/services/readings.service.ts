@@ -2,13 +2,17 @@ import { PrismaService } from '@/prisma.service';
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { CreateReadingDto, UpdateReadingDto } from '../dtos/readings.dto';
 
 @Injectable()
 export class ReadingsService {
-  constructor(private db: PrismaService) {}
+  constructor(
+    private db: PrismaService,
+    private readonly logger: Logger,
+  ) {}
 
   async create(data: CreateReadingDto, userId: string) {
     await this.db.level
@@ -28,7 +32,7 @@ export class ReadingsService {
         );
       });
 
-    const { reading, students } = await this.db.$transaction(async (db) => {
+    const { reading } = await this.db.$transaction(async (db) => {
       const reading = await db.reading
         .create({
           data: {
@@ -70,12 +74,37 @@ export class ReadingsService {
         );
       }
 
-      return { reading, students };
-    });
-
-    if (data.autogenerate) {
-      for (const student of students) {
-        await this.db.detailReading
+      if (data.autogenerate) {
+        for (const student of students) {
+          await db.detailReading
+            .create({
+              data: {
+                reading: {
+                  connect: {
+                    id: reading.id,
+                  },
+                },
+                studentsOnReadings: {
+                  create: {
+                    courseStudentId: student.id,
+                  },
+                },
+                frontPage: {
+                  connect: {
+                    id: data.imageId,
+                  },
+                },
+              },
+            })
+            .catch((e) => {
+              this.logger.error(e.message, e.stack, ReadingsService.name);
+              throw new BadRequestException(
+                `Hubo errores al crear las lecturas para algunos estudiantes`,
+              );
+            });
+        }
+      } else {
+        await db.detailReading
           .create({
             data: {
               reading: {
@@ -83,64 +112,36 @@ export class ReadingsService {
                   id: reading.id,
                 },
               },
-              studentsOnReadings: {
-                create: {
-                  courseStudent: {
-                    connect: {
-                      id: student.id,
-                    },
-                  },
-                },
-              },
               frontPage: {
                 connect: {
                   id: data.imageId,
                 },
               },
+              studentsOnReadings: {
+                createMany: {
+                  data: students.map((student) => ({
+                    courseStudentId: student.id,
+                  })),
+                },
+              },
+            },
+            select: {
+              id: true,
             },
           })
-          .catch(() => {
-            throw new BadRequestException(
-              `Hubo errores al crear las lecturas para algunos estudiantes`,
-            );
+          .catch((error) => {
+            console.log(error);
+            throw new BadRequestException('No se pudo crear la lectura');
           });
       }
-    } else {
-      await this.db.detailReading
-        .create({
-          data: {
-            reading: {
-              connect: {
-                id: reading.id,
-              },
-            },
-            frontPage: {
-              connect: {
-                id: data.imageId,
-              },
-            },
-            studentsOnReadings: {
-              createMany: {
-                data: students.map((student) => ({
-                  courseStudentId: student.id,
-                })),
-              },
-            },
-          },
-          select: {
-            id: true,
-          },
-        })
-        .catch((error) => {
-          console.log(error);
-          throw new BadRequestException('No se pudo crear la lectura');
-        });
-    }
+
+      return { reading };
+    });
 
     return { message: 'Lecturas creadas con éxito', data: reading.id };
   }
 
-  async getReadings(userId: string, levelId?: string) {
+  async getReadings(userId: string, status?: boolean, levelId?: string) {
     return {
       data: await this.db.reading.findMany({
         where: {
@@ -152,6 +153,7 @@ export class ReadingsService {
               },
             },
           },
+          status,
         },
       }),
     };
@@ -282,5 +284,45 @@ export class ReadingsService {
       });
 
     return { message: 'Lectura actualizada con éxito', data: reading.id };
+  }
+
+  async updateStatusReading(readingId: string, currentUserId: string) {
+    const reading = await this.db.reading
+      .findFirstOrThrow({
+        where: {
+          id: readingId,
+          level: {
+            course: {
+              teacher: {
+                userId: currentUserId,
+              },
+            },
+          },
+        },
+        select: {
+          status: true,
+        },
+      })
+      .catch(() => {
+        throw new NotFoundException('No se encontró la lectura');
+      });
+
+    await this.db.reading
+      .update({
+        where: {
+          id: readingId,
+        },
+        data: {
+          status: !reading.status,
+        },
+      })
+      .catch((err) => {
+        this.logger.error(err.message, err.stack, ReadingsService.name);
+        throw new BadRequestException(
+          'Error al actualizar el estado de la lectura',
+        );
+      });
+
+    return { message: 'Lectura actualizada con éxito' };
   }
 }
