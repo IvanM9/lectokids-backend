@@ -135,3 +135,39 @@ function IsAllowedQuestionsActivities(validationOptions?: ValidationOptions) {
     });
   };
 }
+
+export class CreateResponseQuestionActivityDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  questionActivityId: string;
+
+  @ApiProperty({
+    required: false,
+    description: 'Respuesta del estudiante en caso de ser cerrada',
+  })
+  @IsString()
+  @IsOptional()
+  answerActivityId: string;
+
+  @ApiProperty({
+    required: false,
+    description: 'Respuesta del estudiante en caso de ser abierta',
+  })
+  @IsString()
+  @IsOptional()
+  answer: string;
+}
+
+export class CreateResponseActivityDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  activityId: string;
+
+  @ApiProperty({ type: [CreateResponseQuestionActivityDto], required: false })
+  @Type(() => CreateResponseQuestionActivityDto)
+  @IsOptional()
+  @ValidateNested({ each: true })
+  questions: CreateResponseQuestionActivityDto[];
+}

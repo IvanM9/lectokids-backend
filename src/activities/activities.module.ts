@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { ActivitiesController } from './controllers/activities.controller';
 import { ActivitiesService } from './services/activities.service';
 import { ScoresService } from './services/scores.service';
@@ -23,6 +23,7 @@ import { QuestionsActivitiesController } from './controllers/questions-activitie
     PrismaService,
     AnswersActivitiesService,
     QuestionsActivitiesService,
+    Logger,
   ],
   imports: [AiModule],
   exports: [ActivitiesService],
