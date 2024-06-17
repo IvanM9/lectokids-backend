@@ -8,13 +8,13 @@ export function generateReading(params: GenerateGeneralReadingDto) {
   return `You are an educational content generator.
   Write a reading passage in Spanish (Ecuadorian) suitable for school children to practice reading comprehension. The reading passage should be based on the following parameters:
 
-- Title: "${params.title}"
+- Title (do not include this title in the generation): "${params.title}"
 - Objectives: "${params.goals}"
 - Length: "${params.length}"
 - Extra details: "${params.customPrompt}"
 
 The passage should be engaging and educational, with clear and simple language appropriate for children. The output should be formatted as a JSON array where each item represents a page in the book.
-
+Do not include markdown formatting within the contents.
 Output format:
 [
     { "content": "string" }
@@ -33,8 +33,8 @@ export function generateReading2(params: GenerateReadingDto) {
   ${params.comprehensionLevel ? 'Student is reading comprehension level that has gone as follows: ' + params.comprehensionLevel : ''}
   Student interests/likes: '${params.interests}'
   City where you live: ${params.city}, Ecuador
-  ${params.problems ? 'Learning problems: "' + params.problems + '"' : ''}
-  ${params.preferences ? 'Additional preferences: "' + params.preferences + '"' : ''}
+  ${params.problems ? 'Learning problems: "' + params.problems + '".' : ''}
+  ${params.preferences ? 'Additional preferences: "' + params.preferences + '".' : ''}
 
   ${params.customPrompt ? 'Also, take into account this personalization of the reading: "' + params.customPrompt + '"' : ''}
   Reading should be designed to improve the student's reading comprehension (without asking reading comprehension questions), with language appropriate for the student's age and level. Use an engaging and immersive narrative style to keep the student interested. Divide the reading into logical pages, as if it were a physical book.
@@ -46,7 +46,7 @@ export function generateReading2(params: GenerateReadingDto) {
   ]
  
   Important: Only return a single piece of valid JSON text. Return it as text, not block code syntax.
-  
+  Do not include markdown formatting within the contents.
   Example Output:
   [
     { "content": "Había una vez un pequeño pueblo donde todos los habitantes eran muy amables y trabajadores. Un día, un forastero llegó al pueblo y trajo consigo noticias de tierras lejanas." },

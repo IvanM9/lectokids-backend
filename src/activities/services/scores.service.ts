@@ -9,6 +9,7 @@ import {
   CreateResponseActivityDto,
   CreateResponseQuestionActivityDto,
 } from '../dtos/activities.dto';
+import { ScoreQuestionActivityInterface } from '../interfaces/score.interface';
 
 @Injectable()
 export class ScoresService {
@@ -25,7 +26,9 @@ export class ScoresService {
     });
   }
 
-  async scoreQuestionActivity(payload: CreateResponseQuestionActivityDto) {
+  async scoreQuestionActivity(
+    payload: CreateResponseQuestionActivityDto,
+  ): Promise<{ data: ScoreQuestionActivityInterface }> {
     const question = await this.db.questionActivity
       .findFirstOrThrow({
         where: {
@@ -33,6 +36,7 @@ export class ScoresService {
         },
         select: {
           answerActivity: true,
+          question: true,
         },
       })
       .catch((err) => {
@@ -46,7 +50,13 @@ export class ScoresService {
         const isCorrect = question.answerActivity.some(
           (answer) => answer.answer === payload.answer,
         );
-        return { data: isCorrect };
+        return {
+          data: {
+            isCorrect,
+            question: question.question,
+            recommend: '',
+          },
+        };
       }
       // TODO: Sino, verificar que la respuesta sea correcta con IA
     } else if (payload.answerActivityId) {
@@ -65,13 +75,44 @@ export class ScoresService {
           throw new NotFoundException('Respuesta no encontrada');
         });
 
-      return { data: answer.isCorrect };
+      let answerCorrect = null;
+      if (!answer.isCorrect) {
+        answerCorrect = (
+          await this.db.answerActivity
+            .findFirst({
+              where: {
+                questionId: payload.questionActivityId,
+                isCorrect: true,
+              },
+              select: {
+                answer: true,
+              }
+            })
+            .catch((err) => {
+              this.logger.error(err.message, err.stack, ScoresService.name);
+              throw new NotFoundException('Respuesta correcta no encontrada');
+            })
+        ).answer;
+      } else {
+        answerCorrect = answer.answer;
+      }
+
+      return {
+        data: {
+          isCorrect: answer.isCorrect,
+          answerCorrect,
+          recommend: '',
+          question: question.question,
+        },
+      };
     } else
       throw new BadRequestException(
         'No se ha proporcionado una respuesta válida',
       );
 
-    return { data: false };
+    return {
+      data: null,
+    };
   }
 
   async saveScore(payload: CreateResponseActivityDto, userId: string) {
@@ -103,9 +144,12 @@ export class ScoresService {
       });
 
     let score = 0;
+    const qualifiedActivities = [];
     for (const response of payload.questions) {
-      const isCorrect = await this.scoreQuestionActivity(response);
-      if (isCorrect.data) score++;
+      const qualified = await this.scoreQuestionActivity(response);
+      if (qualified.data.isCorrect) score++;
+
+      qualifiedActivities.push(qualified.data);
     }
 
     const data = await this.db.score
@@ -136,6 +180,9 @@ export class ScoresService {
         throw new BadRequestException('No se pudo guardar la calificación');
       });
 
-    return { message: 'Calificación guardada', data: data.score };
+    return {
+      message: 'Calificación guardada',
+      data: { score: data.score, qualifiedActivities },
+    };
   }
 }
