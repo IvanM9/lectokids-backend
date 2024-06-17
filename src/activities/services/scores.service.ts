@@ -23,7 +23,7 @@ export class ScoresService {
 
   async getScoreByActivity(activityId: string) {
     return {
-      data: this.db.score.findMany({
+      data: await this.db.score.findMany({
         where: {
           activityId,
         },
