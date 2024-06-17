@@ -2,6 +2,7 @@ import {
   GenerateGeneralReadingDto,
   GenerateQuestionsActivitiesDto,
   GenerateReadingDto,
+  generateRecommendationForQuestionsActivitiesDto,
 } from './ai.dto';
 
 export function generateReading(params: GenerateGeneralReadingDto) {
@@ -412,4 +413,24 @@ Output:
     }
 ]
 `;
+}
+
+export function generateRecommendationForQuestionsActivities(
+  params: generateRecommendationForQuestionsActivitiesDto,
+) {
+  return `I will provide a reading passage, a question about the passage, and the student's answer. Please evaluate the student's answer and provide feedback in JSON format. The feedback should be written in easy-to-understand Spanish (Ecuadorian) for a school student. The JSON format should be:
+
+{
+  "recommendation": "string"
+}
+  
+Important: Only return a single piece of valid JSON text. Return it as text, not block code syntax.
+
+Here is the reading passage, the question, and the student's answer:
+
+Reading Passage: "${params.reading}"
+
+Question: "${params.question}"
+
+Student's Answer: "${params.answer}"`;
 }

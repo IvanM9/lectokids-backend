@@ -15,6 +15,7 @@ import {
   generateQuiz,
   generateReading,
   generateReading2,
+  generateRecommendationForQuestionsActivities,
   generateYesOrNot,
   getTypeActivities,
 } from '@/ai/prompts';
@@ -22,6 +23,7 @@ import {
   GenerateGeneralReadingDto,
   GenerateQuestionsActivitiesDto,
   GenerateReadingDto,
+  generateRecommendationForQuestionsActivitiesDto,
 } from '@/ai/ai.dto';
 import { TypeActivity } from '@prisma/client';
 @Injectable()
@@ -111,6 +113,13 @@ export class AiService {
 
   async determineTypeActivities(params: GenerateQuestionsActivitiesDto) {
     const prompt = getTypeActivities(params);
+    return await this.generateJSON(prompt);
+  }
+
+  async generateRecommendationForQuestionsActivitiesService(
+    params: generateRecommendationForQuestionsActivitiesDto,
+  ) {
+    const prompt = generateRecommendationForQuestionsActivities(params);
     return await this.generateJSON(prompt);
   }
 }

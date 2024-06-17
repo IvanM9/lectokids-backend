@@ -1,9 +1,10 @@
 import { PrismaService } from '@/prisma.service';
 import {
   BadRequestException,
+  Inject,
   Injectable,
-  InternalServerErrorException,
   NotFoundException,
+  forwardRef,
 } from '@nestjs/common';
 import { TypeActivity, TypeContent } from '@prisma/client';
 import {
@@ -14,6 +15,7 @@ import {
 } from '../dtos/activities.dto';
 import { GenerateQuestionsActivitiesDto } from '@/ai/ai.dto';
 import { AiService } from '@/ai/services/ai/ai.service';
+import { ContentsService } from '@/readings/services/contents.service';
 
 @Injectable()
 export class ActivitiesService {

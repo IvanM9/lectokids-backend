@@ -1,9 +1,11 @@
 import { PrismaService } from '@/prisma.service';
 import {
   BadRequestException,
+  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
+  forwardRef,
 } from '@nestjs/common';
 import {
   CreateContentDto,
@@ -20,6 +22,7 @@ export class ContentsService {
   constructor(
     private db: PrismaService,
     private ai: AiService,
+    @Inject(forwardRef(() => ActivitiesService))
     private activitiesService: ActivitiesService,
   ) {}
 

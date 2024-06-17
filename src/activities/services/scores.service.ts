@@ -10,25 +10,32 @@ import {
   CreateResponseQuestionActivityDto,
 } from '../dtos/activities.dto';
 import { ScoreQuestionActivityInterface } from '../interfaces/score.interface';
+import { AiService } from '@/ai/services/ai/ai.service';
+import { TypeContent } from '@prisma/client';
 
 @Injectable()
 export class ScoresService {
   constructor(
     private db: PrismaService,
     private readonly logger: Logger,
+    private readonly ai: AiService,
   ) {}
 
   async getScoreByActivity(activityId: string) {
-    return this.db.score.findMany({
-      where: {
-        activityId,
-      },
-    });
+    return {
+      data: this.db.score.findMany({
+        where: {
+          activityId,
+        },
+      }),
+    };
   }
 
   async scoreQuestionActivity(
     payload: CreateResponseQuestionActivityDto,
   ): Promise<{ data: ScoreQuestionActivityInterface }> {
+    const response: { data: ScoreQuestionActivityInterface } = { data: null };
+
     const question = await this.db.questionActivity
       .findFirstOrThrow({
         where: {
@@ -44,18 +51,48 @@ export class ScoresService {
         throw new NotFoundException('Actividad no encontrada');
       });
 
+    const contentsReading = await this.db.contentLecture.findMany({
+      where: {
+        detailReading: {
+          activities: {
+            some: {
+              questionActivities: {
+                some: {
+                  id: payload.questionActivityId,
+                },
+              },
+            },
+          },
+        },
+        type: TypeContent.TEXT,
+      },
+      select: {
+        content: true,
+      },
+      orderBy: {
+        createdAt: 'asc',
+      },
+    });
+
+    const readingText = contentsReading.map((item) => item.content).join('\n');
+
     //* Verificar que las respuestas sean correctas
     if (payload.answer) {
       if (question.answerActivity.length > 0) {
         const isCorrect = question.answerActivity.some(
           (answer) => answer.answer === payload.answer,
         );
-        return {
-          data: {
-            isCorrect,
-            question: question.question,
-            recommend: '',
-          },
+
+        response.data = {
+          isCorrect,
+          question: question.question,
+          recommend: (
+            await this.ai.generateRecommendationForQuestionsActivitiesService({
+              question: question.question,
+              answer: payload.answer,
+              reading: readingText,
+            })
+          ).recommendation,
         };
       }
       // TODO: Sino, verificar que la respuesta sea correcta con IA
@@ -86,7 +123,7 @@ export class ScoresService {
               },
               select: {
                 answer: true,
-              }
+              },
             })
             .catch((err) => {
               this.logger.error(err.message, err.stack, ScoresService.name);
@@ -97,22 +134,24 @@ export class ScoresService {
         answerCorrect = answer.answer;
       }
 
-      return {
-        data: {
-          isCorrect: answer.isCorrect,
-          answerCorrect,
-          recommend: '',
-          question: question.question,
-        },
+      response.data = {
+        isCorrect: answer.isCorrect,
+        question: question.question,
+        recommend: (
+          await this.ai.generateRecommendationForQuestionsActivitiesService({
+            question: question.question,
+            answer: answer.answer,
+            reading: readingText,
+          })
+        ).recommendation,
+        answerCorrect,
       };
     } else
       throw new BadRequestException(
         'No se ha proporcionado una respuesta válida',
       );
 
-    return {
-      data: null,
-    };
+    return response;
   }
 
   async saveScore(payload: CreateResponseActivityDto, userId: string) {

@@ -25,3 +25,9 @@ export interface GenerateQuestionsActivitiesDto {
   grade: number;
   reading: string;
 }
+
+export interface generateRecommendationForQuestionsActivitiesDto {
+  reading: string;
+  question: string;
+  answer: string;
+}

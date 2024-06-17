@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Param,
   Post,
   UseGuards,
   UseInterceptors,
@@ -27,7 +28,7 @@ export class ScoresController {
   constructor(private readonly scoresService: ScoresService) {}
 
   @Get('get/:activityId')
-  async getScoreByActivity(activityId: string) {
+  async getScoreByActivity(@Param('activityId') activityId: string) {
     return this.scoresService.getScoreByActivity(activityId);
   }
 
