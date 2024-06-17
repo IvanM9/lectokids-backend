@@ -26,10 +26,12 @@ import {
   generateRecommendationForQuestionsActivitiesDto,
 } from '@/ai/ai.dto';
 import { TypeActivity } from '@prisma/client';
+import OpenAI from "openai";
 @Injectable()
 export class AiService {
   constructor(private readonly logger: Logger) {}
 
+  openai = new OpenAI();
   genAI = new GoogleGenerativeAI(ENVIRONMENT.API_KEY_AI);
 
   model = this.genAI.getGenerativeModel({
@@ -47,6 +49,17 @@ export class AiService {
         const result = await this.model.generateContent(prompt);
         const response = result.response;
         contents = JSON.parse(response.text());
+
+        // const completion = await this.openai.chat.completions.create({
+        //   messages: [
+        //     { role: "user", content: prompt },
+        //   ],
+        //   model: "gpt-3.5-turbo",
+        // TODO: cambiar a json_object cuando se actualice los prompts
+        // response_format: { type: "json_object" },
+        // });
+
+        // contents = JSON.parse(completion.choices[0].message.content);
 
         exit = true;
       } catch (err) {
