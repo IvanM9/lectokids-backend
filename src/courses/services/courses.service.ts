@@ -129,4 +129,26 @@ export class CoursesService {
 
     return { message: 'Curso actualizado correctamente' };
   }
+
+  async getAllCoursesStudent(studentId: string) {
+    return await this.db.course.findMany({
+      where: {
+        courseStudents: {
+          some: {
+            student: {
+              user: {
+                id: studentId,
+              },
+            },
+            status: true,
+          },
+        },
+      },
+      select: {
+        name: true,
+        id: true,
+        description: true,
+      },
+    });
+  }
 }

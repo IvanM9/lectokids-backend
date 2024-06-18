@@ -17,24 +17,27 @@ import { RoleGuard } from '@/security/jwt-strategy/roles.guard';
 import { CurrentUser } from '@/security/jwt-strategy/auth.decorator';
 import { CreateLevelDto } from '../dtos/levels.dto';
 import { OptionalBooleanPipe } from '@/shared/pipes/optional-boolean.pipe';
+import { Role } from '@/security/jwt-strategy/roles.decorator';
+import { RoleEnum } from '@/security/jwt-strategy/role.enum';
 
 @Controller('levels')
 @ApiTags('levels')
 @UseInterceptors(ResponseHttpInterceptor)
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RoleGuard)
+@Role(RoleEnum.TEACHER)
 export class LevelsController {
   constructor(private levelsService: LevelsService) {}
 
   @Get(':courseId')
   @ApiQuery({ name: 'status', required: false })
+  @Role(RoleEnum.TEACHER, RoleEnum.STUDENT)
   async getAllLevels(
     @Param('courseId') courseId: string,
-    @CurrentUser() { id }: { id: string },
     @Query('status', OptionalBooleanPipe) status?: boolean,
   ) {
     return {
-      data: await this.levelsService.getAllLevels(courseId, id, status),
+      data: await this.levelsService.getAllLevels(courseId, status),
     };
   }
 

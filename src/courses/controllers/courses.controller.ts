@@ -63,4 +63,10 @@ export class CoursesController {
   ) {
     return await this.service.updateStatusCourse(id, courseId);
   }
+
+  @Get('student')
+  @Role(RoleEnum.STUDENT)
+  async getAllCoursesStudent(@CurrentUser() { id }: InfoUserInterface) {
+    return { data: await this.service.getAllCoursesStudent(id) };
+  }
 }

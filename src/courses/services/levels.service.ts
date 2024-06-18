@@ -10,15 +10,12 @@ import { CreateLevelDto, UpdateLevelDto } from '../dtos/levels.dto';
 export class LevelsService {
   constructor(private db: PrismaService) {}
 
-  async getAllLevels(courseId: string, userId: string, status?: boolean) {
+  async getAllLevels(courseId: string, status?: boolean) {
     return await this.db.level
       .findMany({
         where: {
           course: {
             id: courseId,
-            teacher: {
-              userId,
-            },
           },
           status,
         },
