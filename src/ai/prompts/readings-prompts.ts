@@ -3,7 +3,7 @@ import {
   GenerateQuestionsActivitiesDto,
   GenerateReadingDto,
   generateRecommendationForQuestionsActivitiesDto,
-} from './ai.dto';
+} from '../ai.dto';
 
 export function generateReading(params: GenerateGeneralReadingDto) {
   return `You are an educational content generator.
@@ -17,10 +17,19 @@ export function generateReading(params: GenerateGeneralReadingDto) {
 The passage should be engaging and educational, with clear and simple language appropriate for children. The output should be formatted as a JSON array where each item represents a page in the book.
 Do not include markdown formatting within the contents.
 Output format:
-[
-    { "content": "string" }
-]
- Important: Only return a single piece of valid JSON text. Return it as text, not block code syntax. `;
+
+  { contents: [ { "content": "string" } ] }
+
+ Important: Only return a single piece of valid JSON text. Return it as text, not block code syntax. 
+ Example Output:
+ {
+    contents:
+    [
+      { "content": "Había una vez un pequeño pueblo donde todos los habitantes eran muy amables y trabajadores. Un día, un forastero llegó al pueblo y trajo consigo noticias de tierras lejanas." },
+      { "content": "Los habitantes del pueblo estaban emocionados por las noticias del forastero y se reunieron en la plaza para escucharlo." },
+      { "content": "El forastero les contó sobre las tierras lejanas y las maravillas que había visto en su viaje." }
+    ]
+  }`;
 }
 
 export function generateReading2(params: GenerateReadingDto) {
@@ -42,34 +51,38 @@ export function generateReading2(params: GenerateReadingDto) {
  
   Returns the reading in a JSON Array with the following structure:
  
-  [
-    { "content": "string" }
-  ]
+  { contents: [ { "content": "string" } ] }
  
   Important: Only return a single piece of valid JSON text. Return it as text, not block code syntax.
   Do not include markdown formatting within the contents.
   Example Output:
-  [
-    { "content": "Había una vez un pequeño pueblo donde todos los habitantes eran muy amables y trabajadores. Un día, un forastero llegó al pueblo y trajo consigo noticias de tierras lejanas." },
-    { "content": "Los habitantes del pueblo estaban emocionados por las noticias del forastero y se reunieron en la plaza para escucharlo." },
-    { "content": "El forastero les contó sobre las tierras lejanas y las maravillas que había visto en su viaje." }
-  ]`;
+  {
+    contents:
+    [
+      { "content": "Había una vez un pequeño pueblo donde todos los habitantes eran muy amables y trabajadores. Un día, un forastero llegó al pueblo y trajo consigo noticias de tierras lejanas." },
+      { "content": "Los habitantes del pueblo estaban emocionados por las noticias del forastero y se reunieron en la plaza para escucharlo." },
+      { "content": "El forastero les contó sobre las tierras lejanas y las maravillas que había visto en su viaje." }
+    ]
+  }
+    `;
 }
 
 export function generateQuiz(params: GenerateQuestionsActivitiesDto) {
   return `You are an educational content generator. I will provide you with a reading passage, the age of the student, and the grade level. Based on this information, generate a JSON output with multiple-choice questions and answers for reading comprehension. Ensure that the questions and answers are appropriate for the given age and grade level. The output should be in Ecuadorian Spanish and follow this JSON format:
 
-[
-    {
-      "question": "string",
-      "answers": [
-        {
-          "answer": "string",
-          "isCorrect": "boolean"
-        }
-      ]
-    }
-]
+  { 
+    questions: [
+      {
+        "question": "string",
+        "answers": [
+          {
+            "answer": "string",
+            "isCorrect": "boolean"
+          }
+        ]
+      }
+    ]
+  }
 
 Important: Only return a single piece of valid JSON text. Return it as text, not block code syntax.
 
@@ -87,59 +100,64 @@ Student Age: 10
 Grade Level: 4
 
 Example Output:
-[
-    {
-      "question": "¿Cómo eran los habitantes del pequeño pueblo?",
-      "answers": [
-        {
-          "answer": "Eran muy amables y trabajadores.",
-          "isCorrect": true
-        },
-        {
-          "answer": "Eran muy perezosos.",
-          "isCorrect": false
-        },
-        {
-          "answer": "Eran muy ricos.",
-          "isCorrect": false
-        }
-      ]
-    },
-    {
-      "question": "¿Quién llegó al pueblo un día?",
-      "answers": [
-        {
-          "answer": "Un forastero.",
-          "isCorrect": true
-        },
-        {
-          "answer": "Un amigo.",
-          "isCorrect": false
-        },
-        {
-          "answer": "Un niño.",
-          "isCorrect": false
-        }
-      ]
-    }
-]
+
+{
+  "questions": [
+      {
+        "question": "¿Cómo eran los habitantes del pequeño pueblo?",
+        "answers": [
+          {
+            "answer": "Eran muy amables y trabajadores.",
+            "isCorrect": true
+          },
+          {
+            "answer": "Eran muy perezosos.",
+            "isCorrect": false
+          },
+          {
+            "answer": "Eran muy ricos.",
+            "isCorrect": false
+          }
+        ]
+      },
+      {
+        "question": "¿Quién llegó al pueblo un día?",
+        "answers": [
+          {
+            "answer": "Un forastero.",
+            "isCorrect": true
+          },
+          {
+            "answer": "Un amigo.",
+            "isCorrect": false
+          },
+          {
+            "answer": "Un niño.",
+            "isCorrect": false
+          }
+        ]
+      }
+  ]
+}
 `;
 }
 
 export function generateYesOrNot(params: GenerateQuestionsActivitiesDto) {
   return `You are an educational content generator. I will provide you with a reading passage, the age of the student, and the grade level. Based on this information, generate a JSON output with true or false questions for reading comprehension. Ensure that the questions are appropriate for the given age and grade level. The output should be in Ecuadorian Spanish and follow this JSON format:
 
-[
-    {
-      "question": "string",
-      "answers": [
-        {
-          "answer": "verdadero" or "falso",
-          "isCorrect": true
-        }
-      ]
-    }
-]
+  {
+    "questions": [
+      {
+        "question": "string",
+        "answers": [
+          {
+            "answer": "verdadero" or "falso",
+            "isCorrect": true
+          }
+        ]
+      }
+    ]
+  }
 
 Important: Only return a single piece of valid JSON text. Return it as text, not block code syntax.
 
@@ -157,37 +175,42 @@ Student Age: 10
 Grade Level: 4
 
 Example Output:
-[
-    {
-      "question": "¿Todos los habitantes del pequeño pueblo eran muy amables y trabajadores?",
-      "answers": [
-        {
-          "answer": "verdadero",
-          "isCorrect": true
-        }
-      ]
-    },
-    {
-      "question": "¿Un forastero llegó al pueblo y trajo consigo noticias de tierras cercanas?",
-      "answers": [
-        {
-          "answer": "falso",
-          "isCorrect": true
-        }
-      ]
-    }
-]
+
+{
+  "questions": [
+      {
+        "question": "¿Todos los habitantes del pequeño pueblo eran muy amables y trabajadores?",
+        "answers": [
+          {
+            "answer": "verdadero",
+            "isCorrect": true
+          }
+        ]
+      },
+      {
+        "question": "¿Un forastero llegó al pueblo y trajo consigo noticias de tierras cercanas?",
+        "answers": [
+          {
+            "answer": "falso",
+            "isCorrect": true
+          }
+        ]
+      }
+  ]
+}
 `;
 }
 
 export function generateOpenText(params: GenerateQuestionsActivitiesDto) {
   return `You are an educational content generator. I will provide you with a reading passage, the age of the student, and the grade level. Based on this information, generate a JSON output with one Free Text Question that allows the student to freely write about the reading passage. Make sure the question is appropriate for the given age and grade level. The output should be in Ecuadorian Spanish and follow this JSON format:
 
-[
-    {
-      "question": "string"
-    }
-]
+  { 
+   "questions": [
+        {
+          "question": "string"
+        }
+    ]
+  }
 
 Here is the information you need:
 
@@ -203,22 +226,27 @@ Student Age: 10
 Grade Level: 4
 
 Example Output:
-[
-    {
-      "question": "Según lo que recuerdas de la lectura, reescribe la historia de una manera diferente."
-    }
-]
+
+{ "questions": 
+  [
+      {
+        "question": "Según lo que recuerdas de la lectura, reescribe la historia de una manera diferente."
+      }
+  ]
+}
 `;
 }
 
 export function generateOpenAnswers(params: GenerateQuestionsActivitiesDto) {
   return `You are an educational content generator. I will provide you with a reading passage, the age of the student, and the grade level. Based on this information, generate a JSON output with open-ended questions for reading comprehension. Ensure that the questions are appropriate for the given age and grade level. The output should be in Ecuadorian Spanish and follow this JSON format:
 
-[
-    {
-      "question": "string"
-    }
-]
+  { 
+    "questions": [
+      {
+        "question": "string"
+      }
+    ]
+  }
 
 Important: Only return a single piece of valid JSON text. Return it as text, not block code syntax.
 
@@ -236,42 +264,47 @@ Student Age: 10
 Grade Level: 4
 
 Example Output:
-[
-    {
-      "question": "¿Cómo eran los habitantes del pequeño pueblo?"
-    },
-    {
-      "question": "¿Qué trajo consigo el forastero que llegó al pueblo?"
-    },
-    {
-      "question": "Describe al forastero que llegó al pueblo."
-    }
-]
+
+{ 
+  "questions": [
+      {
+        "question": "¿Cómo eran los habitantes del pequeño pueblo?"
+      },
+      {
+        "question": "¿Qué trajo consigo el forastero que llegó al pueblo?"
+      },
+      {
+        "question": "Describe al forastero que llegó al pueblo."
+      }
+  ]
+}
 `;
 }
 
 export function generateAlphabetSoup(params: GenerateQuestionsActivitiesDto) {
   return `You are an educational content generator. I will provide you with a reading passage, the age of the student, and the grade level. Based on this information, generate a JSON output with words that should be found in a word search puzzle. Ensure that the words are appropriate for the given age and grade level. The output should be in Ecuadorian Spanish and follow this JSON format:
 
-[
-    {
-      "question": "Encuentra las siguientes palabras en la sopa de letras:",
-      "answers": [
-        {
-          "answer": "string",
-          "isCorrect": true
-        },
-        {
-          "answer": "string",
-          "isCorrect": true
-        },
-        {
-          "answer": "string",
-          "isCorrect": true
-        }
-      ]
-    }
-]
+  { 
+    "questions": [
+      {
+        "question": "Encuentra las siguientes palabras en la sopa de letras:",
+        "answers": [
+          {
+            "answer": "string",
+            "isCorrect": true
+          },
+          {
+            "answer": "string",
+            "isCorrect": true
+          },
+          {
+            "answer": "string",
+            "isCorrect": true
+          }
+        ]
+      }
+    ]
+  }
 
 Important: Only return a single piece of valid JSON text. Return it as text, not block code syntax.
 
@@ -289,7 +322,9 @@ Student Age: 10
 Grade Level: 4
 
 Example Output:
-[
+
+{ 
+  "questions": [
     {
       "question": "Encuentra las siguientes palabras en la sopa de letras:",
       "answers": [
@@ -307,18 +342,15 @@ Example Output:
         }
       ]
     }
-]
+  ]
+}
 `;
 }
 
 export function getTypeActivities(params: GenerateQuestionsActivitiesDto) {
   return `You are an educational content planner. I will provide you with a reading passage, the age of the student, and the grade level. Based on this information, determine the types of activities that are appropriate for the student's comprehension and engagement. The types of activities are: YES_NO (True or False), QUIZ (Multiple Choice), OPEN_ANSWERS (Open-ended Questions), OPEN_TEXT (Free Text Question), ALPHABET_SOUP (Word Search), SORT_IMAGES (Order Images), CROSSWORD. The output should be in JSON format as follows:
 
-[
-    {
-      "activityType": "string"
-    }
-]
+  { "typeActivities" : [ { "activityType": "string" } ] }
 
 Important: Only return a single piece of valid JSON text. Return it as text, not block code syntax.
 
@@ -336,20 +368,22 @@ Student Age: 10
 Grade Level: 4
 
 Example Output:
-[
-    {
-      "activityType": "YES_NO"
-    },
-    {
-      "activityType": "QUIZ"
-    },
-    {
-      "activityType": "OPEN_TEXT"
-    },
-    {
-      "activityType": "ALPHABET_SOUP"
-    }
-]
+{ 
+  "typeActivities" : [
+      {
+        "activityType": "YES_NO"
+      },
+      {
+        "activityType": "QUIZ"
+      },
+      {
+        "activityType": "OPEN_TEXT"
+      },
+      {
+        "activityType": "ALPHABET_SOUP"
+      }
+  ]
+}
 `;
 }
 
@@ -362,7 +396,9 @@ Parameters:
 - Grade Level: ${params.grade}
 
 Output format (in JSON):
-[
+
+{ 
+  "questions": [
     {
       "question": "string",
       "answers": [
@@ -372,7 +408,8 @@ Output format (in JSON):
         }
       ]
     }
-]
+  ]
+}
 
 Important: Only return a single piece of valid JSON text. Return it as text, not block code syntax.
 
@@ -382,8 +419,10 @@ Reading text: "Los animales del bosque se preparan para el invierno. El oso reco
 Student Age: 10
 Grade Level: 4
 
-Output:
-[
+Example output:
+
+{ 
+  "questions": [
     {
       "question": "oso",
       "answers": [
@@ -411,7 +450,8 @@ Output:
         }
       ]
     }
-]
+  ]
+}
 `;
 }
 
@@ -433,4 +473,19 @@ Reading Passage: "${params.reading}"
 Question: "${params.question}"
 
 Student's Answer: "${params.answer}"`;
+}
+
+export function generateVerificationOpenAnswers(
+  params: generateRecommendationForQuestionsActivitiesDto,
+) {
+  return `You are a helpful assistant tasked with evaluating the accuracy of a student's open-ended response to a question based on a given reading passage. The goal is to determine if the student's answer correctly addresses the question using information from the reading. Your response should be in the format: { \"isCorrect\": \"boolean\" }. Here is the reading passage:
+
+"${params.reading}"
+
+Question: "${params.question}"
+
+Student's Response: "${params.answer}"
+
+Based on the information in the reading passage, is the student's response correct?
+Important: Only return a single piece of valid JSON text. Return it as text, not block code syntax.`;
 }

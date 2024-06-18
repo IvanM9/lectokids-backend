@@ -76,7 +76,7 @@ export class ReadingsService {
 
       if (data.autogenerate) {
         for (const student of students) {
-          await db.detailReading
+          const createdDetailReading = await db.detailReading
             .create({
               data: {
                 reading: {
@@ -89,11 +89,6 @@ export class ReadingsService {
                     courseStudentId: student.id,
                   },
                 },
-                frontPage: {
-                  connect: {
-                    id: data.imageId,
-                  },
-                },
               },
             })
             .catch((e) => {
@@ -102,6 +97,21 @@ export class ReadingsService {
                 `Hubo errores al crear las lecturas para algunos estudiantes`,
               );
             });
+
+          if (data.imageId) {
+            await db.detailReading.update({
+              where: {
+                id: createdDetailReading.id,
+              },
+              data: {
+                frontPage: {
+                  connect: {
+                    id: data.imageId,
+                  },
+                },
+              },
+            });
+          }
         }
       } else {
         await db.detailReading

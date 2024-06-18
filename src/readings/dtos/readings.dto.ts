@@ -31,6 +31,7 @@ export class CreateReadingDto {
 
   @ApiProperty()
   @IsString()
+  @IsOptional()
   imageId: string;
 
   @ApiProperty()

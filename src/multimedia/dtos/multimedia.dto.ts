@@ -1,6 +1,6 @@
 import { ApiProperty, OmitType } from '@nestjs/swagger';
 import { TypeMultimedia } from '@prisma/client';
-import { IsEnum, IsOptional, IsUrl } from 'class-validator';
+import { IsEnum, IsOptional, IsString, IsUrl } from 'class-validator';
 
 export class CreateMultimediaDto {
   @ApiProperty({
@@ -29,4 +29,10 @@ export class CreateLinkMultimediaDto extends OmitType(CreateMultimediaDto, [
   @ApiProperty()
   @IsUrl()
   url: string;
+}
+
+export class GenerateImageDto {
+  @ApiProperty()
+  @IsString()
+  text: string;
 }

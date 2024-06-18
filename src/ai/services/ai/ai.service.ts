@@ -16,9 +16,10 @@ import {
   generateReading,
   generateReading2,
   generateRecommendationForQuestionsActivities,
+  generateVerificationOpenAnswers,
   generateYesOrNot,
   getTypeActivities,
-} from '@/ai/prompts';
+} from '@/ai/prompts/readings-prompts';
 import {
   GenerateGeneralReadingDto,
   GenerateQuestionsActivitiesDto,
@@ -26,7 +27,8 @@ import {
   generateRecommendationForQuestionsActivitiesDto,
 } from '@/ai/ai.dto';
 import { TypeActivity } from '@prisma/client';
-import OpenAI from "openai";
+import OpenAI from 'openai';
+import { generateFrontPagePrompt } from '@/ai/prompts/images-prompts';
 @Injectable()
 export class AiService {
   constructor(private readonly logger: Logger) {}
@@ -40,28 +42,22 @@ export class AiService {
   });
 
   private async generateJSON(prompt: string) {
-    let exit = false;
     let contents = null;
     let attempts = 5;
 
-    while (!exit && attempts-- > 0) {
+    while (!contents && attempts-- > 0) {
       try {
-        const result = await this.model.generateContent(prompt);
-        const response = result.response;
-        contents = JSON.parse(response.text());
+        // const result = await this.model.generateContent(prompt);
+        // const response = result.response;
+        // contents = JSON.parse(response.text());
 
-        // const completion = await this.openai.chat.completions.create({
-        //   messages: [
-        //     { role: "user", content: prompt },
-        //   ],
-        //   model: "gpt-3.5-turbo",
-        // TODO: cambiar a json_object cuando se actualice los prompts
-        // response_format: { type: "json_object" },
-        // });
-
-        // contents = JSON.parse(completion.choices[0].message.content);
-
-        exit = true;
+        const completion = await this.openai.chat.completions.create({
+          messages: [{ role: 'user', content: prompt }],
+          model: 'gpt-3.5-turbo',
+          response_format: { type: 'json_object' },
+        });
+        // console.log(completion);
+        contents = JSON.parse(completion.choices[0].message.content);
       } catch (err) {
         this.logger.error(err.message, err.stack, AiService.name);
       }
@@ -74,14 +70,41 @@ export class AiService {
     return contents;
   }
 
+  async generateImage(prompt: string, base64: boolean = false) {
+    let attempts = 5;
+    let imageGenerated = null;
+    while (!imageGenerated && attempts-- > 0) {
+      try {
+        const response = await this.openai.images.generate({
+          model: 'dall-e-3',
+          prompt,
+          n: 1,
+          size: '1024x1024',
+        });
+
+        imageGenerated = base64
+          ? response.data[0].b64_json
+          : response.data[0].url;
+      } catch (err) {
+        this.logger.error(err.message, err.stack, AiService.name);
+      }
+    }
+
+    if (!imageGenerated) {
+      throw new InternalServerErrorException('No se pudo generar la imagen');
+    }
+
+    return imageGenerated;
+  }
+
   async generateReadingService(params: GenerateReadingDto) {
     const prompt = generateReading2(params);
-    return await this.generateJSON(prompt);
+    return (await this.generateJSON(prompt)).contents;
   }
 
   async generateGeneralReadingService(params: GenerateGeneralReadingDto) {
     const prompt = generateReading(params);
-    return await this.generateJSON(prompt);
+    return (await this.generateJSON(prompt)).contents;
   }
 
   async generateQuizService(
@@ -121,18 +144,31 @@ export class AiService {
       throw new InternalServerErrorException('Tipo de actividad no soportado');
     }
 
-    return await this.generateJSON(prompt);
+    return (await this.generateJSON(prompt)).questions;
   }
 
   async determineTypeActivities(params: GenerateQuestionsActivitiesDto) {
     const prompt = getTypeActivities(params);
-    return await this.generateJSON(prompt);
+    return (await this.generateJSON(prompt)).typeActivities;
   }
 
   async generateRecommendationForQuestionsActivitiesService(
     params: generateRecommendationForQuestionsActivitiesDto,
   ) {
     const prompt = generateRecommendationForQuestionsActivities(params);
-    return await this.generateJSON(prompt);
+    return (await this.generateJSON(prompt)).recommendation;
+  }
+
+  async generateVerificationOpenTextOrAnswerService(
+    params: generateRecommendationForQuestionsActivitiesDto,
+  ) {
+    const prompt = generateVerificationOpenAnswers(params);
+    return (await this.generateJSON(prompt)).isCorrect == 'true' ? true : false;
+  }
+
+  async generateFrontPage(reading: string) {
+    const prompt = generateFrontPagePrompt(reading);
+    console.log(prompt);
+    return await this.generateImage(prompt, true);
   }
 }

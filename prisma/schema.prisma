@@ -155,8 +155,8 @@ model DetailReading {
   id          String     @id @default(cuid())
   reading     Reading    @relation(fields: [readingId], references: [id])
   readingId   String     @map("reading_id")
-  frontPage   Multimedia @relation(fields: [frontPageId], references: [id])
-  frontPageId String     @map("front_page_id")
+  frontPage   Multimedia? @relation(fields: [frontPageId], references: [id])
+  frontPageId String?     @map("front_page_id")
   status      Boolean    @default(true)
 
   contentsLecture    ContentLecture[]

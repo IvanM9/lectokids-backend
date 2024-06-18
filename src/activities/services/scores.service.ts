@@ -94,8 +94,22 @@ export class ScoresService {
             })
           ).recommendation,
         };
+      } else {
+        response.data = {
+          isCorrect: await this.ai.generateVerificationOpenTextOrAnswerService({
+            question: question.question,
+            answer: payload.answer,
+            reading: readingText,
+          }),
+          question: question.question,
+          recommend:
+            await this.ai.generateRecommendationForQuestionsActivitiesService({
+              question: question.question,
+              answer: payload.answer,
+              reading: readingText,
+            }),
+        };
       }
-      // TODO: Sino, verificar que la respuesta sea correcta con IA
     } else if (payload.answerActivityId) {
       const answer = await this.db.answerActivity
         .findFirstOrThrow({
@@ -194,7 +208,7 @@ export class ScoresService {
     const data = await this.db.score
       .create({
         data: {
-          score: (score / payload.questions.length) * 10,
+          score: Number((score / payload.questions.length) * 10).toFixed(2),
           activity: {
             connect: {
               id: payload.activityId,
