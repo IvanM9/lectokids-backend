@@ -148,6 +148,35 @@ export class CoursesService {
         name: true,
         id: true,
         description: true,
+        levels: {
+          select: {
+            id: true,
+            readings: {
+              select: {
+                id: true,
+                title: true,
+                detailReadings: {
+                  select: {
+                    id: true,
+                  },
+                  where: {
+                    studentsOnReadings: {
+                      some: {
+                        courseStudent:{
+                          student: {
+                            user: {
+                              id: studentId
+                            }
+                        }
+                      }
+                    }
+                  }
+                  }
+                }
+              }
+            }
+          }
+        }
       },
     });
   }
