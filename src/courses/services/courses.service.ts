@@ -162,21 +162,21 @@ export class CoursesService {
                   where: {
                     studentsOnReadings: {
                       some: {
-                        courseStudent:{
+                        courseStudent: {
                           student: {
                             user: {
-                              id: studentId
-                            }
-                        }
-                      }
-                    }
-                  }
-                  }
-                }
-              }
-            }
-          }
-        }
+                              id: studentId,
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
       },
     });
   }

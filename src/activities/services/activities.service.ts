@@ -16,6 +16,7 @@ import {
 import { GenerateQuestionsActivitiesDto } from '@/ai/ai.dto';
 import { AiService } from '@/ai/services/ai/ai.service';
 import { ContentsService } from '@/readings/services/contents.service';
+import { RoleEnum } from '@/security/jwt-strategy/role.enum';
 
 @Injectable()
 export class ActivitiesService {
@@ -40,7 +41,7 @@ export class ActivitiesService {
     };
   }
 
-  async getOneActivity(activityId: string) {
+  async getOneActivity(activityId: string, role: RoleEnum) {
     const activity = await this.db.activity.findUnique({
       where: {
         id: activityId,
@@ -77,7 +78,7 @@ export class ActivitiesService {
           answerActivity: {
             select: {
               answer: true,
-              isCorrect: true,
+              isCorrect: role === RoleEnum.TEACHER ? true : false,
               id: true,
             },
             where: {

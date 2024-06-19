@@ -41,8 +41,7 @@ export class ReadingsController {
   @Get()
   @ApiQuery({ name: 'levelId', required: false })
   @ApiQuery({ name: 'status', required: false })
-@Role(RoleEnum.TEACHER, RoleEnum.STUDENT)
-
+  @Role(RoleEnum.TEACHER, RoleEnum.STUDENT)
   async getReadings(
     @CurrentUser() { id }: InfoUserInterface,
     @Query('levelId') levelId: string,

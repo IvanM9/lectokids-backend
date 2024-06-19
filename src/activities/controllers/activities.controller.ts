@@ -22,6 +22,8 @@ import { JwtAuthGuard } from '@/security/jwt-strategy/jwt-auth.guard';
 import { RoleGuard } from '@/security/jwt-strategy/roles.guard';
 import { Role } from '@/security/jwt-strategy/roles.decorator';
 import { RoleEnum } from '@/security/jwt-strategy/role.enum';
+import { CurrentUser } from '@/security/jwt-strategy/auth.decorator';
+import { InfoUserInterface } from '@/security/jwt-strategy/info-user.interface';
 
 @Controller('activities')
 @ApiTags('activities')
@@ -39,8 +41,12 @@ export class ActivitiesController {
   }
 
   @Get('by-id/:id')
-  async getOneActivity(@Param('id') id: string) {
-    return await this.activitiesService.getOneActivity(id);
+  @Role(RoleEnum.TEACHER, RoleEnum.STUDENT)
+  async getOneActivity(
+    @Param('id') id: string,
+    @CurrentUser() { role }: InfoUserInterface,
+  ) {
+    return await this.activitiesService.getOneActivity(id, role);
   }
 
   @Post('create-questions')
