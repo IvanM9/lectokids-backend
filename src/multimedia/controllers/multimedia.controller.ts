@@ -20,11 +20,9 @@ import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import {
   CreateLinkMultimediaDto,
   CreateMultimediaDto,
-  GenerateImageDto,
 } from '../dtos/multimedia.dto';
 import { MultimediaService } from '../services/multimedia.service';
 import { Response } from 'express';
-import { AiService } from '@/ai/services/ai/ai.service';
 
 @Controller('multimedia')
 @ApiTags('multimedia')
@@ -33,10 +31,7 @@ import { AiService } from '@/ai/services/ai/ai.service';
 @UseGuards(JwtAuthGuard, RoleGuard)
 @Role(RoleEnum.TEACHER)
 export class MultimediaController {
-  constructor(
-    private service: MultimediaService,
-    private ai: AiService,
-  ) {}
+  constructor(private service: MultimediaService) {}
 
   @Post()
   @UseInterceptors(FilesInterceptor('files'), ResponseHttpInterceptor)
@@ -74,10 +69,5 @@ export class MultimediaController {
   @Post('link')
   async createLinkMultimedia(@Body() data: CreateLinkMultimediaDto) {
     return this.service.uploadUrl(data);
-  }
-
-  @Post('generate')
-  async generateMultimedia(@Body() data: GenerateImageDto) {
-    return { data: await this.ai.generateFrontPage(data.text) };
   }
 }

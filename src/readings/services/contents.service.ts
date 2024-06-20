@@ -16,14 +16,15 @@ import { AiService } from '@/ai/services/ai/ai.service';
 import { TypeContent } from '@prisma/client';
 import { ActivitiesService } from '@/activities/services/activities.service';
 import { GenerateReadingDto } from '@/ai/ai.dto';
+import { DetailsReadingsService } from './details-readings.service';
 
 @Injectable()
 export class ContentsService {
   constructor(
     private db: PrismaService,
     private ai: AiService,
-    @Inject(forwardRef(() => ActivitiesService))
     private activitiesService: ActivitiesService,
+    private detailReadingService: DetailsReadingsService,
   ) {}
 
   async create(data: CreateContentDto) {
@@ -230,6 +231,8 @@ export class ContentsService {
         detailReadingId: student.detailReading.id,
         courseStudentId: student.courseStudent.id,
       });
+
+      await this.detailReadingService.updateFrontPage(student.detailReading.id);
     }
     return {
       message: `Contenido agregado correctamente a las lecturas`,

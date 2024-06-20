@@ -26,12 +26,17 @@ import {
   GenerateReadingDto,
   generateRecommendationForQuestionsActivitiesDto,
 } from '@/ai/ai.dto';
-import { TypeActivity } from '@prisma/client';
+import { TypeActivity, TypeMultimedia } from '@prisma/client';
 import OpenAI from 'openai';
-import { generateFrontPagePrompt } from '@/ai/prompts/images-prompts';
+import { generatePromptForFrontPage } from '@/ai/prompts/images-prompts';
+import { MultimediaService } from '@/multimedia/services/multimedia.service';
+
 @Injectable()
 export class AiService {
-  constructor(private readonly logger: Logger) {}
+  constructor(
+    private readonly logger: Logger,
+    private multimedia: MultimediaService,
+  ) {}
 
   openai = new OpenAI();
   genAI = new GoogleGenerativeAI(ENVIRONMENT.API_KEY_AI);
@@ -70,7 +75,30 @@ export class AiService {
     return contents;
   }
 
-  async generateImage(prompt: string, base64: boolean = false) {
+  private async generateText(prompt: string) {
+    let textGenerated = null;
+    let attempts = 5;
+    while (!textGenerated && attempts-- > 0) {
+      try {
+        const completion = await this.openai.chat.completions.create({
+          messages: [{ role: 'user', content: prompt }],
+          model: 'gpt-3.5-turbo',
+        });
+
+        textGenerated = completion.choices[0].message.content;
+      } catch (err) {
+        this.logger.error(err.message, err.stack, AiService.name);
+      }
+    }
+
+    if (!textGenerated) {
+      throw new InternalServerErrorException('No se pudo generar el texto');
+    }
+
+    return textGenerated;
+  }
+
+  private async generateImage(prompt: string, base64: boolean = true) {
     let attempts = 5;
     let imageGenerated = null;
     while (!imageGenerated && attempts-- > 0) {
@@ -80,6 +108,8 @@ export class AiService {
           prompt,
           n: 1,
           size: '1024x1024',
+          response_format: base64 ? 'b64_json' : 'url',
+          quality: 'standard',
         });
 
         imageGenerated = base64
@@ -94,7 +124,24 @@ export class AiService {
       throw new InternalServerErrorException('No se pudo generar la imagen');
     }
 
-    return imageGenerated;
+    let imageId = '';
+    if (base64) {
+      imageId = (
+        await this.multimedia.createMultimediaFromBase64(imageGenerated, {
+          type: TypeMultimedia.IMAGE,
+          description: 'Imagen generada por IA',
+        })
+      ).data[0].id;
+    } else
+      imageId = (
+        await this.multimedia.uploadUrl({
+          url: imageGenerated,
+          type: TypeMultimedia.IMAGE,
+          description: 'Imagen generada por IA',
+        })
+      ).data.id;
+
+    return imageId;
   }
 
   async generateReadingService(params: GenerateReadingDto) {
@@ -167,8 +214,7 @@ export class AiService {
   }
 
   async generateFrontPage(reading: string) {
-    const prompt = generateFrontPagePrompt(reading);
-    console.log(prompt);
-    return await this.generateImage(prompt, true);
+    const prompt = generatePromptForFrontPage(reading);
+    return { data: await this.generateImage(await this.generateText(prompt)) };
   }
 }
