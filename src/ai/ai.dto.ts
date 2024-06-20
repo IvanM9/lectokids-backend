@@ -1,3 +1,6 @@
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsString } from 'class-validator';
+
 export interface GenerateReadingDto {
   age: number;
   title: string;
@@ -30,4 +33,11 @@ export interface generateRecommendationForQuestionsActivitiesDto {
   reading: string;
   question: string;
   answer: string;
+}
+
+export class GenerateContentDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  prompt: string;
 }

@@ -30,9 +30,3 @@ export class CreateLinkMultimediaDto extends OmitType(CreateMultimediaDto, [
   @IsUrl()
   url: string;
 }
-
-export class GenerateImageDto {
-  @ApiProperty()
-  @IsString()
-  text: string;
-}

@@ -4,7 +4,6 @@ import { MultimediaController } from './controllers/multimedia.controller';
 import { PrismaService } from '@/prisma.service';
 import { MulterModule } from '@nestjs/platform-express';
 import { CustomFileInterceptor } from './interceptors/custom-file.interceptor';
-import { AiModule } from '@/ai/ai.module';
 
 @Module({
   providers: [MultimediaService, PrismaService, Logger],
@@ -13,7 +12,7 @@ import { AiModule } from '@/ai/ai.module';
     MulterModule.registerAsync({
       useClass: CustomFileInterceptor,
     }),
-    AiModule,
   ],
+  exports: [MultimediaService],
 })
 export class MultimediaModule {}
