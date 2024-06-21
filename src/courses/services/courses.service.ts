@@ -159,7 +159,6 @@ export class CoursesService {
                   select: {
                     id: true,
                   },
-                  // TODO: Revisar error cuando no es autogenerado y varios estudiantes tienen un DetailReading
                   where: {
                     studentsOnReadings: {
                       some: {
@@ -183,6 +182,9 @@ export class CoursesService {
           },
         },
       },
+      orderBy: {
+        createdAt: 'asc',
+      }
     });
   }
 }
