@@ -139,20 +139,20 @@ export class ReadingsService {
             throw new BadRequestException('No se pudo crear la lectura');
           });
 
-          if (data.imageId) {
-            await db.detailReading.update({
-              where: {
-                id: createdDetailReading.id,
-              },
-              data: {
-                frontPage: {
-                  connect: {
-                    id: data.imageId,
-                  },
+        if (data.imageId) {
+          await db.detailReading.update({
+            where: {
+              id: createdDetailReading.id,
+            },
+            data: {
+              frontPage: {
+                connect: {
+                  id: data.imageId,
                 },
               },
-            });
-          }
+            },
+          });
+        }
       }
 
       return { reading };

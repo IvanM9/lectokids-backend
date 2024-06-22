@@ -177,14 +177,14 @@ export class CoursesService {
               },
               where: {
                 status: true,
-              }
+              },
             },
           },
         },
       },
       orderBy: {
         createdAt: 'asc',
-      }
+      },
     });
   }
 }

@@ -152,12 +152,12 @@ model Reading {
 }
 
 model DetailReading {
-  id          String     @id @default(cuid())
-  reading     Reading    @relation(fields: [readingId], references: [id])
-  readingId   String     @map("reading_id")
+  id          String      @id @default(cuid())
+  reading     Reading     @relation(fields: [readingId], references: [id])
+  readingId   String      @map("reading_id")
   frontPage   Multimedia? @relation(fields: [frontPageId], references: [id])
   frontPageId String?     @map("front_page_id")
-  status      Boolean    @default(true)
+  status      Boolean     @default(true)
 
   contentsLecture    ContentLecture[]
   studentsOnReadings StudentsOnReadings[]
@@ -175,8 +175,8 @@ model StudentsOnReadings {
   createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt       DateTime?     @updatedAt @map("updated_at") @db.Timestamptz()
 
-  @@map("students_on_readings")
   @@id([courseStudentId, detailReadingId])
+  @@map("students_on_readings")
 }
 
 enum TypeContent {
@@ -190,9 +190,11 @@ model ContentLecture {
   detailReadingId String        @map("detail_lecture_id")
   status          Boolean       @default(true)
   type            TypeContent
-  content         String        @db.Text
+  content         String?       @db.Text
   createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt       DateTime?     @updatedAt @map("updated_at") @db.Timestamptz()
+  image           Multimedia?   @relation(fields: [imageId], references: [id])
+  imageId         String?       @map("image_id")
 
   @@map("contents_lecture")
 }
@@ -255,7 +257,7 @@ model AnswerActivity {
   isCorrect  Boolean?         @default(false) @map("is_correct")
   question   QuestionActivity @relation(fields: [questionId], references: [id])
   questionId String           @map("question_id")
-  status     Boolean  @default(true)
+  status     Boolean          @default(true)
 
   @@map("answer_activities")
 }
@@ -267,7 +269,7 @@ model ImageActivity {
   activity     Activity   @relation(fields: [activityId], references: [id])
   activityId   String     @map("activity_id")
   order        Int        @db.SmallInt
-  status     Boolean  @default(true)
+  status       Boolean    @default(true)
 
   @@map("image_activities")
 }
@@ -283,13 +285,14 @@ model Multimedia {
   url         String         @db.Text
   description String?        @db.Text
   type        TypeMultimedia
-  fileName    String?         @map("file_name")
+  fileName    String?        @map("file_name")
   status      Boolean        @default(true)
   createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt   DateTime?      @updatedAt @map("updated_at") @db.Timestamptz()
 
   imageActivities ImageActivity[]
   frontPages      DetailReading[]
+  contentsLecture ContentLecture[]
 
   @@map("multimedia")
 }
@@ -302,9 +305,9 @@ model Score {
   createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt      DateTime? @updatedAt @map("updated_at") @db.Timestamptz()
 
-  activity   Activity @relation(fields: [activityId], references: [id])
-  activityId String
-  courseStudent CourseStudent @relation(fields: [courseStudentId], references: [id])
+  activity        Activity      @relation(fields: [activityId], references: [id])
+  activityId      String
+  courseStudent   CourseStudent @relation(fields: [courseStudentId], references: [id])
   courseStudentId String
 
   @@map("scores")
