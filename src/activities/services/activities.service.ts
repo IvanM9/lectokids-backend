@@ -15,7 +15,6 @@ import {
 } from '../dtos/activities.dto';
 import { GenerateQuestionsActivitiesDto } from '@/ai/ai.dto';
 import { AiService } from '@/ai/services/ai/ai.service';
-import { ContentsService } from '@/readings/services/contents.service';
 import { RoleEnum } from '@/security/jwt-strategy/role.enum';
 
 @Injectable()
@@ -42,13 +41,17 @@ export class ActivitiesService {
   }
 
   async getOneActivity(activityId: string, role: RoleEnum) {
-    const activity = await this.db.activity.findUnique({
-      where: {
-        id: activityId,
-      },
-    });
+    const activity = await this.db.activity
+      .findUniqueOrThrow({
+        where: {
+          id: activityId,
+        },
+      })
+      .catch(() => {
+        throw new NotFoundException('La actividad no existe');
+      });
 
-    let activityData;
+    let activityData = null;
 
     if (activity.typeActivity === TypeActivity.SORT_IMAGES) {
       activityData = await this.db.imageActivity.findMany({

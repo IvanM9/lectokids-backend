@@ -77,6 +77,7 @@ export class ScoresService {
     const readingText = contentsReading.map((item) => item.content).join('\n');
 
     //* Verificar que las respuestas sean correctas
+    // TODO: Manejar actividad de sopa de letras
     if (payload.answer) {
       if (question.answerActivity.length > 0) {
         const isCorrect = question.answerActivity.some(
@@ -86,13 +87,12 @@ export class ScoresService {
         response.data = {
           isCorrect,
           question: question.question,
-          recommend: (
+          recommend:
             await this.ai.generateRecommendationForQuestionsActivitiesService({
               question: question.question,
               answer: payload.answer,
               reading: readingText,
-            })
-          ).recommendation,
+            }),
         };
       } else {
         response.data = {

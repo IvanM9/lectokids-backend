@@ -161,7 +161,7 @@ export class ContentsService {
             id: true,
             url: true,
           },
-        }
+        },
       },
       orderBy: {
         createdAt: 'asc',
@@ -363,7 +363,7 @@ export class ContentsService {
     await this.db.contentLecture
       .create({
         data: {
-          image: {connect: {id: imageId}},
+          image: { connect: { id: imageId } },
           detailReading: {
             connect: {
               id: detailReadingId,
