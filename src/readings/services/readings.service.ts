@@ -114,17 +114,12 @@ export class ReadingsService {
           }
         }
       } else {
-        await db.detailReading
+        const createdDetailReading = await db.detailReading
           .create({
             data: {
               reading: {
                 connect: {
                   id: reading.id,
-                },
-              },
-              frontPage: {
-                connect: {
-                  id: data.imageId,
                 },
               },
               studentsOnReadings: {
@@ -143,6 +138,21 @@ export class ReadingsService {
             console.log(error);
             throw new BadRequestException('No se pudo crear la lectura');
           });
+
+        if (data.imageId) {
+          await db.detailReading.update({
+            where: {
+              id: createdDetailReading.id,
+            },
+            data: {
+              frontPage: {
+                connect: {
+                  id: data.imageId,
+                },
+              },
+            },
+          });
+        }
       }
 
       return { reading };

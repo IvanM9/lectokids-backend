@@ -152,6 +152,17 @@ export class ContentsService {
         },
         status,
       },
+      select: {
+        id: true,
+        content: true,
+        type: true,
+        image: {
+          select: {
+            id: true,
+            url: true,
+          },
+        },
+      },
       orderBy: {
         createdAt: 'asc',
       },
@@ -313,8 +324,10 @@ export class ContentsService {
       customPrompt: student.detailReading.reading.customPrompt,
     };
 
-    const contents = await this.ai.generateReadingService(params);
+    const contents: any[] = await this.ai.generateReadingService(params);
 
+    let numberOfImages = Math.floor(Math.random() * (4 - 2 + 1)) + 2;
+    let index = 0;
     for (const element of contents) {
       await this.create({
         content: element.content,
@@ -325,11 +338,45 @@ export class ContentsService {
           'Error al agregar contenido a la lectura',
         );
       });
+
+      if (index % 2 === 0 && numberOfImages-- > 0) {
+        await this.generateImageForContent(
+          element.content,
+          student.detailReading.id,
+        );
+      }
+
+      index++;
     }
 
     return {
       message: `Contenido agregado correctamente a la lectura`,
     };
+  }
+
+  private async generateImageForContent(
+    content: string,
+    detailReadingId: string,
+  ) {
+    const imageId = (await this.ai.generateFrontPage(content)).data;
+
+    await this.db.contentLecture
+      .create({
+        data: {
+          image: { connect: { id: imageId } },
+          detailReading: {
+            connect: {
+              id: detailReadingId,
+            },
+          },
+          type: TypeContent.IMAGE,
+        },
+      })
+      .catch(() => {
+        throw new InternalServerErrorException(
+          'Error al agregar contenido a la lectura',
+        );
+      });
   }
 
   async generateContentsByDetailReading(detailReadingId: string) {
