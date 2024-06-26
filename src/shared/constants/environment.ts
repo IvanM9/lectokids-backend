@@ -6,4 +6,6 @@ export const ENVIRONMENT = {
   PUBLIC_DIR: process.env.PUBLIC_DIR || './src/public',
   BUCKET_NAME: process.env.BUCKET_NAME,
   API_KEY_AI: process.env.API_KEY_AI,
+  MODEL_TEXT: process.env.MODEL_TEXT || 'gpt-3.5-turbo',
+  MODEL_IMAGE: process.env.MODEL_IMAGE || 'dall-e-3',
 };
