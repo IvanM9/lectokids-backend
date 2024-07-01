@@ -299,7 +299,7 @@ model Multimedia {
 
 model Score {
   id             String    @id @default(cuid())
-  score          Decimal?  @db.Decimal(3, 2)
+  score          Decimal  @db.Decimal(5, 2)
   recommendation String?   @db.Text
   reponses       Json[]    @default([]) @db.Json
   createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz()
