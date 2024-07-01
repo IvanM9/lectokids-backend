@@ -8,8 +8,11 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { ScoresService } from '../services/scores.service';
-import { CreateResponseActivityDto } from '../dtos/activities.dto';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import {
+  CreateResponseActivityDto,
+  CreateSaveScoreDto,
+} from '../dtos/activities.dto';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ResponseHttpInterceptor } from '@/shared/interceptors/response-http.interceptor';
 import { JwtAuthGuard } from '@/security/jwt-strategy/jwt-auth.guard';
 import { RoleGuard } from '@/security/jwt-strategy/roles.guard';
@@ -32,10 +35,24 @@ export class ScoresController {
     return this.scoresService.getScoreByActivity(activityId);
   }
 
-  @Post('save')
+  @Post('save-score-question')
+  @ApiOperation({
+    summary:
+      'Generar y guardar la calificación de una activiadad de preguntas y respuestas',
+  })
   @Role(RoleEnum.STUDENT)
   async saveScore(
     @Body() payload: CreateResponseActivityDto,
+    @CurrentUser() { id }: InfoUserInterface,
+  ) {
+    return this.scoresService.saveQuestionScore(payload, id);
+  }
+
+  @Post('save-score')
+  @ApiOperation({ summary: 'Guardar la calificación de una actividad' })
+  @Role(RoleEnum.STUDENT)
+  async saveScoreActivity(
+    @Body() payload: CreateSaveScoreDto,
     @CurrentUser() { id }: InfoUserInterface,
   ) {
     return this.scoresService.saveScore(payload, id);

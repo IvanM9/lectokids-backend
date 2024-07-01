@@ -8,6 +8,7 @@ import {
 import {
   CreateResponseActivityDto,
   CreateResponseQuestionActivityDto,
+  CreateSaveScoreDto,
 } from '../dtos/activities.dto';
 import { ScoreQuestionActivityInterface } from '../interfaces/score.interface';
 import { AiService } from '@/ai/services/ai/ai.service';
@@ -77,7 +78,6 @@ export class ScoresService {
     const readingText = contentsReading.map((item) => item.content).join('\n');
 
     //* Verificar que las respuestas sean correctas
-    // TODO: Manejar actividad de sopa de letras
     if (payload.answer) {
       if (question.answerActivity.length > 0) {
         const isCorrect = question.answerActivity.some(
@@ -151,13 +151,12 @@ export class ScoresService {
       response.data = {
         isCorrect: answer.isCorrect,
         question: question.question,
-        recommend: (
+        recommend:
           await this.ai.generateRecommendationForQuestionsActivitiesService({
             question: question.question,
             answer: answer.answer,
             reading: readingText,
-          })
-        ).recommendation,
+          }),
         answerCorrect,
       };
     } else
@@ -168,7 +167,7 @@ export class ScoresService {
     return response;
   }
 
-  async saveScore(payload: CreateResponseActivityDto, userId: string) {
+  async saveQuestionScore(payload: CreateResponseActivityDto, userId: string) {
     const courseStudent = await this.db.courseStudent
       .findFirstOrThrow({
         where: {
@@ -236,6 +235,60 @@ export class ScoresService {
     return {
       message: 'Calificación guardada',
       data: { score: data.score, qualifiedActivities },
+    };
+  }
+
+  async saveScore(payload: CreateSaveScoreDto, userId: string) {
+    const courseStudent = await this.db.courseStudent
+      .findFirstOrThrow({
+        where: {
+          student: {
+            userId,
+          },
+          studentsOnReadings: {
+            some: {
+              detailReading: {
+                activities: {
+                  some: {
+                    id: payload.activityId,
+                  },
+                },
+              },
+            },
+          },
+        },
+        select: {
+          id: true,
+        },
+      })
+      .catch((err) => {
+        this.logger.error(err.message, err.stack, ScoresService.name);
+        throw new NotFoundException('Estudiante no encontrado');
+      });
+
+    await this.db.score
+      .create({
+        data: {
+          score: payload.score,
+          activity: {
+            connect: {
+              id: payload.activityId,
+            },
+          },
+          courseStudent: {
+            connect: {
+              id: courseStudent.id,
+            },
+          },
+        },
+      })
+      .catch((err) => {
+        this.logger.error(err.message, err.stack, ScoresService.name);
+        throw new BadRequestException('No se pudo guardar la calificación');
+      });
+
+    return {
+      message: 'Calificación guardada',
     };
   }
 }

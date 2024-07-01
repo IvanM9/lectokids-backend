@@ -3,6 +3,7 @@ import { TypeActivity } from '@prisma/client';
 import { Type } from 'class-transformer';
 import {
   IsBoolean,
+  IsDecimal,
   IsEnum,
   IsNotEmpty,
   IsOptional,
@@ -170,4 +171,16 @@ export class CreateResponseActivityDto {
   @IsOptional()
   @ValidateNested({ each: true })
   questions: CreateResponseQuestionActivityDto[];
+}
+
+export class CreateSaveScoreDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  activityId: string;
+
+  @ApiProperty()
+  @IsDecimal({ decimal_digits: '2' })
+  @IsNotEmpty()
+  score: string;
 }

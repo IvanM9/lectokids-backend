@@ -58,7 +58,7 @@ export class AiService {
 
         const completion = await this.openai.chat.completions.create({
           messages: [{ role: 'user', content: prompt }],
-          model: 'gpt-3.5-turbo',
+          model: ENVIRONMENT.MODEL_TEXT,
           response_format: { type: 'json_object' },
         });
         // console.log(completion);
@@ -82,7 +82,7 @@ export class AiService {
       try {
         const completion = await this.openai.chat.completions.create({
           messages: [{ role: 'user', content: prompt }],
-          model: 'gpt-3.5-turbo',
+          model: ENVIRONMENT.MODEL_TEXT,
         });
 
         textGenerated = completion.choices[0].message.content;
@@ -104,7 +104,7 @@ export class AiService {
     while (!imageGenerated && attempts-- > 0) {
       try {
         const response = await this.openai.images.generate({
-          model: 'dall-e-3',
+          model: ENVIRONMENT.MODEL_IMAGE,
           prompt,
           n: 1,
           size: '1024x1024',
