@@ -177,6 +177,23 @@ export class CoursesService {
               },
               where: {
                 status: true,
+                detailReadings: {
+                  some: {
+                    status: true,
+                  },
+                },
+              },
+            },
+          },
+          where: {
+            readings: {
+              some: {
+                status: true,
+                detailReadings: {
+                  some: {
+                    status: true,
+                  },
+                },
               },
             },
           },
