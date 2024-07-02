@@ -15,6 +15,7 @@ import {
   generateQuiz,
   generateReading,
   generateReading2,
+  generateReadingInformation,
   generateRecommendationForQuestionsActivities,
   generateVerificationOpenAnswers,
   generateYesOrNot,
@@ -226,5 +227,11 @@ export class AiService {
   async generateFrontPage(reading: string) {
     const prompt = generatePromptForFrontPage(reading);
     return { data: await this.generateImage(await this.generateText(prompt)) };
+  }
+
+  async generateReadingInformationService() {
+    const prompt = generateReadingInformation();
+
+    return await this.generateJSON(prompt);
   }
 }

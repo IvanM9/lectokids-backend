@@ -71,4 +71,9 @@ export class ReadingsController {
   ) {
     return await this.service.updateStatusReading(id, user.id);
   }
+
+  @Post('generate-information')
+  async generateInformation() {
+    return await this.service.generateReadingInformation();
+  }
 }

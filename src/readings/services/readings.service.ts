@@ -6,12 +6,14 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CreateReadingDto, UpdateReadingDto } from '../dtos/readings.dto';
+import { AiService } from '@/ai/services/ai/ai.service';
 
 @Injectable()
 export class ReadingsService {
   constructor(
     private db: PrismaService,
     private readonly logger: Logger,
+    private ai: AiService,
   ) {}
 
   async create(data: CreateReadingDto, userId: string) {
@@ -344,5 +346,9 @@ export class ReadingsService {
       });
 
     return { message: 'Lectura actualizada con éxito' };
+  }
+
+  async generateReadingInformation() {
+    return { data: await this.ai.generateReadingInformationService() };
   }
 }
