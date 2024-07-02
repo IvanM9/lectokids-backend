@@ -39,5 +39,5 @@ export class GenerateContentDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  prompt: string;
+  text: string;
 }
