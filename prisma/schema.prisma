@@ -46,7 +46,6 @@ model Teacher {
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamptz()
 
-  comprensionLevelHistory ComprensionLevelHistory[]
   courses                 Course[]
 
   @@map("teachers")
@@ -62,24 +61,9 @@ model Student {
   updatedAt    DateTime? @updatedAt @map("updated_at") @db.Timestamptz()
   haveDyslexia Boolean   @default(false) @map("have_dyslexia")
 
-  comprensionLevelHistory ComprensionLevelHistory[]
   coursesStudent          CourseStudent[]
 
   @@map("students")
-}
-
-model ComprensionLevelHistory {
-  id           String    @id @default(cuid())
-  student      Student   @relation(fields: [studentId], references: [id])
-  studentId    String    @map("student_id")
-  level        Int       @db.SmallInt
-  observations String?   @db.Text
-  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt    DateTime? @updatedAt @map("updated_at") @db.Timestamptz()
-  createdBy    Teacher?  @relation(fields: [createdById], references: [id])
-  createdById  String?   @map("created_by_id")
-
-  @@map("comprension_level_history")
 }
 
 model Course {
@@ -113,6 +97,7 @@ model CourseStudent {
 
   studentsOnReadings StudentsOnReadings[]
   scores             Score[]
+  timeSpends         TimeSpend[]
 
   @@map("courses_students")
 }
@@ -162,6 +147,7 @@ model DetailReading {
   contentsLecture    ContentLecture[]
   studentsOnReadings StudentsOnReadings[]
   activities         Activity[]
+  timeSpends         TimeSpend[]
 
   @@map("detail_readings")
 }
@@ -206,7 +192,7 @@ enum TypeActivity {
   OPEN_TEXT
   CROSSWORD
   ALPHABET_SOUP
-  SORT_IMAGES
+  // SORT_IMAGES
 }
 
 // model TypeActivity {
@@ -233,8 +219,8 @@ model Activity {
   status          Boolean       @default(true)
 
   questionActivities QuestionActivity[]
-  imageActivities    ImageActivity[]
   scores             Score[]
+  timeSpends         TimeSpend[]
 
   @@map("activities")
 }
@@ -262,18 +248,6 @@ model AnswerActivity {
   @@map("answer_activities")
 }
 
-model ImageActivity {
-  id           String     @id @default(cuid())
-  multimedia   Multimedia @relation(fields: [multimediaId], references: [id])
-  multimediaId String     @map("multimedia_id")
-  activity     Activity   @relation(fields: [activityId], references: [id])
-  activityId   String     @map("activity_id")
-  order        Int        @db.SmallInt
-  status       Boolean    @default(true)
-
-  @@map("image_activities")
-}
-
 enum TypeMultimedia {
   IMAGE
   VIDEO
@@ -290,7 +264,6 @@ model Multimedia {
   createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt   DateTime?      @updatedAt @map("updated_at") @db.Timestamptz()
 
-  imageActivities ImageActivity[]
   frontPages      DetailReading[]
   contentsLecture ContentLecture[]
 
@@ -311,4 +284,20 @@ model Score {
   courseStudentId String
 
   @@map("scores")
+}
+
+model TimeSpend {
+  id         String   @id @default(cuid())
+  startTime DateTime @map("start_time") @db.Timestamptz()
+  endTime   DateTime @map("end_time") @db.Timestamptz()
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt  DateTime? @updatedAt @map("updated_at") @db.Timestamptz()
+
+  detailReading   DetailReading? @relation(fields: [detailReadingId], references: [id])
+  detailReadingId String?        @map("detail_lecture_id")
+  activity        Activity?      @relation(fields: [activityId], references: [id])
+  activityId      String?
+  courseStudent   CourseStudent @relation(fields: [courseStudentId], references: [id])
+  courseStudentId String
+  @@map("time_spend")
 }

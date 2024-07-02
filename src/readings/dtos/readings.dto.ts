@@ -1,5 +1,11 @@
 import { ApiProperty, OmitType } from '@nestjs/swagger';
-import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import {
+  IsBoolean,
+  IsDateString,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class CreateReadingDto {
   @ApiProperty()
@@ -45,3 +51,20 @@ export class UpdateReadingDto extends OmitType(CreateReadingDto, [
   'imageId',
   'levelId',
 ]) {}
+
+export class CreateTimeSpendDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  detailReadingId: string;
+
+  @ApiProperty()
+  @IsDateString()
+  @IsNotEmpty()
+  startTime: string;
+
+  @ApiProperty()
+  @IsDateString()
+  @IsNotEmpty()
+  endTime: string;
+}

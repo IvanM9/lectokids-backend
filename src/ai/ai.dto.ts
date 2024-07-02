@@ -6,7 +6,6 @@ export interface GenerateReadingDto {
   title: string;
   goals: string;
   length: string;
-  comprehensionLevel: string;
   interests: string;
   city: string;
   problems: string;

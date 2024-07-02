@@ -51,46 +51,26 @@ export class ActivitiesService {
         throw new NotFoundException('La actividad no existe');
       });
 
-    let activityData = null;
-
-    if (activity.typeActivity === TypeActivity.SORT_IMAGES) {
-      activityData = await this.db.imageActivity.findMany({
-        where: {
-          activityId,
-        },
-        select: {
-          id: true,
-          order: true,
-          multimedia: {
-            select: {
-              url: true,
-              description: true,
-            },
+    const activityData = await this.db.questionActivity.findMany({
+      where: {
+        activityId,
+        status: true,
+      },
+      select: {
+        id: true,
+        question: true,
+        answerActivity: {
+          select: {
+            answer: true,
+            isCorrect: role === RoleEnum.TEACHER ? true : false,
+            id: true,
+          },
+          where: {
+            status: true,
           },
         },
-      });
-    } else {
-      activityData = await this.db.questionActivity.findMany({
-        where: {
-          activityId,
-          status: true,
-        },
-        select: {
-          id: true,
-          question: true,
-          answerActivity: {
-            select: {
-              answer: true,
-              isCorrect: role === RoleEnum.TEACHER ? true : false,
-              id: true,
-            },
-            where: {
-              status: true,
-            },
-          },
-        },
-      });
-    }
+      },
+    });
 
     return { data: activityData };
   }
@@ -151,17 +131,12 @@ export class ActivitiesService {
       );
     }
 
-    // let activityId = null;
-    if (payload.typeActivity !== TypeActivity.SORT_IMAGES) {
-      let questions = await this.ai.generateQuizService(
-        generateActivityDto,
-        payload.typeActivity,
-      );
+    const questions = await this.ai.generateQuizService(
+      generateActivityDto,
+      payload.typeActivity,
+    );
 
-      return { message: 'Actividad generada correctamente', data: questions };
-    }
-
-    return { message: 'Actividad generada correctamente' };
+    return { message: 'Actividad generada correctamente', data: questions };
   }
 
   async generateActivities(payload: CreateAutoGenerateActivitiesDto) {
@@ -203,7 +178,6 @@ export class ActivitiesService {
       await this.ai.determineTypeActivities(generateActivityDto);
 
     for (const element of typeActivities) {
-      // TODO: modificar para generar actividades de ordenar imágenes
       const questions = (
         await this.generateActivityByType(
           {
@@ -215,13 +189,11 @@ export class ActivitiesService {
         )
       ).data;
 
-      if (element.activityType !== TypeActivity.SORT_IMAGES) {
-        await this.createQuestionActivity({
-          detailReadingId: payload.detailReadingId,
-          questions,
-          typeActivity: element.activityType,
-        });
-      }
+      await this.createQuestionActivity({
+        detailReadingId: payload.detailReadingId,
+        questions,
+        typeActivity: element.activityType,
+      });
     }
 
     return { message: 'Actividades generadas correctamente' };
@@ -298,11 +270,6 @@ export class ActivitiesService {
         },
         include: {
           questionActivities: {
-            select: {
-              id: true,
-            },
-          },
-          imageActivities: {
             select: {
               id: true,
             },
