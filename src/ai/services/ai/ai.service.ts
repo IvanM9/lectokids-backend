@@ -144,6 +144,16 @@ export class AiService {
     return imageId;
   }
 
+  async generateSpeechService(text: string) {
+    const response = await this.openai.audio.speech.create({
+      model: 'tts-1',
+      voice: 'alloy',
+      input: text,
+    });
+
+    return Buffer.from( await response.arrayBuffer());
+  }
+
   async generateReadingService(params: GenerateReadingDto) {
     const prompt = generateReading2(params);
     return (await this.generateJSON(prompt)).contents;
