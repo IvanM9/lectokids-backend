@@ -291,4 +291,116 @@ export class ScoresService {
       message: 'Calificación guardada',
     };
   }
+
+  async getScoreByDetailReading(detailReadingId: string, userId: string) {
+    const courseStudent = await this.db.courseStudent
+      .findFirstOrThrow({
+        where: {
+          student: {
+            userId,
+          },
+          studentsOnReadings: {
+            some: {
+              detailReading: {
+                id: detailReadingId,
+              },
+            },
+          },
+        },
+        select: {
+          id: true,
+        },
+      })
+      .catch((err) => {
+        this.logger.error(err.message, err.stack, ScoresService.name);
+        throw new NotFoundException('Estudiante no encontrado');
+      });
+
+    const activities = await this.db.activity.findMany({
+      where: {
+        detailReadingId,
+      },
+      select: {
+        id: true,
+        typeActivity: true,
+      },
+    });
+
+    if (activities.length === 0)
+      throw new NotFoundException('No se encontraron actividades');
+
+    const scores = [];
+    for (const activity of activities) {
+      const average = await this.db.score.aggregate({
+        where: {
+          activityId: activity.id,
+          courseStudentId: courseStudent.id,
+        },
+        _avg: {
+          score: true,
+        },
+        _count: {
+          score: true,
+        },
+      });
+
+      scores.push({
+        activityId: activity.id,
+        score: Number(average._avg.score).toFixed(2),
+        typeActivity: activity.typeActivity,
+        count: average._count.score,
+      });
+    }
+
+    return {
+      data: scores,
+    };
+  }
+
+  async getScoreByReading(readingId: string) {
+    const studenntsOnReadings = await this.db.studentsOnReadings.findMany({
+      where: {
+        detailReading: {
+          readingId,
+        },
+      },
+      select: {
+        courseStudent: {
+          select: {
+            student: {
+              select: {
+                id: true,
+                user: {
+                  select: {
+                    id: true,
+                    firstName: true,
+                    lastName: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+        detailReadingId: true,
+      },
+    });
+
+    const scores = [];
+    for (const student of studenntsOnReadings) {
+      const scoreByStudent = await this.getScoreByDetailReading(
+        student.detailReadingId,
+        student.courseStudent.student.user.id,
+      );
+
+      scores.push({
+        studentId: student.courseStudent.student.id,
+        studentName: `${student.courseStudent.student.user.firstName} ${student.courseStudent.student.user.lastName}`,
+        scores: scoreByStudent.data,
+      });
+    }
+
+    return {
+      data: scores,
+    };
+  }
 }
