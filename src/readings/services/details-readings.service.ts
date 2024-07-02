@@ -6,6 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { TypeContent } from '@prisma/client';
+import { CreateTimeSpendDto } from '../dtos/readings.dto';
 
 @Injectable()
 export class DetailsReadingsService {
@@ -99,5 +100,72 @@ export class DetailsReadingsService {
     });
 
     return { message: 'Portada actualizada correctamente' };
+  }
+
+  async saveTimeSpentReading(
+    { detailReadingId, startTime, endTime }: CreateTimeSpendDto,
+    userId,
+  ) {
+    const { courseStudent } = await this.db.studentsOnReadings
+      .findFirstOrThrow({
+        where: {
+          detailReadingId,
+          courseStudent: {
+            student: {
+              userId,
+            },
+          },
+        },
+        select: {
+          courseStudent: {
+            select: {
+              id: true,
+            },
+          },
+        },
+      })
+      .catch(() => {
+        throw new NotFoundException('No se encontró el estudiante');
+      });
+
+    await this.db.detailReading
+      .findFirstOrThrow({
+        where: {
+          id: detailReadingId,
+          studentsOnReadings: {
+            some: {
+              courseStudentId: courseStudent.id,
+            },
+          },
+        },
+      })
+      .catch(() => {
+        throw new NotFoundException('No se encontró la lectura');
+      });
+
+    await this.db.timeSpend
+      .create({
+        data: {
+          detailReading: {
+            connect: {
+              id: detailReadingId,
+            },
+          },
+          courseStudent: {
+            connect: {
+              id: courseStudent.id,
+            },
+          },
+          startTime,
+          endTime,
+        },
+      })
+      .catch(() => {
+        throw new BadRequestException(
+          'No se pudo guardar el tiempo de lectura',
+        );
+      });
+
+    return { message: 'Tiempo de lectura registrado con éxito' };
   }
 }

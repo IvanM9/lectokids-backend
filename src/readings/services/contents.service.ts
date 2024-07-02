@@ -262,11 +262,6 @@ export class ContentsService {
               student: {
                 select: {
                   city: true,
-                  comprensionLevelHistory: {
-                    select: {
-                      level: true,
-                    },
-                  },
                   user: {
                     select: {
                       genre: true,
@@ -301,12 +296,6 @@ export class ContentsService {
         throw new NotFoundException('No se encontró el estudiante');
       });
 
-    let comprehensionLevel = null;
-    for (const element of student.courseStudent.student
-      .comprensionLevelHistory) {
-      comprehensionLevel += `${element.level}, `;
-    }
-
     const params: GenerateReadingDto = {
       age:
         new Date().getFullYear() -
@@ -314,7 +303,6 @@ export class ContentsService {
       title: student.detailReading.reading.title,
       goals: student.detailReading.reading.goals,
       length: student.detailReading.reading.length,
-      comprehensionLevel,
       interests: student.courseStudent.student.interests,
       city: student.courseStudent.student.city,
       problems: student.courseStudent.problems,

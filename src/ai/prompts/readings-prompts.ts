@@ -40,7 +40,6 @@ export function generateReading2(params: GenerateReadingDto) {
   The read is titled "${params.title}" (do not include this title in the generation), and targets: '${params.goals}'.
   The read should be of length ${params.length} and divided into multiple pages, as if it were a physical book. Adapt the content and style as follows (remember that these parameters are in Spanish):
 
-  ${params.comprehensionLevel ? 'Student is reading comprehension level that has gone as follows: ' + params.comprehensionLevel : ''}
   Student interests/likes: '${params.interests}'
   City where you live: ${params.city}, Ecuador
   ${params.problems ? 'Learning problems: "' + params.problems + '".' : ''}

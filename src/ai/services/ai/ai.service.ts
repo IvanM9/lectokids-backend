@@ -151,7 +151,7 @@ export class AiService {
       input: text,
     });
 
-    return Buffer.from( await response.arrayBuffer());
+    return Buffer.from(await response.arrayBuffer());
   }
 
   async generateReadingService(params: GenerateReadingDto) {
