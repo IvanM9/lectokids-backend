@@ -107,7 +107,7 @@
 <body>
     <% readings.forEach((reading, readingIndex)=> { %>
         <div class="page">
-            <div class="watermark">lectokids</div>
+            <div class="watermark"></div>
             <h1>
                 <%= title %>
             </h1>
@@ -117,7 +117,7 @@
                 </h2>
             </div>
             <div class="reading">
-                <h2>Lectura <%= readingIndex + 1 %>
+                <h2>Lectura
                 </h2>
                 <p>
                     <%= reading.text %>
@@ -198,7 +198,7 @@
                             pages.forEach(page => {
                                 const watermark = document.createElement('div');
                                 watermark.className = 'watermark';
-                                watermark.textContent = 'lectokids';
+                                watermark.textContent = 'LectoKids';
                                 page.appendChild(watermark);
                             });
                         });
