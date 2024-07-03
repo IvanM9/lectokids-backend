@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 // import { GoogleGenerativeAI } from '@google/generative-ai';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+// const { GoogleGenerativeAI } = require('@google/generative-ai');
 import { ENVIRONMENT } from '@/shared/constants/environment';
 import {
   generateAlphabetSoup,
@@ -40,12 +40,12 @@ export class AiService {
   ) {}
 
   openai = new OpenAI();
-  genAI = new GoogleGenerativeAI(ENVIRONMENT.API_KEY_AI);
+  // genAI = new GoogleGenerativeAI(ENVIRONMENT.API_KEY_AI);
 
-  model = this.genAI.getGenerativeModel({
+  // model = this.genAI.getGenerativeModel({
     // model: 'gemini-pro',
-    model: 'gemini-1.5-flash',
-  });
+  //   model: 'gemini-1.5-flash',
+  // });
 
   private async generateJSON(prompt: string) {
     let contents = null;
