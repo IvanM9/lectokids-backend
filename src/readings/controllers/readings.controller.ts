@@ -6,6 +6,7 @@ import {
   Patch,
   Post,
   Query,
+  Res,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -20,10 +21,10 @@ import { RoleGuard } from '@/security/jwt-strategy/roles.guard';
 import { Role } from '@/security/jwt-strategy/roles.decorator';
 import { RoleEnum } from '@/security/jwt-strategy/role.enum';
 import { OptionalBooleanPipe } from '@/shared/pipes/optional-boolean.pipe';
+import { Response } from 'express';
 
 @Controller('readings')
 @ApiTags('readings')
-@UseInterceptors(ResponseHttpInterceptor)
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RoleGuard)
 @Role(RoleEnum.TEACHER)
@@ -31,6 +32,7 @@ export class ReadingsController {
   constructor(private service: ReadingsService) {}
 
   @Post('create')
+  @UseInterceptors(ResponseHttpInterceptor)
   async createReading(
     @Body() data: CreateReadingDto,
     @CurrentUser() { id }: InfoUserInterface,
@@ -40,6 +42,7 @@ export class ReadingsController {
 
   @Get()
   @ApiQuery({ name: 'levelId', required: false })
+  @UseInterceptors(ResponseHttpInterceptor)
   @ApiQuery({ name: 'status', required: false })
   @Role(RoleEnum.TEACHER, RoleEnum.STUDENT)
   async getReadings(
@@ -51,11 +54,13 @@ export class ReadingsController {
   }
 
   @Get(':id')
+  @UseInterceptors(ResponseHttpInterceptor)
   async getReadingById(@Param('id') id: string) {
     return await this.service.getReadingById(id);
   }
 
   @Patch(':id')
+  @UseInterceptors(ResponseHttpInterceptor)
   async updateReading(
     @Param('id') id: string,
     @Body() data: UpdateReadingDto,
@@ -65,6 +70,7 @@ export class ReadingsController {
   }
 
   @Patch(':id/update-status')
+  @UseInterceptors(ResponseHttpInterceptor)
   async updateStatusReading(
     @Param('id') id: string,
     @CurrentUser() user: InfoUserInterface,
@@ -73,7 +79,17 @@ export class ReadingsController {
   }
 
   @Post('generate-information')
+  @UseInterceptors(ResponseHttpInterceptor)
   async generateInformation() {
     return await this.service.generateReadingInformation();
+  }
+
+  @Get(':id/pdf')
+  async generatePdf(@Param('id') id: string, @Res() res: Response) {
+    const pdfBuffer = await this.service.getPDFReading(id);
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename=reading.pdf');
+    res.send(pdfBuffer);
   }
 }
