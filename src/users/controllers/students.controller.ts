@@ -17,7 +17,7 @@ import { Role } from '@/security/jwt-strategy/roles.decorator';
 import { CurrentUser } from '@/security/jwt-strategy/auth.decorator';
 import { InfoUserInterface } from '@/security/jwt-strategy/info-user.interface';
 import { CreateStudentDto, UpdateStudentDto } from '../dtos/students.dto';
-import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { ResponseHttpInterceptor } from '@/shared/interceptors/response-http.interceptor';
 import { OptionalBooleanPipe } from '@/shared/pipes/optional-boolean.pipe';
 
@@ -87,5 +87,12 @@ export class StudentsController {
       data: await this.service.getStudentByIdentification(identification),
       message: 'Se buscó al estudiante correctamente',
     };
+  }
+
+  @Get()
+  @Role(RoleEnum.STUDENT)
+  @ApiOperation({ summary: 'Obtener datos del perfil' })
+  async getMyProfile(@CurrentUser() { id }: InfoUserInterface) {
+    return { data: await this.service.myProfile(id) };
   }
 }

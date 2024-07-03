@@ -239,4 +239,25 @@ export class StudentsService {
       },
     });
   }
+
+  async myProfile(userId: string) {
+    return await this.db.student.findFirst({
+      where: { userId },
+      select: {
+        id: true,
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+            identification: true,
+            genre: true,
+            birthDate: true,
+          },
+        },
+        city: true,
+        interests: true,
+        haveDyslexia: true,
+      },
+    });
+  }
 }

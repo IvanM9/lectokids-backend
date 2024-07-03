@@ -461,7 +461,7 @@ export class ScoresService {
       for (const level of course.course.levels) {
         for (const reading of level.readings) {
           if (reading.detailReadings.length === 0) continue;
-          
+
           const score = await this.getScoreByDetailReading(
             reading.detailReadings[0].id,
             userId,
