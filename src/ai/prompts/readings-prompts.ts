@@ -488,3 +488,24 @@ Student's Response: "${params.answer}"
 Based on the information in the reading passage, is the student's response correct?
 Important: Only return a single piece of valid JSON text. Return it as text, not block code syntax.`;
 }
+
+export function generateReadingInformation() {
+  return `
+  Generate a title for a reading passage and its learning objectives. The passage is intended for school students to practice reading comprehension, which will later be assessed through comprehension activities. The title should be engaging and appropriate for school-age children. The objectives should focus on specific reading comprehension skills such as identifying main ideas, understanding vocabulary in context, or making inferences.
+Provide the output in the following JSON format:
+{
+  "title": "string",
+  "objectives": "string"
+}
+
+The 'title' should be a single, concise string. The 'objectives' should be a single string containing 2-3 clear, measurable learning objectives separated by semicolons.
+Example output:
+{
+  "title": "The Mysterious Garden",
+  "objectives": "Identify the main characters and their roles; Understand the sequence of events in the story; Make predictions about what might happen next based on given information"
+}
+
+Important: Only return a single piece of valid JSON text. Return it as text, not block code syntax.
+Please generate a new, unique title and set of objectives following this format.
+This generated content must be in Ecuadorian Spanish`;
+}

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= title %>
+    </title>
+    <style>
+        @page {
+            size: A4;
+            margin: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        .page {
+            width: 210mm;
+            height: 297mm;
+            padding: 20mm;
+            margin: 0 auto;
+            background-color: white;
+            box-shadow: 0 0 0.5cm rgba(0,0,0,0.5);
+            page-break-after: always;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 6em;
+            color: rgba(200, 200, 200, 0.2);
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            color: #e74c3c;
+        }
+
+        .student-info {
+            background-color: #ecf0f1;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .reading {
+            background-color: #f9f9f9;
+            border-left: 5px solid #3498db;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .activity {
+            background-color: #e8f6f3;
+            border: 1px solid #1abc9c;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .activity h3 {
+            color: #16a085;
+        }
+
+        .question {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .answer {
+            margin-left: 20px;
+        }
+
+        .correct-answer {
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        @media print {
+            .page {
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <% readings.forEach((reading, readingIndex)=> { %>
+        <div class="page">
+            <div class="watermark"></div>
+            <h1>
+                <%= title %>
+            </h1>
+            <div class="student-info">
+                <h2>Estudiante: <%= reading.students[0].firstName %>
+                        <%= reading.students[0].lastName %>
+                </h2>
+            </div>
+            <div class="reading">
+                <h2>Lectura
+                </h2>
+                <p>
+                    <%= reading.text %>
+                </p>
+            </div>
+        </div>
+
+        <% reading.activities.forEach((activity, activityIndex)=> { %>
+            <div class="page">
+                <h2>Actividad <%= activityIndex + 1 %>: <%= 
+                    activity.typeActivity === 'YES_NO' ? 'Verdadero o Falso' :
+                    activity.typeActivity === 'QUIZ' ? 'Preguntas' :
+                    activity.typeActivity === 'OPEN_ANSWERS' ? 'Respuestas abiertas' :
+                    activity.typeActivity === 'OPEN_TEXT' ? 'Texto abierto' :
+                    activity.typeActivity === 'ALPHABET_SOUP' ? 'Sopa de letras' :
+                    activity.typeActivity === 'CROSSWORD' ? 'Crucigrama' : ''
+                 %>
+                </h2>
+                <div class="activity">
+                    <% activity.questionActivities.forEach((question, questionIndex)=> { %>
+                        <div class="question">
+                            <%  if (activity.typeActivity==='CROSSWORD' ) { %>
+                                <p>Palabra <%= questionIndex + 1 %>: <%= question.question %>
+                                </p>
+                                <% } else { %>
+                            <p>Pregunta <%= questionIndex + 1 %>: <%= question.question %>
+                            </p>
+                            <% } %>
+                        </div>
+                        <% if (activity.typeActivity==='YES_NO' ) { %>
+                            <div class="answer">
+                                <% question.answerActivity.forEach((answer, answerIndex)=> { %>
+                                    <p>
+                                        <%= String.fromCharCode(97 + answerIndex) %>) <%= answer.answer %>
+                                    </p>
+                                    <% }) %>
+                            </div>
+                            <% } else if (activity.typeActivity==='QUIZ' ) { %>
+                                <div class="answer">
+                                    <% question.answerActivity.forEach((answer, answerIndex)=> { %>
+                                        <p class="<%= answer.isCorrect ? 'correct-answer' : '' %>">
+                                            <%= String.fromCharCode(97 + answerIndex) %>) <%= answer.answer %>
+                                                    <% if (answer.isCorrect) { %> ✓ <% } %>
+                                        </p>
+                                        <% }) %>
+                                </div>
+                                <% } else if (activity.typeActivity==='OPEN_ANSWERS' ||
+                                    activity.typeActivity==='OPEN_TEXT' ) { %>
+                                    <div class="answer">
+                                        <p>[Espacio para respuesta]</p>
+                                    </div>
+                                    <% } else if (activity.typeActivity==='ALPHABET_SOUP' ) { %>
+                                        <div class="answer">
+                                            <% question.answerActivity.forEach((answer, answerIndex)=> { %>
+                                                <p>
+                                                   <%= answer.answer %>
+                                                </p>
+                                                <% }) %>
+                                        </div>
+                                        <% } else if (activity.typeActivity==='CROSSWORD' ) { %>
+                                        <div class="answer">
+                                            <% question.answerActivity.forEach((answer, answerIndex)=> { %>
+                                                <p>
+                                                  Pista: <%= answer.answer %>
+                                                </p>
+                                                <% }) %>
+                                        </div>
+                                        <% } %>
+                                            <% }) %>
+                </div>
+            </div>
+            <% }) %>
+                <% }) %>
+
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function () {
+                            const pages = document.querySelectorAll('.page');
+                            pages.forEach(page => {
+                                const watermark = document.createElement('div');
+                                watermark.className = 'watermark';
+                                watermark.textContent = 'LectoKids';
+                                page.appendChild(watermark);
+                            });
+                        });
+                    </script>
+</body>
+
+</html>

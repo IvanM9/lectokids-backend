@@ -4,6 +4,7 @@ import {
   Get,
   Param,
   Post,
+  Query,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -12,7 +13,12 @@ import {
   CreateResponseActivityDto,
   CreateSaveScoreDto,
 } from '../dtos/activities.dto';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ResponseHttpInterceptor } from '@/shared/interceptors/response-http.interceptor';
 import { JwtAuthGuard } from '@/security/jwt-strategy/jwt-auth.guard';
 import { RoleGuard } from '@/security/jwt-strategy/roles.guard';
@@ -30,7 +36,7 @@ import { InfoUserInterface } from '@/security/jwt-strategy/info-user.interface';
 export class ScoresController {
   constructor(private readonly scoresService: ScoresService) {}
 
-  @Get('get/:activityId')
+  @Get('by-activity/:activityId')
   async getScoreByActivity(@Param('activityId') activityId: string) {
     return this.scoresService.getScoreByActivity(activityId);
   }
@@ -56,5 +62,29 @@ export class ScoresController {
     @CurrentUser() { id }: InfoUserInterface,
   ) {
     return this.scoresService.saveScore(payload, id);
+  }
+
+  @Get('by-detailReading/:detailReadingId')
+  @ApiOperation({ summary: 'Obtener todas las calificaciones por actividad' })
+  @Role(RoleEnum.STUDENT)
+  async getScoresByDetailReading(
+    @Param('detailReadingId') detailReadingId: string,
+    @CurrentUser() { id }: InfoUserInterface,
+  ) {
+    return this.scoresService.getScoreByDetailReading(detailReadingId, id);
+  }
+
+  @Get('by-reading/:readingId')
+  @ApiOperation({ summary: 'Obtener todas las calificaciones por lectura' })
+  @Role(RoleEnum.TEACHER)
+  async getScoresByReading(@Param('readingId') readingId: string) {
+    return this.scoresService.getScoreByReading(readingId);
+  }
+
+  @Get('my-scores')
+  @ApiOperation({ summary: 'Obtener todas las calificaciones del estudiante' })
+  @Role(RoleEnum.STUDENT)
+  async getMyScores(@CurrentUser() { id }: InfoUserInterface) {
+    return this.scoresService.getScoreByCourses(id);
   }
 }

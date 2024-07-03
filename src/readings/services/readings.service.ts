@@ -6,12 +6,17 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CreateReadingDto, UpdateReadingDto } from '../dtos/readings.dto';
+import { AiService } from '@/ai/services/ai/ai.service';
+import puppeteer from 'puppeteer';
+import { renderFile } from 'ejs';
+import path from 'path';
 
 @Injectable()
 export class ReadingsService {
   constructor(
     private db: PrismaService,
     private readonly logger: Logger,
+    private ai: AiService,
   ) {}
 
   async create(data: CreateReadingDto, userId: string) {
@@ -344,5 +349,143 @@ export class ReadingsService {
       });
 
     return { message: 'Lectura actualizada con éxito' };
+  }
+
+  async generateReadingInformation() {
+    return { data: await this.ai.generateReadingInformationService() };
+  }
+
+  async getPDFReading(readingId: string) {
+    const reading = await this.db.reading
+      .findFirstOrThrow({
+        where: { id: readingId },
+        select: {
+          title: true,
+          goals: true,
+          detailReadings: {
+            select: {
+              contentsLecture: {
+                select: {
+                  content: true,
+                },
+                where: {
+                  status: true,
+                },
+              },
+              activities: {
+                select: {
+                  typeActivity: true,
+                  questionActivities: {
+                    select: {
+                      question: true,
+                      answerActivity: {
+                        select: {
+                          answer: true,
+                          isCorrect: true,
+                        },
+                        where: {
+                          status: true,
+                        },
+                      },
+                    },
+                    where: {
+                      status: true,
+                    },
+                  },
+                },
+                where: {
+                  status: true,
+                },
+              },
+              studentsOnReadings: {
+                select: {
+                  courseStudent: {
+                    select: {
+                      id: true,
+                      student: {
+                        select: {
+                          user: {
+                            select: {
+                              firstName: true,
+                              lastName: true,
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+                orderBy: {
+                  courseStudent: {
+                    student: {
+                      user: {
+                        firstName: 'asc',
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            where: {
+              status: true,
+            },
+          },
+        },
+      })
+      .catch(() => {
+        throw new NotFoundException('No se encontró la lectura');
+      });
+
+    const readings = [];
+    for (const detailReading of reading.detailReadings) {
+      const text = detailReading.contentsLecture
+        .map((content) => content.content)
+        .join('\n');
+      readings.push({
+        text,
+        activities: detailReading.activities,
+        students: detailReading.studentsOnReadings.map(
+          (student) => student.courseStudent.student.user,
+        ),
+      });
+    }
+
+    const data = {
+      readings,
+      title: reading.title,
+      goals: reading.goals,
+    };
+
+    const dirTemplate = path.join(
+      __dirname,
+      '..',
+      '..',
+      '..',
+      'views',
+      'reading.ejs',
+    );
+
+    return new Promise<Buffer>((resolve, reject) => {
+      renderFile(dirTemplate, data, async (err, html) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+
+        const browser = await puppeteer.launch({
+          args: ['--no-sandbox', '--disable-setuid-sandbox'],
+        });
+
+        const page = await browser.newPage();
+
+        await page.setContent(html);
+
+        const buffer = await page.pdf({ format: 'A4' });
+
+        await browser.close();
+
+        resolve(buffer);
+      });
+    });
   }
 }

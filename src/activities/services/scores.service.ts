@@ -291,4 +291,197 @@ export class ScoresService {
       message: 'Calificación guardada',
     };
   }
+
+  async getScoreByDetailReading(detailReadingId: string, userId: string) {
+    const courseStudent = await this.db.courseStudent
+      .findFirstOrThrow({
+        where: {
+          student: {
+            userId,
+          },
+          studentsOnReadings: {
+            some: {
+              detailReading: {
+                id: detailReadingId,
+              },
+            },
+          },
+        },
+        select: {
+          id: true,
+        },
+      })
+      .catch((err) => {
+        this.logger.error(err.message, err.stack, ScoresService.name);
+        throw new NotFoundException('Estudiante no encontrado');
+      });
+
+    const activities = await this.db.activity.findMany({
+      where: {
+        detailReadingId,
+      },
+      select: {
+        id: true,
+        typeActivity: true,
+      },
+    });
+
+    const scores = [];
+    for (const activity of activities) {
+      const average = await this.db.score.aggregate({
+        where: {
+          activityId: activity.id,
+          courseStudentId: courseStudent.id,
+        },
+        _avg: {
+          score: true,
+        },
+        _count: {
+          score: true,
+        },
+      });
+
+      scores.push({
+        activityId: activity.id,
+        score: Number(average._avg.score).toFixed(2),
+        typeActivity: activity.typeActivity,
+        count: average._count.score,
+      });
+    }
+
+    return {
+      data: scores,
+    };
+  }
+
+  async getScoreByReading(readingId: string) {
+    const studenntsOnReadings = await this.db.studentsOnReadings.findMany({
+      where: {
+        detailReading: {
+          readingId,
+        },
+      },
+      select: {
+        courseStudent: {
+          select: {
+            student: {
+              select: {
+                id: true,
+                user: {
+                  select: {
+                    id: true,
+                    firstName: true,
+                    lastName: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+        detailReadingId: true,
+      },
+    });
+
+    const scores = [];
+    for (const student of studenntsOnReadings) {
+      const scoreByStudent = await this.getScoreByDetailReading(
+        student.detailReadingId,
+        student.courseStudent.student.user.id,
+      );
+
+      scores.push({
+        studentId: student.courseStudent.student.id,
+        studentName: `${student.courseStudent.student.user.firstName} ${student.courseStudent.student.user.lastName}`,
+        scores: scoreByStudent.data,
+      });
+    }
+
+    return {
+      data: scores,
+    };
+  }
+
+  async getScoreByCourses(userId: string) {
+    const courses = await this.db.courseStudent.findMany({
+      where: {
+        student: {
+          userId,
+        },
+        course: {
+          status: true,
+        },
+      },
+      select: {
+        course: {
+          select: {
+            id: true,
+            name: true,
+            levels: {
+              select: {
+                id: true,
+                readings: {
+                  select: {
+                    id: true,
+                    title: true,
+                    detailReadings: {
+                      where: {
+                        status: true,
+                        studentsOnReadings: {
+                          some: {
+                            courseStudent: {
+                              student: {
+                                userId,
+                              },
+                            },
+                          },
+                        },
+                      },
+                      select: {
+                        id: true,
+                      },
+                    },
+                  },
+                  where: {
+                    status: true,
+                  },
+                },
+              },
+              where: {
+                status: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const scores = [];
+    for (const course of courses) {
+      const readings = [];
+      for (const level of course.course.levels) {
+        for (const reading of level.readings) {
+          if (reading.detailReadings.length === 0) continue;
+
+          const score = await this.getScoreByDetailReading(
+            reading.detailReadings[0].id,
+            userId,
+          );
+          readings.push({
+            readingId: reading.id,
+            readingTitle: reading.title,
+            scores: score.data,
+          });
+        }
+      }
+      scores.push({
+        courseId: course.course.id,
+        courseName: course.course.name,
+        readings,
+      });
+    }
+
+    return {
+      data: scores,
+    };
+  }
 }
