@@ -127,13 +127,25 @@
 
         <% reading.activities.forEach((activity, activityIndex)=> { %>
             <div class="page">
-                <h2>Actividad <%= activityIndex + 1 %>: <%= activity.typeActivity %>
+                <h2>Actividad <%= activityIndex + 1 %>: <%= 
+                    activity.typeActivity === 'YES_NO' ? 'Verdadero o Falso' :
+                    activity.typeActivity === 'QUIZ' ? 'Preguntas' :
+                    activity.typeActivity === 'OPEN_ANSWERS' ? 'Respuestas abiertas' :
+                    activity.typeActivity === 'OPEN_TEXT' ? 'Texto abierto' :
+                    activity.typeActivity === 'ALPHABET_SOUP' ? 'Sopa de letras' :
+                    activity.typeActivity === 'CROSSWORD' ? 'Crucigrama' : ''
+                 %>
                 </h2>
                 <div class="activity">
                     <% activity.questionActivities.forEach((question, questionIndex)=> { %>
                         <div class="question">
+                            <%  if (activity.typeActivity==='CROSSWORD' ) { %>
+                                <p>Palabra <%= questionIndex + 1 %>: <%= question.question %>
+                                </p>
+                                <% } else { %>
                             <p>Pregunta <%= questionIndex + 1 %>: <%= question.question %>
                             </p>
+                            <% } %>
                         </div>
                         <% if (activity.typeActivity==='YES_NO' ) { %>
                             <div class="answer">
@@ -157,12 +169,19 @@
                                     <div class="answer">
                                         <p>[Espacio para respuesta]</p>
                                     </div>
-                                    <% } else if (activity.typeActivity==='ALPHABET_SOUP' ||
-                                        activity.typeActivity==='CROSSWORD' ) { %>
+                                    <% } else if (activity.typeActivity==='ALPHABET_SOUP' ) { %>
                                         <div class="answer">
                                             <% question.answerActivity.forEach((answer, answerIndex)=> { %>
                                                 <p>
-                                                    <%= answer.answer %>
+                                                   <%= answer.answer %>
+                                                </p>
+                                                <% }) %>
+                                        </div>
+                                        <% } else if (activity.typeActivity==='CROSSWORD' ) { %>
+                                        <div class="answer">
+                                            <% question.answerActivity.forEach((answer, answerIndex)=> { %>
+                                                <p>
+                                                  Pista: <%= answer.answer %>
                                                 </p>
                                                 <% }) %>
                                         </div>
