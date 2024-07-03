@@ -326,9 +326,6 @@ export class ScoresService {
       },
     });
 
-    if (activities.length === 0)
-      throw new NotFoundException('No se encontraron actividades');
-
     const scores = [];
     for (const activity of activities) {
       const average = await this.db.score.aggregate({
@@ -396,6 +393,90 @@ export class ScoresService {
         studentId: student.courseStudent.student.id,
         studentName: `${student.courseStudent.student.user.firstName} ${student.courseStudent.student.user.lastName}`,
         scores: scoreByStudent.data,
+      });
+    }
+
+    return {
+      data: scores,
+    };
+  }
+
+  async getScoreByCourses(userId: string) {
+    const courses = await this.db.courseStudent.findMany({
+      where: {
+        student: {
+          userId,
+        },
+        course: {
+          status: true,
+        },
+      },
+      select: {
+        course: {
+          select: {
+            id: true,
+            name: true,
+            levels: {
+              select: {
+                id: true,
+                readings: {
+                  select: {
+                    id: true,
+                    title: true,
+                    detailReadings: {
+                      where: {
+                        status: true,
+                        studentsOnReadings: {
+                          some: {
+                            courseStudent: {
+                              student: {
+                                userId,
+                              },
+                            },
+                          },
+                        },
+                      },
+                      select: {
+                        id: true,
+                      },
+                    },
+                  },
+                  where: {
+                    status: true,
+                  },
+                },
+              },
+              where: {
+                status: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const scores = [];
+    for (const course of courses) {
+      const readings = [];
+      for (const level of course.course.levels) {
+        for (const reading of level.readings) {
+          if (reading.detailReadings.length === 0) continue;
+          
+          const score = await this.getScoreByDetailReading(
+            reading.detailReadings[0].id,
+            userId,
+          );
+          readings.push({
+            readingId: reading.id,
+            readingTitle: reading.title,
+            scores: score.data,
+          });
+        }
+      }
+      scores.push({
+        courseId: course.course.id,
+        courseName: course.course.name,
+        readings,
       });
     }
 

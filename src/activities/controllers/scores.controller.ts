@@ -80,4 +80,11 @@ export class ScoresController {
   async getScoresByReading(@Param('readingId') readingId: string) {
     return this.scoresService.getScoreByReading(readingId);
   }
+
+  @Get('my-scores')
+  @ApiOperation({ summary: 'Obtener todas las calificaciones del estudiante' })
+  @Role(RoleEnum.STUDENT)
+  async getMyScores(@CurrentUser() { id }: InfoUserInterface) {
+    return this.scoresService.getScoreByCourses(id);
+  }
 }
