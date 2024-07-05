@@ -17,7 +17,12 @@ import { Role } from '@/security/jwt-strategy/roles.decorator';
 import { CurrentUser } from '@/security/jwt-strategy/auth.decorator';
 import { InfoUserInterface } from '@/security/jwt-strategy/info-user.interface';
 import { CreateStudentDto, UpdateStudentDto } from '../dtos/students.dto';
-import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ResponseHttpInterceptor } from '@/shared/interceptors/response-http.interceptor';
 import { OptionalBooleanPipe } from '@/shared/pipes/optional-boolean.pipe';
 

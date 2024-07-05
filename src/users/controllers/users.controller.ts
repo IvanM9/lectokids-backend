@@ -1,4 +1,11 @@
-import { Body, Controller, Get, Post, UseGuards, UseInterceptors } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { UsersService } from '@/users/services/users.service';
 import { RoleGuard } from '@/security/jwt-strategy/roles.guard';
@@ -24,7 +31,7 @@ export class UsersController {
 
   @Post('teachers')
   @Role(RoleEnum.ADMIN)
-  async createTeacher(@Body() data: CreateUserDto){
+  async createTeacher(@Body() data: CreateUserDto) {
     data.isPending = false;
     return { data: await this.service.createTeacher(data) };
   }

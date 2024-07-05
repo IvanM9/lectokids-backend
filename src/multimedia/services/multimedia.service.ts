@@ -74,29 +74,46 @@ export class MultimediaService {
     return { message: 'Multimedia creado con éxito', data: uploaded };
   }
 
-  async createMultimediaFromBase64(base64: string, extraData?: any) {
-    const buffer = Buffer.from(base64, 'base64');
-    const fileName = `image_generate_${Date.now()}.webp`;
-    fs.writeFileSync(`${ENVIRONMENT.PUBLIC_DIR}/${fileName}`, buffer);
+  async createMultimediaFromBuffer(
+    buffer: Buffer,
+    extraData: { fileName: string; type: TypeMultimedia; description?: string },
+  ) {
+    fs.writeFileSync(`${ENVIRONMENT.PUBLIC_DIR}/${extraData.fileName}`, buffer);
+
+    let mimetype = '';
+
+    switch (extraData.type) {
+      case TypeMultimedia.IMAGE:
+        mimetype = 'image/webp';
+        break;
+      case TypeMultimedia.VIDEO:
+        mimetype = 'video/mp4';
+        break;
+      case TypeMultimedia.AUDIO:
+        mimetype = 'audio/mp3';
+        break;
+      default:
+        mimetype = 'application/octet-stream';
+    }
 
     return await this.createMultimedia(
       [
         {
           buffer,
-          originalname: fileName,
-          mimetype: 'image/webp',
+          originalname: extraData.fileName,
+          mimetype,
           fieldname: 'files',
           encoding: '7bit',
           size: 0,
           stream: new Readable(),
           destination: ENVIRONMENT.PUBLIC_DIR,
-          filename: fileName,
-          path: `${ENVIRONMENT.PUBLIC_DIR}/${fileName}`,
+          filename: extraData.fileName,
+          path: `${ENVIRONMENT.PUBLIC_DIR}/${extraData.fileName}`,
         },
       ],
       {
-        type: extraData?.type ?? TypeMultimedia.IMAGE,
-        description: extraData?.description,
+        type: extraData.type ?? TypeMultimedia.IMAGE,
+        description: extraData.description,
       },
     );
   }

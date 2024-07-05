@@ -31,6 +31,7 @@ import { TypeActivity, TypeMultimedia } from '@prisma/client';
 import OpenAI from 'openai';
 import { generatePromptForFrontPage } from '@/ai/prompts/images-prompts';
 import { MultimediaService } from '@/multimedia/services/multimedia.service';
+import fs from 'fs';
 
 @Injectable()
 export class AiService {
@@ -43,7 +44,7 @@ export class AiService {
   // genAI = new GoogleGenerativeAI(ENVIRONMENT.API_KEY_AI);
 
   // model = this.genAI.getGenerativeModel({
-    // model: 'gemini-pro',
+  // model: 'gemini-pro',
   //   model: 'gemini-1.5-flash',
   // });
 
@@ -128,10 +129,14 @@ export class AiService {
     let imageId = '';
     if (base64) {
       imageId = (
-        await this.multimedia.createMultimediaFromBase64(imageGenerated, {
-          type: TypeMultimedia.IMAGE,
-          description: 'Imagen generada por IA',
-        })
+        await this.multimedia.createMultimediaFromBuffer(
+          Buffer.from(imageGenerated, 'base64'),
+          {
+            type: TypeMultimedia.IMAGE,
+            description: 'Imagen generada por IA',
+            fileName: `image_generated_${Date.now()}.webp`,
+          },
+        )
       ).data[0].id;
     } else
       imageId = (
@@ -152,7 +157,15 @@ export class AiService {
       input: text,
     });
 
-    return Buffer.from(await response.arrayBuffer());
+    const audioId = await this.multimedia.createMultimediaFromBuffer(
+      Buffer.from(await response.arrayBuffer()),
+      {
+        type: TypeMultimedia.AUDIO,
+        description: 'Audio generado por IA',
+        fileName: `audio_generated_${Date.now()}.mp3`,
+      },
+    );
+    return audioId.data[0].id;
   }
 
   async generateReadingService(params: GenerateReadingDto) {

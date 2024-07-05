@@ -7,12 +7,14 @@ import {
 } from '@nestjs/common';
 import { TypeContent } from '@prisma/client';
 import { CreateTimeSpendDto } from '../dtos/readings.dto';
+import { MultimediaService } from '@/multimedia/services/multimedia.service';
 
 @Injectable()
 export class DetailsReadingsService {
   constructor(
     private db: PrismaService,
     private ai: AiService,
+    private multimediaService: MultimediaService,
   ) {}
 
   async getInfo(detailReadingId: string) {
@@ -167,5 +169,59 @@ export class DetailsReadingsService {
       });
 
     return { message: 'Tiempo de lectura registrado con éxito' };
+  }
+
+  async getAudio(detailReadingId: string) {
+    const detailReading = await this.db.detailReading
+      .findUniqueOrThrow({
+        where: {
+          id: detailReadingId,
+        },
+        select: {
+          audio: {
+            select: {
+              id: true,
+            },
+          },
+          contentsLecture: {
+            select: {
+              content: true,
+            },
+            where: {
+              type: TypeContent.TEXT,
+            },
+          },
+        },
+      })
+      .catch(() => {
+        throw new NotFoundException('Detalle de lectura no encontrado');
+      });
+
+    let audioId = null;
+    if (!detailReading.audio) {
+      const textReading = detailReading.contentsLecture
+        .map((content) => content.content)
+        .join('\n');
+      audioId = await this.ai.generateSpeechService(textReading);
+
+      await this.db.detailReading.update({
+        where: {
+          id: detailReadingId,
+        },
+        data: {
+          audio: {
+            connect: {
+              id: audioId,
+            }
+          },
+        },
+      }).catch(() => {
+        throw new BadRequestException('No se pudo guardar el audio');
+      });
+    } else {
+      audioId = detailReading.audio.id;
+    }
+
+    return await this.multimediaService.downloadMultimedia(audioId);
   }
 }

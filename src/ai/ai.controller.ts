@@ -29,21 +29,4 @@ export class AiController {
   async generateImage(@Body() { text }: GenerateContentDto) {
     return this.service.generateFrontPage(text);
   }
-
-  @Post('generate-speach')
-  @Role(RoleEnum.STUDENT)
-  async generateSpeach(
-    @Body() { text }: GenerateContentDto,
-    @Res() res: Response,
-  ) {
-    const arrayBuffer = await this.service.generateSpeechService(text);
-
-    res.set({
-      'Content-Type': 'audio/mp3',
-      'Content-Disposition': `attachment; filename=audio.mp3`,
-      responseType: 'blob',
-    });
-
-    res.send(arrayBuffer);
-  }
 }
