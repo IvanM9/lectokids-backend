@@ -8,6 +8,7 @@ import { AiModule } from '@/ai/ai.module';
 import { ActivitiesModule } from '@/activities/activities.module';
 import { DetailsReadingsService } from './services/details-readings.service';
 import { DetailsReadingsController } from './controllers/details-readings.controller';
+import { MultimediaModule } from '@/multimedia/multimedia.module';
 
 @Module({
   controllers: [
@@ -22,6 +23,6 @@ import { DetailsReadingsController } from './controllers/details-readings.contro
     Logger,
     DetailsReadingsService,
   ],
-  imports: [AiModule, ActivitiesModule],
+  imports: [AiModule, ActivitiesModule, MultimediaModule],
 })
 export class ReadingsModule {}

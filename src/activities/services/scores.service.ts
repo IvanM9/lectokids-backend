@@ -13,6 +13,9 @@ import {
 import { ScoreQuestionActivityInterface } from '../interfaces/score.interface';
 import { AiService } from '@/ai/services/ai/ai.service';
 import { TypeContent } from '@prisma/client';
+import { renderFile } from 'ejs';
+import { ENVIRONMENT } from '@/shared/constants/environment';
+import puppeteer from 'puppeteer';
 
 @Injectable()
 export class ScoresService {
@@ -355,7 +358,7 @@ export class ScoresService {
   }
 
   async getScoreByReading(readingId: string) {
-    const studenntsOnReadings = await this.db.studentsOnReadings.findMany({
+    const studentsOnReadings = await this.db.studentsOnReadings.findMany({
       where: {
         detailReading: {
           readingId,
@@ -382,8 +385,14 @@ export class ScoresService {
       },
     });
 
-    const scores = [];
-    for (const student of studenntsOnReadings) {
+    const scores: {
+      studentId: string;
+      studentName: string;
+      scores: any[];
+      detailReadingId: string;
+    }[] = [];
+
+    for (const student of studentsOnReadings) {
       const scoreByStudent = await this.getScoreByDetailReading(
         student.detailReadingId,
         student.courseStudent.student.user.id,
@@ -393,6 +402,7 @@ export class ScoresService {
         studentId: student.courseStudent.student.id,
         studentName: `${student.courseStudent.student.user.firstName} ${student.courseStudent.student.user.lastName}`,
         scores: scoreByStudent.data,
+        detailReadingId: student.detailReadingId,
       });
     }
 
@@ -483,5 +493,148 @@ export class ScoresService {
     return {
       data: scores,
     };
+  }
+
+  async getAllScoreByCourse(userId: string, courseId: string) {
+    const course = await this.db.course
+      .findUniqueOrThrow({
+        where: {
+          id: courseId,
+          teacher: {
+            userId,
+          },
+        },
+        select: {
+          id: true,
+          name: true,
+          levels: {
+            select: {
+              id: true,
+              readings: {
+                select: {
+                  id: true,
+                  title: true,
+                  detailReadings: {
+                    where: {
+                      status: true,
+                    },
+                    select: {
+                      id: true,
+                    },
+                  },
+                },
+                where: {
+                  status: true,
+                },
+              },
+              name: true,
+            },
+            where: {
+              status: true,
+              readings: {
+                some: {
+                  detailReadings: {
+                    some: {
+                      status: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      })
+      .catch(() => {
+        throw new NotFoundException('Curso no encontrado');
+      });
+
+    const levels = [];
+    for (const levelItem of course.levels) {
+      const readings = [];
+      for (const reading of levelItem.readings) {
+        const score = (await this.getScoreByReading(reading.id)).data;
+
+        const scores = [];
+
+        for (const item of score) {
+          const readingTimeSpends = await this.db.timeSpend.findMany({
+            where: {
+              detailReadingId: item.detailReadingId,
+              courseStudent: {
+                studentId: item.studentId,
+              },
+            },
+            select: {
+              startTime: true,
+              endTime: true,
+              createdAt: true,
+            },
+          });
+
+          scores.push({
+            studentId: item.studentId,
+            studentName: item.studentName,
+            scores: item.scores,
+            detailReadingId: item.detailReadingId,
+            readingTimeSpends: readingTimeSpends.map((time) => ({
+              createdAt: time.createdAt,
+              timeSpend:
+                (
+                  (time.endTime.getTime() - time.startTime.getTime()) /
+                  1000 /
+                  60
+                ).toFixed(2) + ' minutos',
+            })),
+          });
+        }
+
+        readings.push({
+          readingId: reading.id,
+          readingTitle: reading.title,
+          scores,
+        });
+      }
+
+      levels.push({
+        levelId: levelItem.id,
+        levelName: levelItem.name,
+        readings,
+      });
+    }
+
+    return {
+      data: levels,
+    };
+  }
+
+  async getPDFScoreByCourse(userId: string, courseId: string) {
+    const data = (await this.getAllScoreByCourse(userId, courseId)).data;
+
+    return new Promise<Buffer>((resolve, reject) => {
+      renderFile(
+        ENVIRONMENT.VIEWS_DIR + '/report-by-course.ejs',
+        { course: data },
+        async (err, html) => {
+          if (err) {
+            reject(err);
+            return;
+          }
+
+          const browser = await puppeteer.launch({
+            args: ['--no-sandbox', '--disable-setuid-sandbox'],
+          });
+
+          const page = await browser.newPage();
+          console.log(html);
+          await page.setContent(html);
+
+          const buffer = await page.pdf({ format: 'A4' });
+
+          await browser.close();
+
+          resolve(buffer);
+        },
+      );
+    });
   }
 }

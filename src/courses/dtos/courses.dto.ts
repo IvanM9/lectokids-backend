@@ -8,11 +8,6 @@ export class CreateCoursesDto {
   name: string;
 
   @ApiProperty()
-  @IsOptional()
-  @IsBoolean()
-  status?: boolean;
-
-  @ApiProperty()
   @IsString()
   @IsOptional()
   description?: string;

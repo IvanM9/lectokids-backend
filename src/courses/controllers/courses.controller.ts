@@ -66,7 +66,12 @@ export class CoursesController {
 
   @Get('student')
   @Role(RoleEnum.STUDENT)
-  async getAllCoursesStudent(@CurrentUser() { id, role }: InfoUserInterface) {
+  async getAllCoursesStudent(@CurrentUser() { id }: InfoUserInterface) {
     return { data: await this.service.getAllCoursesStudent(id) };
+  }
+
+  @Get('info/:courseId')
+  async getCourseInfo(@Param('courseId') courseId: string) {
+    return { data: await this.service.getCourseById(courseId) };
   }
 }

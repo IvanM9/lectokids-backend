@@ -141,9 +141,11 @@ model DetailReading {
   id          String      @id @default(cuid())
   reading     Reading     @relation(fields: [readingId], references: [id])
   readingId   String      @map("reading_id")
-  frontPage   Multimedia? @relation(fields: [frontPageId], references: [id])
+  frontPage   Multimedia? @relation("FrontPageRelation", fields: [frontPageId], references: [id])
   frontPageId String?     @map("front_page_id")
   status      Boolean     @default(true)
+  audio       Multimedia? @relation("AudioRelation", fields: [audioId], references: [id])
+  audioId     String?     @map("audio_id") @unique
 
   contentsLecture    ContentLecture[]
   studentsOnReadings StudentsOnReadings[]
@@ -265,7 +267,11 @@ model Multimedia {
   createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt   DateTime?      @updatedAt @map("updated_at") @db.Timestamptz()
 
-  frontPages      DetailReading[]
+  detailReadingFrontPage DetailReading[]  @relation("FrontPageRelation")
+
+  detailReadingAudio     DetailReading?  @relation("AudioRelation")
+  detailReadingAudioId   String?         @map("detail_reading_audio_id") @unique
+
   contentsLecture ContentLecture[]
 
   @@map("multimedia")

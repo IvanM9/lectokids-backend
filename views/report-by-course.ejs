@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte de Lecturas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        @page {
+            size: A4;
+            margin: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .page-break {
+            page-break-after: always;
+        }
+    </style>
+</head>
+
+<body class="bg-white text-gray-800">
+    <% course.forEach(function(level) { %>
+        <div class="p-8 max-w-[21cm] mx-auto">
+            <h1 class="text-3xl font-bold mb-6 text-center">
+                <%= level.levelName %>
+            </h1>
+
+            <% level.readings.forEach(function(reading, readingIndex) { %>
+                <div class="mb-8 <%= readingIndex > 0 ? 'page-break mt-10' : '' %>">
+                    <h2 class="text-2xl font-semibold mb-4">
+                        <%= reading.readingTitle %>
+                    </h2>
+
+                    <% reading.scores.forEach(function(student) { %>
+                        <div class="mb-6 border-b pb-4">
+                            <h3 class="text-xl font-medium mb-2">
+                                <%= student.studentName %>
+                            </h3>
+
+                            <h4 class="text-lg font-medium mb-2">Puntajes:</h4>
+                            <table class="w-full mb-4">
+                                <thead>
+                                    <tr class="bg-gray-100">
+                                        <th class="p-2 text-left">Tipo de actividad</th>
+                                        <th class="p-2 text-left">Puntaje</th>
+                                        <th class="p-2 text-left">Intentos</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% student.scores.forEach(function(score) { %>
+                                        <tr class="border-b">
+                                            <td class="p-2">
+                                                <%= function() {
+                                                    switch (score.typeActivity) {
+                                                        case 'YES_NO':
+                                                        return 'Verdadero o Falso'
+                                                        case 'OPEN_ANSWERS':
+                                                        return 'Respuesta Abierta'
+                                                        case 'QUIZ':
+                                                        return 'Quiz'
+                                                        case 'CROSSWORD':
+                                                        return 'Crucigrama'
+                                                        case 'ALPHABET_SOUP':
+                                                        return 'Sopa de Letras'
+                                                        case 'OPEN_TEXT':
+                                                        return 'Texto Abierto'
+                                                        default:
+                                                        return 'Desconocido'
+                                                    }
+                                                }() %>
+                                                %>
+                                            </td>
+                                            <td class="p-2">
+                                                <%= score.score %>
+                                            </td>
+                                            <td class="p-2">
+                                                <%= score.count %>
+                                            </td>
+                                        </tr>
+                                        <% }); %>
+                                </tbody>
+                            </table>
+
+                            <h4 class="text-lg font-medium mb-2">Tiempo de lectura:</h4>
+                            <% if (student.readingTimeSpends.length> 0) { %>
+                                <table class="w-full">
+                                    <thead>
+                                        <tr class="bg-gray-100">
+                                            <th class="p-2 text-left">Fecha</th>
+                                            <th class="p-2 text-left">Tiempo</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% student.readingTimeSpends.forEach(function(timeSpend) { %>
+                                            <tr class="border-b">
+                                                <td class="p-2">
+                                                    <%= function() {
+                                                        const date = new Date(timeSpend.createdAt)
+                                                        return date.toLocaleDateString('es-ES', {
+                                                            year: 'numeric',
+                                                            month: 'long',
+                                                            day: 'numeric'
+                                                        })
+                                                    }() %>
+                                                </td>
+                                                <td class="p-2">
+                                                    <%= timeSpend.timeSpend %>
+                                                </td>
+                                            </tr>
+                                            <% }); %>
+                                    </tbody>
+                                </table>
+                                <% } else { %>
+                                    <p>No hay registros de tiempo de lectura.</p>
+                                    <% } %>
+                        </div>
+                        <% }); %>
+                </div>
+                <% }); %>
+        </div>
+        <% }); %>
+</body>
+
+</html>

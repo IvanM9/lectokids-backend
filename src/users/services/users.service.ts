@@ -56,36 +56,42 @@ export class UsersService {
   }
 
   async createTeacher(data: CreateUserDto) {
-    await this.db.teacher.findFirst({
-      where: {
-        user: {
-          identification: data.identification,
-        },
-      },
-    }).then((teacher) => {
-      if (teacher) {
-        throw new BadRequestException('Ya existe un profesor con esa identificación');
-      }
-    });
-
-    return await this.db.teacher.create({
-      data: {
-        user: {
-          create: {
-            password: hashSync(data.identification, 10),
-            role: Role.TEACHER,
+    await this.db.teacher
+      .findFirst({
+        where: {
+          user: {
             identification: data.identification,
-            firstName: data.firstName,
-            lastName: data.lastName,
-            birthDate: data.birthDate,
-            genre: data.genre,
-            user: data.identification,
           },
         },
-        isPending: true,
-      },
-    }).catch(() => {
-      throw new BadRequestException('No se pudo crear el profesor');
-    });
+      })
+      .then((teacher) => {
+        if (teacher) {
+          throw new BadRequestException(
+            'Ya existe un profesor con esa identificación',
+          );
+        }
+      });
+
+    return await this.db.teacher
+      .create({
+        data: {
+          user: {
+            create: {
+              password: hashSync(data.identification, 10),
+              role: Role.TEACHER,
+              identification: data.identification,
+              firstName: data.firstName,
+              lastName: data.lastName,
+              birthDate: data.birthDate,
+              genre: data.genre,
+              user: data.identification,
+            },
+          },
+          isPending: true,
+        },
+      })
+      .catch(() => {
+        throw new BadRequestException('No se pudo crear el profesor');
+      });
   }
 }
