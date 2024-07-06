@@ -39,9 +39,3 @@ export class CreateUserDto extends PickType(CreateStudentDto, [
   @IsOptional()
   user?: string;
 }
-
-export class UserIdDto {
-  @ApiProperty()
-  @IsString()
-  id: string;
-}

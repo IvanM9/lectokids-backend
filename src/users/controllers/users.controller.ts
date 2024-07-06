@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Param,
   Patch,
   Post,
   Query,
@@ -15,7 +16,7 @@ import { JwtAuthGuard } from '@/security/jwt-strategy/jwt-auth.guard';
 import { Role } from '@/security/jwt-strategy/roles.decorator';
 import { RoleEnum } from '@/security/jwt-strategy/role.enum';
 import { ResponseHttpInterceptor } from '@/shared/interceptors/response-http.interceptor';
-import { CreateUserDto, UserIdDto } from '../dtos/users.dto';
+import { CreateUserDto } from '../dtos/users.dto';
 import { OptionalBooleanPipe } from '@/shared/pipes/optional-boolean.pipe';
 
 @Controller('users')
@@ -53,13 +54,20 @@ export class UsersController {
     return { data: await this.service.createTeacher(data) };
   }
 
-  @Patch('activate')
+  @Patch('activate/:id')
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Role(RoleEnum.ADMIN)
-  async activateTeacher(@Body() { id }: UserIdDto) {
+  async activateTeacher(@Param('id') id: string) {
     return {
       data: await this.service.activateTeacher(id),
       message: 'Profesor activado',
     };
+  }
+
+  @Patch('status/:id')
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Role(RoleEnum.ADMIN)
+  async changeStatusTeacher(@Param('id') id: string) {
+    return await this.service.updateStatusTeacher(id);
   }
 }

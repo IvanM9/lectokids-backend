@@ -80,7 +80,7 @@ export class AuthService {
       });
 
     if (isPending)
-      throw new UnauthorizedException('El usuario no está habilitado');
+      throw new BadRequestException('El usuario no está habilitado');
   }
 
   private async validateStudent(id: string) {

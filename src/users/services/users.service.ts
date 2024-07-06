@@ -1,5 +1,10 @@
 import { PrismaService } from '@/prisma.service';
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { Role } from '@prisma/client';
 import { hashSync } from 'bcrypt';
 import { CreateUserDto } from '../dtos/users.dto';
@@ -44,7 +49,9 @@ export class UsersService {
             firstName: true,
             lastName: true,
             status: true,
-            role: true,
+            genre: true,
+            birthDate: true,
+            identification: true,
           },
         },
         createdAt: true,
@@ -58,6 +65,7 @@ export class UsersService {
             { lastName: { contains: search, mode: 'insensitive' } },
           ],
           status,
+          role: Role.TEACHER,
         },
       },
       skip: page ? (page - 1) * 10 : 0,
@@ -77,6 +85,7 @@ export class UsersService {
             { lastName: { contains: search, mode: 'insensitive' } },
           ],
           status,
+          role: Role.TEACHER,
         },
       },
     });
@@ -142,5 +151,45 @@ export class UsersService {
         this.logger.error(err.message, err.stack, UsersService.name);
         throw new BadRequestException('No se pudo aceptar al profesor');
       });
+  }
+
+  async updateStatusTeacher(id: string) {
+    const teacher = await this.db.teacher
+      .findUniqueOrThrow({
+        where: {
+          id,
+        },
+        select: {
+          user: {
+            select: {
+              status: true,
+            },
+          },
+        },
+      })
+      .catch((err) => {
+        this.logger.error(err.message, err.stack, UsersService.name);
+        throw new NotFoundException('No se pudo encontrar el profesor');
+      });
+
+    await this.db.teacher
+      .update({
+        where: {
+          id,
+        },
+        data: {
+          user: {
+            update: {
+              status: !teacher.user.status,
+            },
+          },
+        },
+      })
+      .catch((err) => {
+        this.logger.error(err.message, err.stack, UsersService.name);
+        throw new BadRequestException('No se pudo actualizar el profesor');
+      });
+
+    return 'Profesor actualizado correctamente';
   }
 }
