@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rendimiento del Estudiante</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @page {
+            size: A4;
+            margin: 0;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            width: 210mm;
+            height: 297mm;
+        }
+        .page-break {
+            page-break-after: always;
+        }
+        @media print {
+            .print-columns {
+                column-count: 2;
+                column-gap: 2rem;
+            }
+        }
+    </style>
+</head>
+<body class="bg-white text-gray-800 p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-6 text-center">Rendimiento del Estudiante</h1>
+
+        <% data.forEach((level, levelIndex) => { %>
+            <div class="mb-8">
+                <h2 class="text-2xl font-semibold mb-4 text-gray-700"><%= level.levelName %></h2>
+
+                <div class="print-columns">
+                    <% level.readings.forEach((reading, readingIndex) => { %>
+                        <div class="bg-white shadow-md rounded-lg p-4 mb-6 break-inside-avoid">
+                            <h3 class="text-xl font-medium mb-4"><%= reading.readingTitle %></h3>
+
+                            <% reading.scores.forEach((studentScore) => { %>
+                                <div class="mb-4">
+                                    <h4 class="text-lg font-medium mb-2"><%= studentScore.studentName %></h4>
+
+                                    <div class="grid grid-cols-3 gap-2 mb-2">
+                                        <div class="bg-blue-50 p-2 rounded-md">
+                                            <p class="text-xs font-medium text-gray-500">Promedio</p>
+                                            <p class="text-lg font-bold text-blue-600">
+                                                <%= (studentScore.scores.filter(s => s.count > 0).reduce((acc, s) => acc + parseFloat(s.score), 0) / studentScore.scores.filter(s => s.count > 0).length || 0).toFixed(2) %>
+                                            </p>
+                                        </div>
+                                        <div class="bg-green-50 p-2 rounded-md">
+                                            <p class="text-xs font-medium text-gray-500">Tiempo Total</p>
+                                            <p class="text-lg font-bold text-green-600">
+                                                <%= studentScore.readingTimeSpends.reduce((acc, t) => acc + parseFloat(t.timeSpend.split(' ')[0]), 0).toFixed(2) %> min
+                                            </p>
+                                        </div>
+                                        <div class="bg-purple-50 p-2 rounded-md">
+                                            <p class="text-xs font-medium text-gray-500">Actividades</p>
+                                            <p class="text-lg font-bold text-purple-600">
+                                                <%= studentScore.scores.filter(s => s.count > 0).length %>
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-2">
+                                        <h5 class="text-sm font-medium mb-1 text-gray-600">Detalle de Actividades</h5>
+                                        <table class="w-full text-xs">
+                                            <thead class="bg-gray-100">
+                                                <tr>
+                                                    <th class="py-1 px-2 text-left">Tipo</th>
+                                                    <th class="py-1 px-2 text-left">Puntaje</th>
+                                                    <th class="py-1 px-2 text-left">Intentos</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <% studentScore.scores.forEach((score) => { %>
+                                                    <tr class="border-b">
+                                                        <td class="py-1 px-2">
+                                                            <%= function() {
+                                                                switch (score.typeActivity) {
+                                                                    case 'YES_NO':
+                                                                    return 'Verdadero o Falso'
+                                                                    case 'OPEN_ANSWERS':
+                                                                    return 'Respuesta Abierta'
+                                                                    case 'QUIZ':
+                                                                    return 'Quiz'
+                                                                    case 'CROSSWORD':
+                                                                    return 'Crucigrama'
+                                                                    case 'ALPHABET_SOUP':
+                                                                    return 'Sopa de Letras'
+                                                                    case 'OPEN_TEXT':
+                                                                    return 'Texto Abierto'
+                                                                    default:
+                                                                    return 'Desconocido'
+                                                                }
+                                                            }() %>
+
+                                                        </td>
+                                                        <td class="py-1 px-2"><%= score.score %></td>
+                                                        <td class="py-1 px-2"><%= score.count %></td>
+                                                    </tr>
+                                                <% }) %>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            <% }) %>
+                        </div>
+                        <% if ((readingIndex + 1) % 2 === 0 && readingIndex !== level.readings.length - 1) { %>
+                            <div class="page-break"></div>
+                        <% } %>
+                    <% }) %>
+                </div>
+            </div>
+            <% if (levelIndex !== data.length - 1) { %>
+                <div class="page-break"></div>
+            <% } %>
+        <% }) %>
+    </div>
+</body>
+</html>

@@ -125,4 +125,41 @@ export class ScoresController {
     res.setHeader('Content-Disposition', 'attachment; filename=report.pdf');
     res.send(pdfBuffer);
   }
+
+  @Get('by-student/:studentId/:courseId')
+  @ApiOperation({ summary: 'Obtener todas las calificaciones por estudiante' })
+  @Role(RoleEnum.TEACHER)
+  @UseInterceptors(ResponseHttpInterceptor)
+  async getScoresByStudent(
+    @Param('studentId') studentId: string,
+    @Param('courseId') courseId: string,
+    @CurrentUser() { id }: InfoUserInterface,
+  ) {
+    return this.scoresService.getScoreByStudent(id, studentId, courseId);
+  }
+
+  @Get('by-student/:studentId/:courseId/pdf')
+  @ApiOperation({
+    summary: 'Obtener el PDF de todas las calificaciones por estudiante',
+  })
+  @Role(RoleEnum.TEACHER)
+  async getPDFScoresByStudent(
+    @Param('studentId') studentId: string,
+    @Param('courseId') courseId: string,
+    @CurrentUser() { id }: InfoUserInterface,
+    @Res() res: Response,
+  ) {
+    const pdfBuffer = await this.scoresService.getPDFScoreByStudent(
+      id,
+      studentId,
+      courseId,
+    );
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader(
+      'Content-Disposition',
+      'attachment; filename=report-student.pdf',
+    );
+    res.send(pdfBuffer);
+  }
 }

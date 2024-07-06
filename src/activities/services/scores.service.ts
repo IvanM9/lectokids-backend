@@ -627,6 +627,163 @@ export class ScoresService {
           const page = await browser.newPage();
           await page.setContent(html);
 
+          const buffer = await page.pdf({ 
+            format: 'A4' ,
+            margin: {
+              top: '20px',
+              bottom: '20px',
+              left: '20px',
+              right: '20px'
+            },
+          });
+
+          await browser.close();
+
+          resolve(buffer);
+        },
+      );
+    });
+  }
+
+  async getScoreByStudent(userId: string, studentId: string, courseId: string) {
+    const course = await this.db.course
+      .findUniqueOrThrow({
+        where: {
+          id: courseId,
+          teacher: {
+            userId,
+          },
+        },
+        select: {
+          id: true,
+          name: true,
+          levels: {
+            select: {
+              id: true,
+              readings: {
+                select: {
+                  id: true,
+                  title: true,
+                  detailReadings: {
+                    where: {
+                      status: true,
+                    },
+                    select: {
+                      id: true,
+                    },
+                  },
+                },
+                where: {
+                  status: true,
+                },
+              },
+              name: true,
+            },
+            where: {
+              status: true,
+              readings: {
+                some: {
+                  detailReadings: {
+                    some: {
+                      status: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      })
+      .catch(() => {
+        throw new NotFoundException('Curso no encontrado');
+      });
+
+    const levels = [];
+    for (const levelItem of course.levels) {
+      const readings = [];
+      for (const reading of levelItem.readings) {
+        const score = (await this.getScoreByReading(reading.id)).data;
+
+        const scores = [];
+
+        for (const item of score) {
+          if (item.studentId !== studentId) continue;
+
+          const readingTimeSpends = await this.db.timeSpend.findMany({
+            where: {
+              detailReadingId: item.detailReadingId,
+              courseStudent: {
+                studentId: item.studentId,
+              },
+            },
+            select: {
+              startTime: true,
+              endTime: true,
+              createdAt: true,
+            },
+          });
+
+          scores.push({
+            studentId: item.studentId,
+            studentName: item.studentName,
+            scores: item.scores,
+            detailReadingId: item.detailReadingId,
+            readingTimeSpends: readingTimeSpends.map((time) => ({
+              createdAt: time.createdAt,
+              timeSpend:
+                (
+                  (time.endTime.getTime() - time.startTime.getTime()) /
+                  1000 /
+                  60
+                ).toFixed(2) + ' minutos',
+            })),
+          });
+        }
+
+        readings.push({
+          readingId: reading.id,
+          readingTitle: reading.title,
+          scores,
+        });
+      }
+
+      levels.push({
+        levelId: levelItem.id,
+        levelName: levelItem.name,
+        readings,
+      });
+    }
+
+    return {
+      data: levels,
+    };
+  }
+
+  async getPDFScoreByStudent(
+    userId: string,
+    studentId: string,
+    courseId: string,
+  ) {
+    const data = (await this.getScoreByStudent(userId, studentId, courseId))
+      .data;
+
+    return new Promise<Buffer>((resolve, reject) => {
+      renderFile(
+        ENVIRONMENT.VIEWS_DIR + '/report-by-student.ejs',
+        { data },
+        async (err, html) => {
+          if (err) {
+            reject(err);
+            return;
+          }
+
+          const browser = await puppeteer.launch({
+            args: ['--no-sandbox', '--disable-setuid-sandbox'],
+          });
+
+          const page = await browser.newPage();
+          await page.setContent(html);
+
           const buffer = await page.pdf({ format: 'A4' });
 
           await browser.close();
