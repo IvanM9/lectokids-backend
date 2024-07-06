@@ -625,7 +625,6 @@ export class ScoresService {
           });
 
           const page = await browser.newPage();
-          console.log(html);
           await page.setContent(html);
 
           const buffer = await page.pdf({ format: 'A4' });
