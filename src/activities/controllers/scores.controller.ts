@@ -5,6 +5,7 @@ import {
   Param,
   Post,
   Query,
+  Res,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -26,17 +27,18 @@ import { Role } from '@/security/jwt-strategy/roles.decorator';
 import { RoleEnum } from '@/security/jwt-strategy/role.enum';
 import { CurrentUser } from '@/security/jwt-strategy/auth.decorator';
 import { InfoUserInterface } from '@/security/jwt-strategy/info-user.interface';
+import { Response } from 'express';
 
 @Controller('scores')
 @ApiTags('scores')
 @UseInterceptors(ResponseHttpInterceptor)
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RoleGuard)
-@Role(RoleEnum.TEACHER, RoleEnum.STUDENT)
 export class ScoresController {
   constructor(private readonly scoresService: ScoresService) {}
 
   @Get('by-activity/:activityId')
+  @Role(RoleEnum.TEACHER, RoleEnum.STUDENT)
   async getScoreByActivity(@Param('activityId') activityId: string) {
     return this.scoresService.getScoreByActivity(activityId);
   }
@@ -86,5 +88,35 @@ export class ScoresController {
   @Role(RoleEnum.STUDENT)
   async getMyScores(@CurrentUser() { id }: InfoUserInterface) {
     return this.scoresService.getScoreByCourses(id);
+  }
+
+  @Get('by-course/:courseId')
+  @ApiOperation({ summary: 'Obtener todas las calificaciones por curso' })
+  @Role(RoleEnum.TEACHER)
+  async getScoresByCourse(
+    @Param('courseId') courseId: string,
+    @CurrentUser() { id }: InfoUserInterface,
+  ) {
+    return this.scoresService.getAllScoreByCourse(id, courseId);
+  }
+
+  @Get('by-course/:courseId/pdf')
+  @ApiOperation({
+    summary: 'Obtener el PDF de todas las calificaciones por curso',
+  })
+  @Role(RoleEnum.TEACHER)
+  async getPDFScoresByCourse(
+    @Param('courseId') courseId: string,
+    @CurrentUser() { id }: InfoUserInterface,
+    @Res() res: Response,
+  ) {
+    const pdfBuffer = await this.scoresService.getPDFScoreByCourse(
+      id,
+      courseId,
+    );
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename=report.pdf');
+    res.send(pdfBuffer);
   }
 }

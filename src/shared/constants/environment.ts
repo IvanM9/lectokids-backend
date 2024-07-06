@@ -1,3 +1,4 @@
+import path from 'path';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require('dotenv').config();
 export const ENVIRONMENT = {
@@ -8,4 +9,6 @@ export const ENVIRONMENT = {
   API_KEY_AI: process.env.API_KEY_AI,
   MODEL_TEXT: process.env.MODEL_TEXT || 'gpt-3.5-turbo',
   MODEL_IMAGE: process.env.MODEL_IMAGE || 'dall-e-3',
+  VIEWS_DIR:
+    process.env.VIEWS_DIR || path.join(__dirname, '..', '..', '..', 'views'),
 };

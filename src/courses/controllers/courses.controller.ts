@@ -72,6 +72,6 @@ export class CoursesController {
 
   @Get('info/:courseId')
   async getCourseInfo(@Param('courseId') courseId: string) {
-    return {data: await this.service.getCourseById(courseId)};
+    return { data: await this.service.getCourseById(courseId) };
   }
 }

@@ -18,21 +18,28 @@ import { CreateUserDto } from '../dtos/users.dto';
 @Controller('users')
 @ApiTags('users')
 @UseInterceptors(ResponseHttpInterceptor)
-@UseGuards(JwtAuthGuard, RoleGuard)
 @ApiBearerAuth()
 export class UsersController {
   constructor(private service: UsersService) {}
 
   @Get('teachers')
+  @UseGuards(JwtAuthGuard, RoleGuard)
   @Role(RoleEnum.ADMIN)
   async getAllTeachers() {
     return { data: await this.service.getAllTeachers() };
   }
 
   @Post('teachers')
+  @UseGuards(JwtAuthGuard, RoleGuard)
   @Role(RoleEnum.ADMIN)
   async createTeacher(@Body() data: CreateUserDto) {
     data.isPending = false;
+    return { data: await this.service.createTeacher(data) };
+  }
+
+  @Post()
+  async createUser(@Body() data: CreateUserDto) {
+    data.isPending = true;
     return { data: await this.service.createTeacher(data) };
   }
 }

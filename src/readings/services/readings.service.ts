@@ -10,6 +10,7 @@ import { AiService } from '@/ai/services/ai/ai.service';
 import puppeteer from 'puppeteer';
 import { renderFile } from 'ejs';
 import path from 'path';
+import { ENVIRONMENT } from '@/shared/constants/environment';
 
 @Injectable()
 export class ReadingsService {
@@ -456,36 +457,31 @@ export class ReadingsService {
       goals: reading.goals,
     };
 
-    const dirTemplate = path.join(
-      __dirname,
-      '..',
-      '..',
-      '..',
-      'views',
-      'reading.ejs',
-    );
-
     return new Promise<Buffer>((resolve, reject) => {
-      renderFile(dirTemplate, data, async (err, html) => {
-        if (err) {
-          reject(err);
-          return;
-        }
+      renderFile(
+        ENVIRONMENT.VIEWS_DIR + '/reading.ejs',
+        data,
+        async (err, html) => {
+          if (err) {
+            reject(err);
+            return;
+          }
 
-        const browser = await puppeteer.launch({
-          args: ['--no-sandbox', '--disable-setuid-sandbox'],
-        });
+          const browser = await puppeteer.launch({
+            args: ['--no-sandbox', '--disable-setuid-sandbox'],
+          });
 
-        const page = await browser.newPage();
+          const page = await browser.newPage();
 
-        await page.setContent(html);
+          await page.setContent(html);
 
-        const buffer = await page.pdf({ format: 'A4' });
+          const buffer = await page.pdf({ format: 'A4' });
 
-        await browser.close();
+          await browser.close();
 
-        resolve(buffer);
-      });
+          resolve(buffer);
+        },
+      );
     });
   }
 }
