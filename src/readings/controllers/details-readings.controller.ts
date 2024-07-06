@@ -29,15 +29,15 @@ export class DetailsReadingsController {
   constructor(private service: DetailsReadingsService) {}
 
   @Get(':id')
-@UseInterceptors(ResponseHttpInterceptor)
-async getDetailReadingById(@Param('id') id: string) {
+  @UseInterceptors(ResponseHttpInterceptor)
+  async getDetailReadingById(@Param('id') id: string) {
     return await this.service.getInfo(id);
   }
 
   @Post('time-spend')
   @Role(RoleEnum.STUDENT)
-@UseInterceptors(ResponseHttpInterceptor)
-async createTimeSpend(
+  @UseInterceptors(ResponseHttpInterceptor)
+  async createTimeSpend(
     @Body() data: CreateTimeSpendDto,
     @CurrentUser() { id }: InfoUserInterface,
   ) {

@@ -204,20 +204,22 @@ export class DetailsReadingsService {
         .join('\n');
       audioId = await this.ai.generateSpeechService(textReading);
 
-      await this.db.detailReading.update({
-        where: {
-          id: detailReadingId,
-        },
-        data: {
-          audio: {
-            connect: {
-              id: audioId,
-            }
+      await this.db.detailReading
+        .update({
+          where: {
+            id: detailReadingId,
           },
-        },
-      }).catch(() => {
-        throw new BadRequestException('No se pudo guardar el audio');
-      });
+          data: {
+            audio: {
+              connect: {
+                id: audioId,
+              },
+            },
+          },
+        })
+        .catch(() => {
+          throw new BadRequestException('No se pudo guardar el audio');
+        });
     } else {
       audioId = detailReading.audio.id;
     }

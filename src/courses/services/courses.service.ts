@@ -204,4 +204,17 @@ export class CoursesService {
       },
     });
   }
+
+  async getCourseById(courseId: string) {
+    return await this.db.course.findUnique({
+      where: {
+        id: courseId,
+      },
+      select: {
+        name: true,
+        id: true,
+        description: true,
+      },
+    });
+  }
 }
