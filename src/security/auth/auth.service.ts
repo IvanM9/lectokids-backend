@@ -21,6 +21,13 @@ export class AuthService {
     const user = await this.db.user
       .findUniqueOrThrow({
         where: { user: payload.user },
+        select: {
+          id: true,
+          user: true,
+          password: true,
+          role: true,
+          status: true,
+        },
       })
       .catch(() => {
         throw new BadRequestException('Usuario no encontrado');
@@ -39,6 +46,8 @@ export class AuthService {
         break;
       case RoleEnum.STUDENT:
         await this.validateStudent(user.id);
+        break;
+      case RoleEnum.ADMIN:
         break;
       default:
         throw new UnauthorizedException('El usuario no tiene un rol válido');
@@ -71,7 +80,7 @@ export class AuthService {
       });
 
     if (isPending)
-      throw new UnauthorizedException('El usuario no está habilitado');
+      throw new BadRequestException('El usuario no está habilitado');
   }
 
   private async validateStudent(id: string) {

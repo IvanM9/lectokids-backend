@@ -31,7 +31,6 @@ import { Response } from 'express';
 
 @Controller('scores')
 @ApiTags('scores')
-@UseInterceptors(ResponseHttpInterceptor)
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RoleGuard)
 export class ScoresController {
@@ -39,6 +38,7 @@ export class ScoresController {
 
   @Get('by-activity/:activityId')
   @Role(RoleEnum.TEACHER, RoleEnum.STUDENT)
+  @UseInterceptors(ResponseHttpInterceptor)
   async getScoreByActivity(@Param('activityId') activityId: string) {
     return this.scoresService.getScoreByActivity(activityId);
   }
@@ -48,6 +48,7 @@ export class ScoresController {
     summary:
       'Generar y guardar la calificación de una activiadad de preguntas y respuestas',
   })
+  @UseInterceptors(ResponseHttpInterceptor)
   @Role(RoleEnum.STUDENT)
   async saveScore(
     @Body() payload: CreateResponseActivityDto,
@@ -59,6 +60,7 @@ export class ScoresController {
   @Post('save-score')
   @ApiOperation({ summary: 'Guardar la calificación de una actividad' })
   @Role(RoleEnum.STUDENT)
+  @UseInterceptors(ResponseHttpInterceptor)
   async saveScoreActivity(
     @Body() payload: CreateSaveScoreDto,
     @CurrentUser() { id }: InfoUserInterface,
@@ -69,6 +71,7 @@ export class ScoresController {
   @Get('by-detailReading/:detailReadingId')
   @ApiOperation({ summary: 'Obtener todas las calificaciones por actividad' })
   @Role(RoleEnum.STUDENT)
+  @UseInterceptors(ResponseHttpInterceptor)
   async getScoresByDetailReading(
     @Param('detailReadingId') detailReadingId: string,
     @CurrentUser() { id }: InfoUserInterface,
@@ -79,6 +82,7 @@ export class ScoresController {
   @Get('by-reading/:readingId')
   @ApiOperation({ summary: 'Obtener todas las calificaciones por lectura' })
   @Role(RoleEnum.TEACHER)
+  @UseInterceptors(ResponseHttpInterceptor)
   async getScoresByReading(@Param('readingId') readingId: string) {
     return this.scoresService.getScoreByReading(readingId);
   }
@@ -86,6 +90,7 @@ export class ScoresController {
   @Get('my-scores')
   @ApiOperation({ summary: 'Obtener todas las calificaciones del estudiante' })
   @Role(RoleEnum.STUDENT)
+  @UseInterceptors(ResponseHttpInterceptor)
   async getMyScores(@CurrentUser() { id }: InfoUserInterface) {
     return this.scoresService.getScoreByCourses(id);
   }
@@ -93,6 +98,7 @@ export class ScoresController {
   @Get('by-course/:courseId')
   @ApiOperation({ summary: 'Obtener todas las calificaciones por curso' })
   @Role(RoleEnum.TEACHER)
+  @UseInterceptors(ResponseHttpInterceptor)
   async getScoresByCourse(
     @Param('courseId') courseId: string,
     @CurrentUser() { id }: InfoUserInterface,
@@ -117,6 +123,43 @@ export class ScoresController {
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'attachment; filename=report.pdf');
+    res.send(pdfBuffer);
+  }
+
+  @Get('by-student/:studentId/:courseId')
+  @ApiOperation({ summary: 'Obtener todas las calificaciones por estudiante' })
+  @Role(RoleEnum.TEACHER)
+  @UseInterceptors(ResponseHttpInterceptor)
+  async getScoresByStudent(
+    @Param('studentId') studentId: string,
+    @Param('courseId') courseId: string,
+    @CurrentUser() { id }: InfoUserInterface,
+  ) {
+    return this.scoresService.getScoreByStudent(id, studentId, courseId);
+  }
+
+  @Get('by-student/:studentId/:courseId/pdf')
+  @ApiOperation({
+    summary: 'Obtener el PDF de todas las calificaciones por estudiante',
+  })
+  @Role(RoleEnum.TEACHER)
+  async getPDFScoresByStudent(
+    @Param('studentId') studentId: string,
+    @Param('courseId') courseId: string,
+    @CurrentUser() { id }: InfoUserInterface,
+    @Res() res: Response,
+  ) {
+    const pdfBuffer = await this.scoresService.getPDFScoreByStudent(
+      id,
+      studentId,
+      courseId,
+    );
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader(
+      'Content-Disposition',
+      'attachment; filename=report-student.pdf',
+    );
     res.send(pdfBuffer);
   }
 }

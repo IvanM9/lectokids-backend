@@ -11,4 +11,6 @@ export const ENVIRONMENT = {
   MODEL_IMAGE: process.env.MODEL_IMAGE || 'dall-e-3',
   VIEWS_DIR:
     process.env.VIEWS_DIR || path.join(__dirname, '..', '..', '..', 'views'),
+  ADMIN_USER: process.env.ADMIN_USER || 'admin',
+  ADMIN_PASSWORD: process.env.ADMIN_PASSWORD || 'admin',
 };

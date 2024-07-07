@@ -1,6 +1,11 @@
 import { ApiProperty, PickType } from '@nestjs/swagger';
 import { CreateStudentDto } from './students.dto';
-import { IsBoolean, IsOptional } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsStrongPassword,
+} from 'class-validator';
 
 export class CreateUserDto extends PickType(CreateStudentDto, [
   'identification',
@@ -9,8 +14,28 @@ export class CreateUserDto extends PickType(CreateStudentDto, [
   'birthDate',
   'genre',
 ]) {
-  @ApiProperty({ required: false })
-  @IsBoolean()
-  @IsOptional()
   isPending: boolean;
+
+  @ApiProperty({ required: false })
+  @IsStrongPassword(
+    {
+      minLength: 6,
+      minLowercase: 1,
+      minUppercase: 1,
+      minNumbers: 1,
+      minSymbols: 0,
+    },
+    {
+      message:
+        'La contraseña debe tener al menos 6 caracteres, 1 letra minúscula, 1 letra mayúscula y 1 número.',
+    },
+  )
+  @IsOptional()
+  password?: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  user?: string;
 }
