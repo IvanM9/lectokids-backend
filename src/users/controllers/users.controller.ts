@@ -18,6 +18,8 @@ import { RoleEnum } from '@/security/jwt-strategy/role.enum';
 import { ResponseHttpInterceptor } from '@/shared/interceptors/response-http.interceptor';
 import { CreateUserDto } from '../dtos/users.dto';
 import { OptionalBooleanPipe } from '@/shared/pipes/optional-boolean.pipe';
+import { CurrentUser } from '@/security/jwt-strategy/auth.decorator';
+import { InfoUserInterface } from '@/security/jwt-strategy/info-user.interface';
 
 @Controller('users')
 @ApiTags('users')
@@ -69,5 +71,12 @@ export class UsersController {
   @Role(RoleEnum.ADMIN)
   async changeStatusTeacher(@Param('id') id: string) {
     return await this.service.updateStatusTeacher(id);
+  }
+
+  @Get('information')
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Role(RoleEnum.TEACHER)
+  async getInformation(@CurrentUser() {id}: InfoUserInterface) {
+    return await this.service.generalInfo(id) ;
   }
 }

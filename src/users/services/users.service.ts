@@ -192,4 +192,43 @@ export class UsersService {
 
     return 'Profesor actualizado correctamente';
   }
+
+  async generalInfo(userId: string){
+    const courses = await this.db.course.findMany({
+      where: {
+        teacher: {
+          userId,
+        }
+      },
+      select: {
+        id: true,
+        name: true,
+        _count: {
+          select: {
+            courseStudents: true,
+            levels: true,
+          }
+        },
+        levels: {
+          select: {
+            id: true,
+            name: true,
+            _count: {
+              select: {
+                readings: true,
+              }
+            },
+            readings: {
+              select: {
+                id: true,
+                title: true,
+              }
+            }
+          }
+        }
+      },
+    });
+
+    return {data: courses};
+  }
 }
