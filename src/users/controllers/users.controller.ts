@@ -76,7 +76,7 @@ export class UsersController {
   @Get('information')
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Role(RoleEnum.TEACHER)
-  async getInformation(@CurrentUser() {id}: InfoUserInterface) {
-    return await this.service.generalInfo(id) ;
+  async getInformation(@CurrentUser() { id }: InfoUserInterface) {
+    return await this.service.generalInfo(id);
   }
 }

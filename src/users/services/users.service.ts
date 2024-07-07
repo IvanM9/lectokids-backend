@@ -193,12 +193,31 @@ export class UsersService {
     return 'Profesor actualizado correctamente';
   }
 
-  async generalInfo(userId: string){
+  async generalInfo(userId: string) {
+    const teacher = await this.db.teacher
+      .findFirstOrThrow({
+        where: {
+          userId,
+        },
+        select: {
+          user: {
+            select: {
+              firstName: true,
+              lastName: true,
+            },
+          },
+        },
+      })
+      .catch((err) => {
+        this.logger.error(err.message, err.stack, UsersService.name);
+        throw new NotFoundException('No se pudo encontrar el profesor');
+      });
+
     const courses = await this.db.course.findMany({
       where: {
         teacher: {
           userId,
-        }
+        },
       },
       select: {
         id: true,
@@ -207,7 +226,7 @@ export class UsersService {
           select: {
             courseStudents: true,
             levels: true,
-          }
+          },
         },
         levels: {
           select: {
@@ -216,19 +235,19 @@ export class UsersService {
             _count: {
               select: {
                 readings: true,
-              }
+              },
             },
             readings: {
               select: {
                 id: true,
                 title: true,
-              }
-            }
-          }
-        }
+              },
+            },
+          },
+        },
       },
     });
 
-    return {data: courses};
+    return { data: { courses, teacher } };
   }
 }
