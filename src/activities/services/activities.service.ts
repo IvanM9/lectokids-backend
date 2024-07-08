@@ -29,6 +29,7 @@ export class ActivitiesService {
       data: await this.db.activity.findMany({
         where: {
           detailReadingId,
+          status: true,
         },
         select: {
           id: true,
@@ -41,7 +42,7 @@ export class ActivitiesService {
   }
 
   async getOneActivity(activityId: string, role: RoleEnum) {
-    const activity = await this.db.activity
+    await this.db.activity
       .findUniqueOrThrow({
         where: {
           id: activityId,
