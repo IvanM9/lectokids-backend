@@ -170,6 +170,15 @@ export class ActivitiesService {
         );
       });
 
+    await this.db.activity.updateMany({
+      where: {
+        detailReadingId: payload.detailReadingId,
+      },
+      data: {
+        status: false,
+      },
+    })
+
     const generateActivityDto = await this.getGenerateActivityDto(
       payload.detailReadingId,
       student,
