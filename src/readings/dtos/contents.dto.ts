@@ -9,10 +9,17 @@ import {
 } from 'class-validator';
 
 export class CreateContentDto {
-  @ApiProperty()
+  @ApiProperty({ required: false })
   @IsString()
   @IsNotEmpty()
-  content: string;
+  @IsOptional()
+  content?: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  imageId?: string;
 
   @ApiProperty()
   @IsString()
@@ -41,7 +48,7 @@ export class MoveContentDto {
   positionTo: number;
 }
 
-export class UpdateContentDto extends PickType(CreateContentDto, ['content']) {
+export class UpdateContentDto extends PickType(CreateContentDto, ['content', 'imageId']) {
   @ApiProperty({ enum: TypeContent })
   @IsEnum(TypeContent)
   type: TypeContent;
