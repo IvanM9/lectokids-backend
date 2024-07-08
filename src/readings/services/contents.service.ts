@@ -28,7 +28,7 @@ export class ContentsService {
   ) {}
 
   async create(data: CreateContentDto) {
-    await this.db.contentLecture
+    const created = await this.db.contentLecture
       .create({
         data: {
           content: data.content,
@@ -46,6 +46,21 @@ export class ContentsService {
           'Error al agregar contenido a la lectura',
         );
       });
+
+    if (data.imageId) {
+      await this.db.contentLecture.update({
+        where: {
+          id: created.id,
+        },
+        data: {
+          image: {
+            connect: {
+              id: data.imageId,
+            },
+          },
+        },
+      });
+    }
 
     return { message: `Contenido agregado correctamente a la lectura` };
   }
