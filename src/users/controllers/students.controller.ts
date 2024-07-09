@@ -6,6 +6,8 @@ import {
   Patch,
   Post,
   Query,
+  Res,
+  UploadedFile,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -16,15 +18,22 @@ import { RoleGuard } from '@/security/jwt-strategy/roles.guard';
 import { Role } from '@/security/jwt-strategy/roles.decorator';
 import { CurrentUser } from '@/security/jwt-strategy/auth.decorator';
 import { InfoUserInterface } from '@/security/jwt-strategy/info-user.interface';
-import { CreateStudentDto, UpdateStudentDto } from '../dtos/students.dto';
+import {
+  CreateStudentDto,
+  ImportFromExcelDto,
+  UpdateStudentDto,
+} from '../dtos/students.dto';
 import {
   ApiBearerAuth,
+  ApiConsumes,
   ApiOperation,
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
 import { ResponseHttpInterceptor } from '@/shared/interceptors/response-http.interceptor';
 import { OptionalBooleanPipe } from '@/shared/pipes/optional-boolean.pipe';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Response } from 'express';
 
 @Controller('students')
 @ApiTags('students')
@@ -99,5 +108,33 @@ export class StudentsController {
   @ApiOperation({ summary: 'Obtener datos del perfil' })
   async getMyProfile(@CurrentUser() { id }: InfoUserInterface) {
     return { data: await this.service.myProfile(id) };
+  }
+
+  @Post('import-excel/:courseId')
+  @Role(RoleEnum.TEACHER)
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiConsumes('multipart/form-data')
+  async importStudentsFromExcel(
+    @UploadedFile() file: Express.Multer.File,
+    @Body() payload: ImportFromExcelDto,
+    @CurrentUser() { id }: InfoUserInterface,
+    @Param('courseId') courseId: string,
+  ) {
+    return await this.service.importFromExcel(file, id, courseId);
+  }
+
+  @Get('template/excel')
+  @Role(RoleEnum.TEACHER)
+  async getExcelTemplate(@Res() res: Response) {
+    const buffer = await this.service.exportTemplate();
+
+    res.set({
+      'Content-Type':
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'Content-Disposition': 'attachment; filename=nomina_estudiantes.xlsx',
+      'Content-Length': buffer.length,
+    });
+
+    res.end(buffer);
   }
 }

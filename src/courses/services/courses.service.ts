@@ -159,14 +159,14 @@ export class CoursesService {
                   select: {
                     id: true,
                     _count: {
-                      select:{ 
-                        activities: true
-                      }
+                      select: {
+                        activities: true,
+                      },
                     },
                     activities: {
                       select: {
                         _count: {
-                          select:{
+                          select: {
                             scores: {
                               where: {
                                 courseStudent: {
@@ -175,11 +175,11 @@ export class CoursesService {
                                   },
                                 },
                               },
-                            }
-                          }
-                        }
-                      }
-                    }
+                            },
+                          },
+                        },
+                      },
+                    },
                   },
                   where: {
                     studentsOnReadings: {

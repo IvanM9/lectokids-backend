@@ -177,7 +177,7 @@ export class ActivitiesService {
       data: {
         status: false,
       },
-    })
+    });
 
     const generateActivityDto = await this.getGenerateActivityDto(
       payload.detailReadingId,

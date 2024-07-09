@@ -26,7 +26,6 @@ import { Response } from 'express';
 
 @Controller('multimedia')
 @ApiTags('multimedia')
-@UseInterceptors(ResponseHttpInterceptor)
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RoleGuard)
 @Role(RoleEnum.TEACHER)
@@ -44,6 +43,7 @@ export class MultimediaController {
   }
 
   @Delete(':id')
+  @UseInterceptors(ResponseHttpInterceptor)
   async deleteMultimedia(@Param('id') id: string) {
     return this.service.deleteMultimedia(id);
   }
@@ -61,12 +61,14 @@ export class MultimediaController {
   }
 
   @Get(':id/get')
+  @UseInterceptors(ResponseHttpInterceptor)
   @Role(RoleEnum.TEACHER, RoleEnum.STUDENT)
   async getMultimediaUrl(@Param('id') id: string) {
     return this.service.getMultimedia(id);
   }
 
   @Post('link')
+  @UseInterceptors(ResponseHttpInterceptor)
   async createLinkMultimedia(@Body() data: CreateLinkMultimediaDto) {
     return this.service.uploadUrl(data);
   }

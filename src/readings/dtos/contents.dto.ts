@@ -48,7 +48,10 @@ export class MoveContentDto {
   positionTo: number;
 }
 
-export class UpdateContentDto extends PickType(CreateContentDto, ['content', 'imageId']) {
+export class UpdateContentDto extends PickType(CreateContentDto, [
+  'content',
+  'imageId',
+]) {
   @ApiProperty({ enum: TypeContent })
   @IsEnum(TypeContent)
   type: TypeContent;

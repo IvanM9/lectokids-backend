@@ -458,7 +458,7 @@ export class ScoresService {
                   },
                   orderBy: {
                     createdAt: 'asc',
-                  }
+                  },
                 },
               },
               where: {
@@ -468,7 +468,7 @@ export class ScoresService {
             status: true,
           },
         },
-      }
+      },
     });
 
     const scores = [];

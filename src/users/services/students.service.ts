@@ -3,21 +3,27 @@ import { RoleEnum } from '@/security/jwt-strategy/role.enum';
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { hashSync } from 'bcrypt';
 import { CreateStudentDto, UpdateStudentDto } from '../dtos/students.dto';
+import * as XLSX from 'xlsx';
 
 @Injectable()
 export class StudentsService {
-  constructor(private db: PrismaService) {}
+  constructor(
+    private db: PrismaService,
+    private logger: Logger,
+  ) {}
 
   async createStudents(data: CreateStudentDto, teacherId: string) {
     await this.db.course
       .findFirstOrThrow({
         where: { id: data.courseId, teacher: { userId: teacherId } },
       })
-      .catch(() => {
+      .catch((err) => {
+        this.logger.error(err.message, err.stack, StudentsService.name);
         throw new NotFoundException(
           'Este curso no existe o no pertenece al profesor',
         );
@@ -48,7 +54,8 @@ export class StudentsService {
             haveDyslexia: data.haveDyslexia,
           },
         })
-        .catch(() => {
+        .catch((e) => {
+          this.logger.error(e.message, e.stack, StudentsService.name);
           throw new BadRequestException('No se pudo crear el estudiante');
         });
     }
@@ -68,7 +75,7 @@ export class StudentsService {
         },
       })
       .catch((e) => {
-        console.error(e);
+        this.logger.error(e.message, e.stack, StudentsService.name);
         throw new BadRequestException('No se pudo crear el estudiante');
       });
 
@@ -259,5 +266,86 @@ export class StudentsService {
         haveDyslexia: true,
       },
     });
+  }
+
+  async importFromExcel(
+    file: Express.Multer.File,
+    userId: string,
+    courseId: string,
+  ) {
+    const workbook = XLSX.read(file.buffer, { type: 'buffer' });
+    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+    const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+    // Validar que el archivo tenga la estructura correcta
+    const keys = Object.keys(jsonData[0]);
+    const validKeys = [
+      'Nombres',
+      'Apellidos',
+      'Identificación',
+      'Género',
+      'Fecha de nacimiento',
+      'Ciudad',
+      'Intereses',
+      'Grado',
+      'Pregunta personalizada',
+      'Problemas',
+      'Tiene dislexia',
+    ];
+
+    const isValid = keys.every((key) => validKeys.includes(key));
+    if (!isValid) {
+      throw new BadRequestException(
+        'El archivo no tiene la estructura correcta. Puede descargar la plantilla',
+      );
+    }
+
+    // Crear los estudiantes
+    for (const student of jsonData) {
+      const data = {
+        firstName: student['Nombres'],
+        lastName: student['Apellidos'],
+        identification: `${student['Identificación']}`,
+        genre: student['Género'],
+        birthDate: new Date(student['Fecha de nacimiento']).toISOString(),
+        city: student['Ciudad'],
+        interests: student['Intereses'],
+        grade: student['Grado'],
+        customPrompt: student['Personalización'],
+        problems: student['Problemas'],
+        courseId,
+        haveDyslexia: student['Tiene dislexia'] == 'si' ? true : false,
+      };
+
+      await this.createStudents(data, userId);
+    }
+
+    return { message: 'Estudiantes creados correctamente' };
+  }
+
+  async exportTemplate() {
+    const data = [
+      {
+        Nombres: 'Nombre del estudiante',
+        Apellidos: 'Apellido del estudiante',
+        Identificación: 'Número de identificación (Cédula)',
+        Género: 'Género del estudiante (m/f)',
+        'Fecha de nacimiento':
+          'Fecha de nacimiento del estudiante (YYYY-MM-DD). Ejemplo: 2000-01-01 (la celda debe ser de tipo texto)',
+        Ciudad: 'Ciudad de residencia',
+        Intereses: 'Intereses del estudiante',
+        Grado: 'Grado del estudiante (1-7)',
+        Personalización:
+          'Descripción para que la IA tome en cuenta al momento de generar los contenidos',
+        Problemas: 'Problemas en el aprendizaje del estudiante',
+        'Tiene dislexia': 'si/no',
+      },
+    ];
+
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Template');
+    const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+    return buffer;
   }
 }
