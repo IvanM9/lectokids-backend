@@ -322,6 +322,7 @@ export class ScoresService {
     const activities = await this.db.activity.findMany({
       where: {
         detailReadingId,
+        status: true,
       },
       select: {
         id: true,
@@ -420,6 +421,7 @@ export class ScoresService {
         course: {
           status: true,
         },
+        status: true,
       },
       select: {
         course: {
@@ -454,12 +456,16 @@ export class ScoresService {
                   where: {
                     status: true,
                   },
+                  orderBy: {
+                    createdAt: 'asc',
+                  },
                 },
               },
               where: {
                 status: true,
               },
             },
+            status: true,
           },
         },
       },

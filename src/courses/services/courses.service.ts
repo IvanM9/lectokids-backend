@@ -158,6 +158,28 @@ export class CoursesService {
                 detailReadings: {
                   select: {
                     id: true,
+                    _count: {
+                      select: {
+                        activities: true,
+                      },
+                    },
+                    activities: {
+                      select: {
+                        _count: {
+                          select: {
+                            scores: {
+                              where: {
+                                courseStudent: {
+                                  student: {
+                                    userId: studentId,
+                                  },
+                                },
+                              },
+                            },
+                          },
+                        },
+                      },
+                    },
                   },
                   where: {
                     studentsOnReadings: {
