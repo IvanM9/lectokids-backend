@@ -69,6 +69,7 @@ export class ScoresService {
           },
         },
         type: TypeContent.TEXT,
+        status: true,
       },
       select: {
         content: true,
@@ -96,6 +97,7 @@ export class ScoresService {
               answer: payload.answer,
               reading: readingText,
             }),
+            answer: payload.answer,
         };
       } else {
         response.data = {
@@ -111,6 +113,7 @@ export class ScoresService {
               answer: payload.answer,
               reading: readingText,
             }),
+            answer: payload.answer,
         };
       }
     } else if (payload.answerActivityId) {
@@ -161,6 +164,7 @@ export class ScoresService {
             reading: readingText,
           }),
         answerCorrect,
+        answer: answer.answer,
       };
     } else
       throw new BadRequestException(
@@ -222,10 +226,11 @@ export class ScoresService {
             },
           },
           reponses: {
-            set: payload.questions.map((question) => ({
-              questionActivityId: question.questionActivityId,
-              answerActivityId: question.answerActivityId,
-              answer: question.answer,
+            set: qualifiedActivities.map((item) => ({
+              question: item.question,
+              isCorrect: item.isCorrect,
+              recommend: item.recommend,
+              answer: item.answer
             })),
           },
         },
@@ -332,24 +337,38 @@ export class ScoresService {
 
     const scores = [];
     for (const activity of activities) {
-      const average = await this.db.score.aggregate({
+      const count = await this.db.score.count({
         where: {
           activityId: activity.id,
           courseStudentId: courseStudent.id,
         },
-        _avg: {
-          score: true,
+      });
+
+      const allScores = await this.db.score.findMany({
+        where: {
+          activityId: activity.id,
+          courseStudentId: courseStudent.id,
         },
-        _count: {
+        select: {
           score: true,
+          createdAt: true,
+          reponses: true,
+        },
+        orderBy: {
+          createdAt: 'asc',
         },
       });
 
       scores.push({
         activityId: activity.id,
-        score: Number(average._avg.score).toFixed(2),
+        score: Number(allScores[allScores.length - 1 ]?.score ?? 0).toFixed(2),
+        allScores: allScores.map((item) => ({
+          score: Number(item.score).toFixed(2),
+          createdAt: item.createdAt,
+          responses: item.reponses,
+        })),
         typeActivity: activity.typeActivity,
-        count: average._count.score,
+        count,
       });
     }
 
