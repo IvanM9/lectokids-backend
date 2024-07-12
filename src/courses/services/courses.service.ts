@@ -221,7 +221,7 @@ export class CoursesService {
           },
           orderBy: {
             createdAt: 'asc',
-          }
+          },
         },
       },
       orderBy: {

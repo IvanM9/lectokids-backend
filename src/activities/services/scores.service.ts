@@ -97,7 +97,7 @@ export class ScoresService {
               answer: payload.answer,
               reading: readingText,
             }),
-            answer: payload.answer,
+          answer: payload.answer,
         };
       } else {
         response.data = {
@@ -113,7 +113,7 @@ export class ScoresService {
               answer: payload.answer,
               reading: readingText,
             }),
-            answer: payload.answer,
+          answer: payload.answer,
         };
       }
     } else if (payload.answerActivityId) {
@@ -230,7 +230,7 @@ export class ScoresService {
               question: item.question,
               isCorrect: item.isCorrect,
               recommend: item.recommend,
-              answer: item.answer
+              answer: item.answer,
             })),
           },
         },
@@ -361,7 +361,7 @@ export class ScoresService {
 
       scores.push({
         activityId: activity.id,
-        score: Number(allScores[allScores.length - 1 ]?.score ?? 0).toFixed(2),
+        score: Number(allScores[allScores.length - 1]?.score ?? 0).toFixed(2),
         allScores: allScores.map((item) => ({
           score: Number(item.score).toFixed(2),
           createdAt: item.createdAt,

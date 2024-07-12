@@ -193,7 +193,7 @@ export class DetailsReadingsService {
             },
             orderBy: {
               createdAt: 'asc',
-            }
+            },
           },
         },
       })
