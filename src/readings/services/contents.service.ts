@@ -183,31 +183,9 @@ export class ContentsService {
       },
     });
 
-    const student = await this.db.student
-      .findFirstOrThrow({
-        select: {
-          haveDyslexia: true,
-        },
-        where: {
-          coursesStudent: {
-            some: {
-              studentsOnReadings: {
-                some: {
-                  detailReadingId,
-                },
-              },
-            },
-          },
-        },
-      })
-      .catch(() => {
-        throw new NotFoundException('No se encontró el estudiante');
-      });
-
     return {
       data: {
         contents,
-        haveDyslexia: student.haveDyslexia,
         title: reading.reading.title,
       },
     };

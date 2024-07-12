@@ -3,4 +3,5 @@ export interface ScoreQuestionActivityInterface {
   question: string;
   recommend: string;
   answerCorrect?: string;
+  answer: string;
 }

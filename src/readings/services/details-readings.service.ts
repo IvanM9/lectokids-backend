@@ -189,6 +189,10 @@ export class DetailsReadingsService {
             },
             where: {
               type: TypeContent.TEXT,
+              status: true,
+            },
+            orderBy: {
+              createdAt: 'asc',
             },
           },
         },

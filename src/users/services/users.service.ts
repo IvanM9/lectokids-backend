@@ -244,6 +244,9 @@ export class UsersService {
               },
             },
           },
+          orderBy: {
+            createdAt: 'asc',
+          },
         },
       },
     });
