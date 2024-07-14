@@ -234,13 +234,20 @@ export class UsersService {
             name: true,
             _count: {
               select: {
-                readings: true,
+                readings: {
+                  where: {
+                    status: true,
+                  },
+                },
               },
             },
             readings: {
               select: {
                 id: true,
                 title: true,
+              },
+              where: {
+                status: true,
               },
             },
           },
