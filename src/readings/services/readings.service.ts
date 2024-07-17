@@ -180,6 +180,9 @@ export class ReadingsService {
           },
           status,
         },
+        orderBy: {
+          createdAt: 'asc',
+        }
       }),
     };
   }
