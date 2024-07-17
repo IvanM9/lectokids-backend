@@ -3,7 +3,7 @@ import { ActivitiesController } from './controllers/activities.controller';
 import { ActivitiesService } from './services/activities.service';
 import { ScoresService } from './services/scores.service';
 import { ScoresController } from './controllers/scores.controller';
-import { PrismaService } from '@/prisma.service';
+import { PrismaService } from '@/libs/prisma.service';
 import { AiModule } from '@/ai/ai.module';
 import { AnswersActivitiesService } from './services/answers-activities.service';
 import { QuestionsActivitiesService } from './services/questions-activities.service';

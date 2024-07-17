@@ -1,4 +1,4 @@
-import { PrismaService } from '@/prisma.service';
+import { PrismaService } from '@/libs/prisma.service';
 import {
   BadRequestException,
   Injectable,
@@ -9,7 +9,6 @@ import { CreateReadingDto, UpdateReadingDto } from '../dtos/readings.dto';
 import { AiService } from '@/ai/services/ai/ai.service';
 import puppeteer from 'puppeteer';
 import { renderFile } from 'ejs';
-import path from 'path';
 import { ENVIRONMENT } from '@/shared/constants/environment';
 
 @Injectable()
