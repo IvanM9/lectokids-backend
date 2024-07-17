@@ -407,7 +407,7 @@ export class ScoresService {
         detailReading: {
           createdAt: 'asc',
         },
-      }
+      },
     });
 
     const scores: {
@@ -604,7 +604,7 @@ export class ScoresService {
             },
             orderBy: {
               createdAt: 'desc',
-            }
+            },
           });
 
           scores.push({

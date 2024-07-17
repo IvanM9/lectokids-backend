@@ -361,58 +361,92 @@ export class ContentsService {
   }
 
   async generateContentsByDetailReading(detailReadingId: string) {
-    const reading = await this.db.reading.findFirstOrThrow({
-      where: {
-        detailReadings: {
-          some: {
-            id: detailReadingId,
+    const reading = await this.db.reading
+      .findFirstOrThrow({
+        where: {
+          detailReadings: {
+            some: {
+              id: detailReadingId,
+            },
           },
         },
-      },
-      select: {
-        autogenerate: true,
-        title: true,
-        customPrompt: true,
-        goals: true,
-        length: true,
-      },
-    });
+        select: {
+          id: true,
+          autogenerate: true,
+          title: true,
+          customPrompt: true,
+          goals: true,
+          length: true,
+        },
+      })
+      .catch(() => {
+        throw new NotFoundException('No se encontró la lectura');
+      });
 
-    await this.db.contentLecture
-      .updateMany({
+    await this.db.detailReading
+      .update({
         where: {
-          detailReadingId,
+          id: detailReadingId,
         },
         data: {
           status: false,
         },
       })
       .catch(() => {
-        throw new InternalServerErrorException(
-          'Error al desactivar el contenido de la lectura',
-        );
+        throw new BadRequestException('Error al eliminar la lectura');
+      });
+
+    const studentsOnReadings = await this.db.studentsOnReadings.findMany({
+      where: {
+        detailReadingId,
+      },
+      select: {
+        courseStudentId: true,
+      },
+    });
+
+    const newDetailReading = await this.db.detailReading
+      .create({
+        data: {
+          reading: {
+            connect: {
+              id: reading.id,
+            },
+          },
+          studentsOnReadings: {
+            createMany: {
+              data: studentsOnReadings.map((student) => ({
+                courseStudentId: student.courseStudentId,
+              })),
+            },
+          },
+        },
+      })
+      .catch(() => {
+        throw new BadRequestException('Error al crear la lectura');
       });
 
     if (reading.autogenerate) {
-      return this.generateContentsForOneStudent(detailReadingId);
-    }
-
-    const contents = await this.ai.generateGeneralReadingService({
-      title: reading.title,
-      goals: reading.goals,
-      length: reading.length,
-      customPrompt: reading.customPrompt,
-    });
-
-    for (const element of contents) {
-      await this.create({
-        content: element.content,
-        detailReadingId,
-        type: TypeContent.TEXT,
+      await this.generateContentsForOneStudent(newDetailReading.id);
+    } else {
+      const contents = await this.ai.generateGeneralReadingService({
+        title: reading.title,
+        goals: reading.goals,
+        length: reading.length,
+        customPrompt: reading.customPrompt,
       });
+
+      for (const element of contents) {
+        await this.create({
+          content: element.content,
+          detailReadingId: newDetailReading.id,
+          type: TypeContent.TEXT,
+        });
+      }
     }
 
     return {
+      data: { newDetailReadingId: newDetailReading.id },
       message: `Contenido agregado correctamente a la lectura`,
     };
   }

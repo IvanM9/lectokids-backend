@@ -182,7 +182,7 @@ export class ReadingsService {
         },
         orderBy: {
           createdAt: 'asc',
-        }
+        },
       }),
     };
   }
