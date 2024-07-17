@@ -1,4 +1,4 @@
-import { PrismaService } from '@/prisma.service';
+import { PrismaService } from '@/libs/prisma.service';
 import { Controller, Get } from '@nestjs/common';
 import {
   HealthCheck,

@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from '@/security/auth/dtos/LoginDto';
-import { PrismaService } from '@/prisma.service';
+import { PrismaService } from '@/libs/prisma.service';
 import { compare } from 'bcrypt';
 import { ENVIRONMENT } from '@/shared/constants/environment';
 import { RoleEnum } from '../jwt-strategy/role.enum';

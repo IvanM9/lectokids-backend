@@ -1,4 +1,4 @@
-import { PrismaService } from '@/prisma.service';
+import { PrismaService } from '@/libs/prisma.service';
 import {
   BadRequestException,
   Injectable,
@@ -27,15 +27,22 @@ export class UsersService {
     });
 
     if (!existAdmin) {
-      await this.db.user.create({
-        data: {
-          user: ENVIRONMENT.ADMIN_USER,
-          password: hashSync(ENVIRONMENT.ADMIN_PASSWORD, 10),
-          role: Role.ADMIN,
-          identification: 'admin',
-          birthDate: new Date(),
-        },
-      });
+      await this.db.user
+        .create({
+          data: {
+            user: ENVIRONMENT.ADMIN_USER,
+            password: hashSync(ENVIRONMENT.ADMIN_PASSWORD, 10),
+            role: Role.ADMIN,
+            identification: 'admin',
+            birthDate: new Date(),
+          },
+        })
+        .catch((err) => {
+          this.logger.error(err.message, err.stack, UsersService.name);
+          throw new BadRequestException(
+            'No se pudo crear el usuario administrador',
+          );
+        });
     }
   }
 
@@ -97,21 +104,22 @@ export class UsersService {
   }
 
   async createTeacher(data: CreateUserDto) {
-    await this.db.teacher
-      .findFirst({
-        where: {
-          user: {
-            identification: data.identification,
-          },
+    const existTeacher = await this.db.teacher.findFirst({
+      where: {
+        user: {
+          OR: [
+            { user: data.user ?? data.identification },
+            { identification: data.identification },
+          ],
         },
-      })
-      .then((teacher) => {
-        if (teacher) {
-          throw new BadRequestException(
-            'Ya existe un profesor con esa identificación',
-          );
-        }
-      });
+      },
+    });
+
+    if (existTeacher) {
+      throw new BadRequestException(
+        'Ya existe un profesor con esa identificación o usuario',
+      );
+    }
 
     return await this.db.teacher
       .create({

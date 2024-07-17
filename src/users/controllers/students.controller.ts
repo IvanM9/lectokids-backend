@@ -37,7 +37,6 @@ import { Response } from 'express';
 
 @Controller('students')
 @ApiTags('students')
-@UseInterceptors(ResponseHttpInterceptor)
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RoleGuard)
 export class StudentsController {
@@ -45,6 +44,7 @@ export class StudentsController {
 
   @Post()
   @Role(RoleEnum.TEACHER)
+  @UseInterceptors(ResponseHttpInterceptor)
   async createStudents(
     @CurrentUser() { id }: InfoUserInterface,
     @Body() data: CreateStudentDto,
@@ -54,6 +54,7 @@ export class StudentsController {
 
   @Get(':courseId')
   @UseGuards(JwtAuthGuard, RoleGuard)
+  @UseInterceptors(ResponseHttpInterceptor)
   @Role(RoleEnum.TEACHER)
   @ApiQuery({ name: 'status', required: false })
   @ApiQuery({ name: 'search', required: false })
@@ -75,6 +76,7 @@ export class StudentsController {
   }
 
   @Patch(':studentId')
+  @UseInterceptors(ResponseHttpInterceptor)
   @Role(RoleEnum.TEACHER)
   async updateStudent(
     @Param('studentId') studentId: string,
@@ -84,6 +86,7 @@ export class StudentsController {
   }
 
   @Patch(':studentId/:courseId/status')
+  @UseInterceptors(ResponseHttpInterceptor)
   @Role(RoleEnum.TEACHER)
   async changeStatus(
     @Param('studentId') studentId: string,
@@ -93,6 +96,7 @@ export class StudentsController {
   }
 
   @Get(':identification/by-identification')
+  @UseInterceptors(ResponseHttpInterceptor)
   @Role(RoleEnum.TEACHER)
   async getStudentByIdentification(
     @Param('identification') identification: string,
@@ -104,6 +108,7 @@ export class StudentsController {
   }
 
   @Get()
+  @UseInterceptors(ResponseHttpInterceptor)
   @Role(RoleEnum.STUDENT)
   @ApiOperation({ summary: 'Obtener datos del perfil' })
   async getMyProfile(@CurrentUser() { id }: InfoUserInterface) {
@@ -112,7 +117,7 @@ export class StudentsController {
 
   @Post('import-excel/:courseId')
   @Role(RoleEnum.TEACHER)
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FileInterceptor('file'), ResponseHttpInterceptor)
   @ApiConsumes('multipart/form-data')
   async importStudentsFromExcel(
     @UploadedFile() file: Express.Multer.File,

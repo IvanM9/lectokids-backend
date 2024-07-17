@@ -1,4 +1,4 @@
-import { PrismaService } from '@/prisma.service';
+import { PrismaService } from '@/libs/prisma.service';
 import {
   BadRequestException,
   Injectable,
@@ -403,6 +403,11 @@ export class ScoresService {
         },
         detailReadingId: true,
       },
+      orderBy: {
+        detailReading: {
+          createdAt: 'asc',
+        },
+      }
     });
 
     const scores: {
@@ -551,6 +556,9 @@ export class ScoresService {
                 where: {
                   status: true,
                 },
+                orderBy: {
+                  createdAt: 'asc',
+                },
               },
               name: true,
             },
@@ -594,6 +602,9 @@ export class ScoresService {
               endTime: true,
               createdAt: true,
             },
+            orderBy: {
+              createdAt: 'desc',
+            }
           });
 
           scores.push({

@@ -1,4 +1,4 @@
-import { PrismaService } from '@/prisma.service';
+import { PrismaService } from '@/libs/prisma.service';
 import { RoleEnum } from '@/security/jwt-strategy/role.enum';
 import {
   BadRequestException,
@@ -288,7 +288,7 @@ export class StudentsService {
       'Ciudad',
       'Intereses',
       'Grado',
-      'Pregunta personalizada',
+      'Personalización',
       'Problemas',
       'Tiene dislexia',
     ];

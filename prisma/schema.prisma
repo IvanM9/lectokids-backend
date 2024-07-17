@@ -146,6 +146,8 @@ model DetailReading {
   status      Boolean     @default(true)
   audio       Multimedia? @relation("AudioRelation", fields: [audioId], references: [id])
   audioId     String?     @map("audio_id") @unique
+  createdAt   DateTime    @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt   DateTime?   @updatedAt @map("updated_at") @db.Timestamptz()
 
   contentsLecture    ContentLecture[]
   studentsOnReadings StudentsOnReadings[]

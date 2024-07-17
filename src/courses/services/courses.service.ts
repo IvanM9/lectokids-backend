@@ -1,4 +1,4 @@
-import { PrismaService } from '@/prisma.service';
+import { PrismaService } from '@/libs/prisma.service';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateCoursesDto } from '../dtos/courses.dto';
 

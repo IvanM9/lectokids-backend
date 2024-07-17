@@ -1,5 +1,5 @@
 import { AiService } from '@/ai/services/ai/ai.service';
-import { PrismaService } from '@/prisma.service';
+import { PrismaService } from '@/libs/prisma.service';
 import {
   BadRequestException,
   Injectable,
