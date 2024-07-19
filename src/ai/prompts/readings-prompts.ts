@@ -387,7 +387,7 @@ Example Output:
 }
 
 export function generateCrossword(params: GenerateQuestionsActivitiesDto) {
-  return `You are an educational assistant tasked with creating a crossword puzzle to help a school child improve their reading comprehension. Based on the provided reading text, generate a list of 3-6 words that can be used in the crossword. Each word should be relevant to the text. The output should be in Spanish (Ecuadorian). Also, consider the child's age and grade when selecting the words to ensure they are appropriate.
+  return `You are an educational assistant tasked with creating a crossword puzzle to help a school child improve their reading comprehension. Based on the provided reading text, generate a list of 4-6 words that can be used in the crossword. Each word should be relevant to the text. The output should be in Spanish (Ecuadorian). Also, consider the child's age and grade when selecting the words to ensure they are appropriate.
 
 Parameters:
 - Reading text: "${params.reading}"

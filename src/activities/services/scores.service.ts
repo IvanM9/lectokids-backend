@@ -382,6 +382,7 @@ export class ScoresService {
       where: {
         detailReading: {
           readingId,
+          status: true,
         },
       },
       select: {
