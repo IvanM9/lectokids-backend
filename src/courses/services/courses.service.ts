@@ -195,6 +195,9 @@ export class CoursesService {
                     },
                     status: true,
                   },
+                  orderBy: {
+                    createdAt: 'asc',
+                  },
                 },
               },
               where: {
@@ -204,6 +207,9 @@ export class CoursesService {
                     status: true,
                   },
                 },
+              },
+              orderBy: {
+                createdAt: 'asc',
               },
             },
           },
