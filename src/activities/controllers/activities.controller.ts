@@ -14,6 +14,7 @@ import {
   AutoGenerateQuestionActivityDto,
   CreateAutoGenerateActivitiesDto,
   CreateQuestionActivityDto,
+  GenerateGeneralActivityDto,
   UpdateQuestionActivityDto,
 } from '../dtos/activities.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
@@ -64,6 +65,13 @@ export class ActivitiesController {
     @Body() data: AutoGenerateQuestionActivityDto,
   ) {
     return await this.activitiesService.generateActivityByType(data);
+  }
+
+  @Post('generate-questions/general')
+  async generateQuestionsActivitiesGeneral(
+    @Body() data: GenerateGeneralActivityDto,
+  ) {
+    return await this.activitiesService.generateGeneralActivityByType(data);
   }
 
   @Put('update-questions/:id')

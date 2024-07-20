@@ -11,6 +11,7 @@ import {
   AutoGenerateQuestionActivityDto,
   CreateAutoGenerateActivitiesDto,
   CreateQuestionActivityDto,
+  GenerateGeneralActivityDto,
   UpdateQuestionActivityDto,
 } from '../dtos/activities.dto';
 import { GenerateQuestionsActivitiesDto } from '@/ai/ai.dto';
@@ -170,15 +171,6 @@ export class ActivitiesService {
         );
       });
 
-    await this.db.activity.updateMany({
-      where: {
-        detailReadingId: payload.detailReadingId,
-      },
-      data: {
-        status: false,
-      },
-    });
-
     const generateActivityDto = await this.getGenerateActivityDto(
       payload.detailReadingId,
       student,
@@ -220,6 +212,9 @@ export class ActivitiesService {
       },
       select: {
         content: true,
+      },
+      orderBy: {
+        createdAt: 'asc',
       },
     });
 
@@ -374,5 +369,34 @@ export class ActivitiesService {
       });
 
     return { message: 'Estado de la actividad actualizada correctamente' };
+  }
+
+  async generateGeneralActivityByType(payload: GenerateGeneralActivityDto) {
+    const contentReading = await this.db.contentLecture.findMany({
+      where: {
+        detailReading: {
+          reading: {
+            id: payload.readingId,
+            autogenerate: false,
+          },
+        },
+        type: TypeContent.TEXT,
+      },
+      select: {
+        content: true,
+      },
+      orderBy: {
+        createdAt: 'asc',
+      },
+    });
+
+    const content = contentReading.map((item) => item.content).join('\n');
+
+    const generated = await this.ai.generateGeneralQuizService(
+      content,
+      payload.typeActivity,
+    );
+
+    return { message: 'Actividad generada correctamente', data: generated };
   }
 }

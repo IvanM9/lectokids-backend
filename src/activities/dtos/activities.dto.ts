@@ -184,3 +184,17 @@ export class CreateSaveScoreDto {
   @IsNotEmpty()
   score: string;
 }
+
+export class GenerateGeneralActivityDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  readingId: string;
+
+  @ApiProperty({ enum: TypeActivity, required: true })
+  @IsEnum(TypeActivity)
+  @IsAllowedQuestionsActivities({
+    message: 'El tipo de actividad no está permitido',
+  })
+  typeActivity: TypeActivity;
+}

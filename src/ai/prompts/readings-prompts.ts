@@ -141,6 +141,74 @@ Example Output:
 `;
 }
 
+export function generateQuizGeneral(reading: string) {
+  return `You are an educational content generator. I will provide you with a reading passage. Based on this information, generate a JSON output with multiple-choice questions and answers for reading comprehension. Ensure that the questions and answers are appropriate for school children. The output should be in Ecuadorian Spanish and follow this JSON format:
+
+  { 
+    questions: [
+      {
+        "question": "string",
+        "answers": [
+          {
+            "answer": "string",
+            "isCorrect": "boolean"
+          }
+        ]
+      }
+    ]
+  }
+
+Important: Only return a single piece of valid JSON text. Return it as text, not block code syntax.
+
+Here is the information you need:
+
+Reading Passage: "${reading}"
+
+Generate 3-5 comprehension questions and multiple-choice answers based on the reading passage. Make sure the questions and answers are clear, concise, and age-appropriate.
+
+Example Output:
+
+{
+  "questions": [
+      {
+        "question": "¿Cómo eran los habitantes del pequeño pueblo?",
+        "answers": [
+          {
+            "answer": "Eran muy amables y trabajadores.",
+            "isCorrect": true
+          },
+          {
+            "answer": "Eran muy perezosos.",
+            "isCorrect": false
+          },
+          {
+            "answer": "Eran muy ricos.",
+            "isCorrect": false
+          }
+        ]
+      },
+      {
+        "question": "¿Quién llegó al pueblo un día?",
+        "answers": [
+          {
+            "answer": "Un forastero.",
+            "isCorrect": true
+          },
+          {
+            "answer": "Un amigo.",
+            "isCorrect": false
+          },
+          {
+            "answer": "Un niño.",
+            "isCorrect": false
+          }
+        ]
+      }
+  ]
+}
+`;
+}
+
 export function generateYesOrNot(params: GenerateQuestionsActivitiesDto) {
   return `You are an educational content generator. I will provide you with a reading passage, the age of the student, and the grade level. Based on this information, generate a JSON output with true or false questions for reading comprehension. Ensure that the questions are appropriate for the given age and grade level. The output should be in Ecuadorian Spanish and follow this JSON format:
 
@@ -172,6 +240,58 @@ Example Input:
 Reading Passage: "Había una vez un pequeño pueblo donde todos los habitantes eran muy amables y trabajadores. Un día, un forastero llegó al pueblo y trajo consigo noticias de tierras lejanas."
 Student Age: 10
 Grade Level: 4
+
+Example Output:
+
+{
+  "questions": [
+      {
+        "question": "¿Todos los habitantes del pequeño pueblo eran muy amables y trabajadores?",
+        "answers": [
+          {
+            "answer": "verdadero",
+            "isCorrect": true
+          }
+        ]
+      },
+      {
+        "question": "¿Un forastero llegó al pueblo y trajo consigo noticias de tierras cercanas?",
+        "answers": [
+          {
+            "answer": "falso",
+            "isCorrect": true
+          }
+        ]
+      }
+  ]
+}
+`;
+}
+
+export function generateYesOrNotGeneral(reading: string) {
+  return `You are an educational content generator. I will provide you with a reading passage. Based on this information, generate a JSON output with true or false questions for reading comprehension. Ensure that the questions are appropriate for school children. The output should be in Ecuadorian Spanish and follow this JSON format:
+
+  {
+    "questions": [
+      {
+        "question": "string",
+        "answers": [
+          {
+            "answer": "verdadero" or "falso",
+            "isCorrect": true
+          }
+        ]
+      }
+    ]
+  }
+
+Important: Only return a single piece of valid JSON text. Return it as text, not block code syntax.
+
+Here is the information you need:
+
+Reading Passage: "${reading}"
+
+Generate 3-5 true or false comprehension questions based on the reading passage. Make sure the questions are clear, concise, and age-appropriate. Each answer should be either "verdadero" or "falso" with the "isCorrect" field set to true.
 
 Example Output:
 
@@ -236,6 +356,35 @@ Example Output:
 `;
 }
 
+export function generateOpenTextGeneral(reading: string) {
+  return `You are an educational content generator. I will provide you with a reading passage. Based on this information, generate a JSON output with one Free Text Question that allows the student to freely write about the reading passage. Make sure the question is appropriate for school children. The output should be in Ecuadorian Spanish and follow this JSON format:
+
+  { 
+   "questions": [
+        {
+          "question": "string"
+        }
+    ]
+  }
+
+Here is the information you need:
+
+Reading Passage: "${reading}"
+
+Generate one free text question based on the reading passage. Make sure the question is clear, concise, and age-appropriate.
+
+Example Output:
+
+{ "questions": 
+  [
+      {
+        "question": "Según lo que recuerdas de la lectura, reescribe la historia de una manera diferente."
+      }
+  ]
+}
+`;
+}
+
 export function generateOpenAnswers(params: GenerateQuestionsActivitiesDto) {
   return `You are an educational content generator. I will provide you with a reading passage, the age of the student, and the grade level. Based on this information, generate a JSON output with open-ended questions for reading comprehension. Ensure that the questions are appropriate for the given age and grade level. The output should be in Ecuadorian Spanish and follow this JSON format:
 
@@ -261,6 +410,43 @@ Example Input:
 Reading Passage: "Había una vez un pequeño pueblo donde todos los habitantes eran muy amables y trabajadores. Un día, un forastero llegó al pueblo y trajo consigo noticias de tierras lejanas."
 Student Age: 10
 Grade Level: 4
+
+Example Output:
+
+{ 
+  "questions": [
+      {
+        "question": "¿Cómo eran los habitantes del pequeño pueblo?"
+      },
+      {
+        "question": "¿Qué trajo consigo el forastero que llegó al pueblo?"
+      },
+      {
+        "question": "Describe al forastero que llegó al pueblo."
+      }
+  ]
+}
+`;
+}
+
+export function generateOpenAnswersGeneral(reading: string) {
+  return `You are an educational content generator. I will provide you with a reading passage, the age of the student, and the grade level. Based on this information, generate a JSON output with open-ended questions for reading comprehension. Ensure that the questions are appropriate for school children. The output should be in Ecuadorian Spanish and follow this JSON format:
+
+  { 
+    "questions": [
+      {
+        "question": "string"
+      }
+    ]
+  }
+
+Important: Only return a single piece of valid JSON text. Return it as text, not block code syntax.
+
+Here is the information you need:
+
+Reading Passage: "${reading}"
+
+Generate 3-5 open-ended comprehension questions based on the reading passage. Make sure the questions are clear, concise, and age-appropriate.
 
 Example Output:
 
@@ -319,6 +505,65 @@ Example Input:
 Reading Passage: "Había una vez un pequeño pueblo donde todos los habitantes eran muy amables y trabajadores. Un día, un forastero llegó al pueblo y trajo consigo noticias de tierras lejanas."
 Student Age: 10
 Grade Level: 4
+
+Example Output:
+
+{ 
+  "questions": [
+    {
+      "question": "Encuentra las siguientes palabras en la sopa de letras:",
+      "answers": [
+        {
+          "answer": "pueblo",
+          "isCorrect": true
+        },
+        {
+          "answer": "forastero",
+          "isCorrect": true
+        },
+        {
+          "answer": "noticias",
+          "isCorrect": true
+        }
+      ]
+    }
+  ]
+}
+`;
+}
+
+export function generateAlphabetSoupGeneral(reading: string) {
+  return `You are an educational content generator. I will provide you with a reading passage. Based on this information, generate a JSON output with words that should be found in a word search puzzle. Ensure that the words are appropriate for school children. The output should be in Ecuadorian Spanish and follow this JSON format:
+
+  { 
+    "questions": [
+      {
+        "question": "Encuentra las siguientes palabras en la sopa de letras:",
+        "answers": [
+          {
+            "answer": "string",
+            "isCorrect": true
+          },
+          {
+            "answer": "string",
+            "isCorrect": true
+          },
+          {
+            "answer": "string",
+            "isCorrect": true
+          }
+        ]
+      }
+    ]
+  }
+
+Important: Only return a single piece of valid JSON text. Return it as text, not block code syntax.
+
+Here is the information you need:
+
+Reading Passage: "${reading}"
+
+Generate a list of 3-5 words that can be found in a word search puzzle based on the reading passage. Make sure the words are clear, concise, and age-appropriate.
 
 Example Output:
 
@@ -417,6 +662,66 @@ Input:
 Reading text: "Los animales del bosque se preparan para el invierno. El oso recolecta bayas, el zorro construye su madriguera y el ciervo busca un lugar seguro."
 Student Age: 10
 Grade Level: 4
+
+Example output:
+
+{ 
+  "questions": [
+    {
+      "question": "oso",
+      "answers": [
+        {
+          "answer": "Animal que recolecta bayas",
+          "isCorrect": true
+        }
+      ]
+    },
+    {
+      "question": "zorro",
+      "answers": [
+        {
+          "answer": "Animal que construye su madriguera",
+          "isCorrect": true
+        }
+      ]
+    },
+    {
+      "question": "ciervo",
+      "answers": [
+        {
+          "answer": "Animal que busca un lugar seguro",
+          "isCorrect": true
+        }
+      ]
+    }
+  ]
+}
+`;
+}
+
+export function generateCrosswordGeneral(reading: string) {
+  return `You are an educational assistant tasked with creating a crossword puzzle to help a school child improve their reading comprehension. Based on the provided reading text, generate a list of 4-6 words that can be used in the crossword. Each word should be relevant to the text. The output should be in Spanish (Ecuadorian).
+
+Parameters:
+- Reading text: "${reading}"
+
+Output format (in JSON):
+
+{ 
+  "questions": [
+    {
+      "question": "string",
+      "answers": [
+        {
+          "answer": "string",
+          "isCorrect": true
+        }
+      ]
+    }
+  ]
+}
+
+Important: Only return a single piece of valid JSON text. Return it as text, not block code syntax.
 
 Example output:
 

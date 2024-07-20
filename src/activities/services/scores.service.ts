@@ -613,15 +613,18 @@ export class ScoresService {
             studentName: item.studentName,
             scores: item.scores,
             detailReadingId: item.detailReadingId,
-            readingTimeSpends: readingTimeSpends.map((time) => ({
-              createdAt: time.createdAt,
-              timeSpend:
-                (
-                  (time.endTime.getTime() - time.startTime.getTime()) /
-                  1000 /
-                  60
-                ).toFixed(2) + ' minutos',
-            })),
+            readingTimeSpends: readingTimeSpends.map((time) => {
+              const timeSpendAux =
+                (time.endTime.getTime() - time.startTime.getTime()) / 1000;
+
+              return {
+                createdAt: time.createdAt,
+                timeSpend:
+                  timeSpendAux > 60
+                    ? (timeSpendAux / 60).toFixed(2) + ' minutos'
+                    : timeSpendAux.toFixed(0) + ' segundos',
+              };
+            }),
           });
         }
 
