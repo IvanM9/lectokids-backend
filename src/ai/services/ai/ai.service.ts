@@ -9,16 +9,22 @@ import {
 import { ENVIRONMENT } from '@/shared/constants/environment';
 import {
   generateAlphabetSoup,
+  generateAlphabetSoupGeneral,
   generateCrossword,
+  generateCrosswordGeneral,
   generateOpenAnswers,
+  generateOpenAnswersGeneral,
   generateOpenText,
+  generateOpenTextGeneral,
   generateQuiz,
+  generateQuizGeneral,
   generateReading,
   generateReading2,
   generateReadingInformation,
   generateRecommendationForQuestionsActivities,
   generateVerificationOpenAnswers,
   generateYesOrNot,
+  generateYesOrNotGeneral,
   getTypeActivities,
 } from '@/ai/prompts/readings-prompts';
 import {
@@ -31,7 +37,6 @@ import { TypeActivity, TypeMultimedia } from '@prisma/client';
 import OpenAI from 'openai';
 import { generatePromptForFrontPage } from '@/ai/prompts/images-prompts';
 import { MultimediaService } from '@/multimedia/services/multimedia.service';
-import fs from 'fs';
 
 @Injectable()
 export class AiService {
@@ -202,6 +207,43 @@ export class AiService {
         break;
       case TypeActivity.CROSSWORD:
         prompt = generateCrossword(params);
+        break;
+      default:
+        this.logger.warn(
+          `Tipo de actividad no soportado: ${type}`,
+          AiService.name,
+        );
+        break;
+    }
+
+    if (!prompt) {
+      throw new InternalServerErrorException('Tipo de actividad no soportado');
+    }
+
+    return (await this.generateJSON(prompt)).questions;
+  }
+
+  async generateGeneralQuizService(reading: string, type: TypeActivity) {
+    let prompt = '';
+
+    switch (type) {
+      case TypeActivity.QUIZ:
+        prompt = generateQuizGeneral(reading);
+        break;
+      case TypeActivity.ALPHABET_SOUP:
+        prompt = generateAlphabetSoupGeneral(reading);
+        break;
+      case TypeActivity.OPEN_TEXT:
+        prompt = generateOpenTextGeneral(reading);
+        break;
+      case TypeActivity.YES_NO:
+        prompt = generateYesOrNotGeneral(reading);
+        break;
+      case TypeActivity.OPEN_ANSWERS:
+        prompt = generateOpenAnswersGeneral(reading);
+        break;
+      case TypeActivity.CROSSWORD:
+        prompt = generateCrosswordGeneral(reading);
         break;
       default:
         this.logger.warn(
