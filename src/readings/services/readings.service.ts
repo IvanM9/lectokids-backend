@@ -10,6 +10,7 @@ import { AiService } from '@/ai/services/ai/ai.service';
 import puppeteer from 'puppeteer';
 import { renderFile } from 'ejs';
 import { ENVIRONMENT } from '@/shared/constants/environment';
+import { TypeContent } from '@prisma/client';
 
 @Injectable()
 export class ReadingsService {
@@ -373,6 +374,7 @@ export class ReadingsService {
                 },
                 where: {
                   status: true,
+                  type: TypeContent.TEXT,
                 },
               },
               activities: {
@@ -443,7 +445,8 @@ export class ReadingsService {
     for (const detailReading of reading.detailReadings) {
       const text = detailReading.contentsLecture
         .map((content) => content.content)
-        .join('\n');
+        .join(' <br />');
+
       readings.push({
         text,
         activities: detailReading.activities,
