@@ -28,6 +28,8 @@ PUBLIC_DIR=""
 VIEWS_DIR=""
 ADMIN_USER=""
 ADMIN_PASSWORD=""
+MODEL_TEXT=""
+MODEL_IMAGE=""
 ```
 
 ### Puppeteer

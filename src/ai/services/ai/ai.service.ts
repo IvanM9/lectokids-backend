@@ -276,7 +276,8 @@ export class AiService {
     params: generateRecommendationForQuestionsActivitiesDto,
   ) {
     const prompt = generateVerificationOpenAnswers(params);
-    return (await this.generateJSON(prompt)).isCorrect == 'true' ? true : false;
+    const scoreByAI = await this.generateJSON(prompt);
+    return scoreByAI.isCorrect;
   }
 
   async generateFrontPage(reading: string) {
