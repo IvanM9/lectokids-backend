@@ -16,6 +16,7 @@ export function generateReading(params: GenerateGeneralReadingDto) {
 
 The passage should be engaging and educational, with clear and simple language appropriate for children. The output should be formatted as a JSON array where each item represents a page in the book.
 Do not include markdown formatting within the contents.
+Do not include difficult words in the text, as this can complicate reading comprehension.
 Output format:
 
   { contents: [ { "content": "string" } ] }
@@ -47,7 +48,7 @@ export function generateReading2(params: GenerateReadingDto) {
 
   ${params.customPrompt ? 'Also, take into account this personalization of the reading: "' + params.customPrompt + '"' : ''}
   Reading should be designed to improve the student's reading comprehension (without asking reading comprehension questions), with language appropriate for the student's age and level. Use an engaging and immersive narrative style to keep the student interested. Divide the reading into logical pages, as if it were a physical book.
- 
+  Do not include difficult words in the text, as this can complicate reading comprehension.
   Returns the reading in a JSON Array with the following structure:
  
   { contents: [ { "content": "string" } ] }
@@ -791,6 +792,7 @@ Question: "${params.question}"
 Student's Response: "${params.answer}"
 
 Based on the information in the reading passage, is the student's response correct?
+You must be flexible when grading, since the student is from elementary school.
 Important: Only return a single piece of valid JSON text. Return it as text, not block code syntax.`;
 }
 
@@ -804,11 +806,6 @@ Provide the output in the following JSON format:
 }
 
 The 'title' should be a single, concise string. The 'objectives' should be a single string containing 2-3 clear, measurable learning objectives separated by semicolons.
-Example output:
-{
-  "title": "The Mysterious Garden",
-  "objectives": "Identify the main characters and their roles; Understand the sequence of events in the story; Make predictions about what might happen next based on given information"
-}
 
 Important: Only return a single piece of valid JSON text. Return it as text, not block code syntax.
 Please generate a new, unique title and set of objectives following this format.

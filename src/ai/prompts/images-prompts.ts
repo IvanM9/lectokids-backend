@@ -1,5 +1,5 @@
 export function generateFrontPagePrompt(reading: string) {
-  return `Create a colorful and engaging cover illustration for a children's storybook designed for elementary school students practicing reading comprehension. The cover should include key elements and themes from the following story excerpt:
+  return `Create a colorful and engaging illustration for a children's storybook designed for elementary school students practicing reading comprehension. The illustration should include key elements and themes from the following story excerpt:
 
 Story Excerpt:
 "${reading}"
@@ -16,7 +16,7 @@ Important: Do not insert text anywhere in the image.`;
 
 export function generatePromptForFrontPage(reading: string) {
   return `
-  Generate a detailed prompt for DALL-E to create a cover illustration for a children's storybook. The illustration should be based on a story provided separately. The generated prompt should describe the key characteristics and elements necessary for creating the cover image without explicitly including the full text of the story.
+  Generate a detailed prompt for DALL-E to create a illustration for a children's storybook. The illustration should be based on a story provided separately. The generated prompt should describe the key characteristics and elements necessary for creating the image without explicitly including the full text of the story.
 
 Here are the necessary characteristics to include:
 
