@@ -92,7 +92,7 @@ Reading Passage: "${params.reading}"
 Student Age: ${params.age}
 Grade Level: ${params.grade}
 
-Generate 3-5 comprehension questions and multiple-choice answers based on the reading passage. Make sure the questions and answers are clear, concise, and age-appropriate.
+Generate 2-4 comprehension questions and multiple-choice answers based on the reading passage. Make sure the questions and answers are clear, concise, and age-appropriate.
 
 Example Input:
 Reading Passage: "Había una vez un pequeño pueblo donde todos los habitantes eran muy amables y trabajadores. Un día, un forastero llegó al pueblo y trajo consigo noticias de tierras lejanas."
@@ -235,7 +235,7 @@ Reading Passage: "${params.reading}"
 Student Age: ${params.age}
 Grade Level: ${params.grade}
 
-Generate 3-5 true or false comprehension questions based on the reading passage. Make sure the questions are clear, concise, and age-appropriate. Each answer should be either "verdadero" or "falso" with the "isCorrect" field set to true.
+Generate 2-4 true or false comprehension questions based on the reading passage. Make sure the questions are clear, concise, and age-appropriate. Each answer should be either "verdadero" or "falso" with the "isCorrect" field set to true.
 
 Example Input:
 Reading Passage: "Había una vez un pequeño pueblo donde todos los habitantes eran muy amables y trabajadores. Un día, un forastero llegó al pueblo y trajo consigo noticias de tierras lejanas."

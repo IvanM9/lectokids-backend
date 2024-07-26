@@ -320,12 +320,12 @@ export class ContentsService {
         );
       });
 
-      if (index % 2 === 0 && numberOfImages-- > 0) {
-        await this.generateImageForContent(
-          element.content,
-          student.detailReading.id,
-        );
-      }
+      // if (index % 2 === 0 && numberOfImages-- > 0) {
+      //   await this.generateImageForContent(
+      //     element.content,
+      //     student.detailReading.id,
+      //   );
+      // }
 
       index++;
     }
