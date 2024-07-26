@@ -127,6 +127,9 @@ export class StudentsService {
             customPrompt: true,
             problems: true,
           },
+          where: {
+            courseId,
+          },
         },
       },
       skip: page ? (page - 1) * 10 : 0,
