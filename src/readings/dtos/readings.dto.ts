@@ -29,7 +29,7 @@ export class CreateReadingDto {
   @IsNotEmpty()
   title: string;
 
-  @ApiProperty({required: false})
+  @ApiProperty({ required: false })
   @IsString()
   @IsOptional()
   length?: string;
@@ -46,12 +46,12 @@ export class CreateReadingDto {
   @IsBoolean()
   autogenerate: boolean;
 
-  @ApiProperty({required: false})
+  @ApiProperty({ required: false })
   @IsString()
   @IsOptional()
   imageId: string;
 
-  @ApiProperty({required: false})
+  @ApiProperty({ required: false })
   @IsString()
   @IsOptional()
   customPrompt: string;

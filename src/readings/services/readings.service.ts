@@ -38,171 +38,168 @@ export class ReadingsService {
         );
       });
 
-    const { reading } = await this.db.$transaction(async (dbTransaction:  PrismaService) => {
-      const reading = await dbTransaction.reading
-        .create({
-          data: {
-            goals: data.goals,
-            title: data.title,
-            length: data.length,
-            level: {
-              connect: {
-                id: data.levelId,
+    const { reading } = await this.db.$transaction(
+      async (dbTransaction: PrismaService) => {
+        const reading = await dbTransaction.reading
+          .create({
+            data: {
+              goals: data.goals,
+              title: data.title,
+              length: data.length,
+              level: {
+                connect: {
+                  id: data.levelId,
+                },
               },
+              autogenerate: data.autogenerate,
+              customPrompt: data.customPrompt,
             },
-            autogenerate: data.autogenerate,
-            customPrompt: data.customPrompt,
-          },
-          select: {
-            id: true,
-          },
-        })
-        .catch(() => {
-          throw new BadRequestException('No se pudo crear la lectura');
-        });
-
-      let students = []
-
-      if(!data.autogenerate){
-        students = await dbTransaction.courseStudent.findMany({
-          where: {
-            course: {
-              id: data.courseId,
-            },
-            status: true,
-          },
-          select: {
-            id: true,
-          },
-          distinct: 'studentId',
-        });
-      } else {
-        students = await db.courseStudent.findMany({
-          where: {
-            student: {
-              id: {
-                in: data.students.map((student) => student.id),
-              }
-            },
-          },
-          select: {
-            id: true,
-          },
-        }).catch((e) => {
-          this.logger.error(e.message, e.stack, ReadingsService.name);
-          throw new BadRequestException(
-            'Hubo errores al obtener los estudiantes del curso',
-          );
-        });
-      }
-      
-
-      if (students.length === 0) {
-        throw new BadRequestException(
-          'No se pudo registrar la lectura porque no hay estudiantes en el curso',
-        );
-      }
-
-      if (data.autogenerate) {
-        const createdDetailReading = await dbTransaction.detailReading
-          .createManyAndReturn({
-            data: students.map(() => ({
-              readingId: reading.id,
-            })),
             select: {
               id: true,
-            }
+            },
           })
-          .catch((e) => {
-            this.logger.error(e.message, e.stack, ReadingsService.name);
-            throw new BadRequestException(
-              `Hubo errores al crear las lecturas para algunos estudiantes`,
-            );
+          .catch(() => {
+            throw new BadRequestException('No se pudo crear la lectura');
           });
+
+        let students = [];
+
+        if (!data.autogenerate) {
+          students = await dbTransaction.courseStudent.findMany({
+            where: {
+              course: {
+                id: data.courseId,
+              },
+              status: true,
+            },
+            select: {
+              id: true,
+            },
+            distinct: 'studentId',
+          });
+        } else {
+          students = await dbTransaction.courseStudent
+            .findMany({
+              where: {
+                student: {
+                  id: {
+                    in: data.students.map((student) => student.id),
+                  },
+                },
+              },
+              select: {
+                id: true,
+              },
+            })
+            .catch((e) => {
+              this.logger.error(e.message, e.stack, ReadingsService.name);
+              throw new BadRequestException(
+                'Hubo errores al obtener los estudiantes del curso',
+              );
+            });
+        }
+
+        if (students.length === 0) {
+          throw new BadRequestException(
+            'No se pudo registrar la lectura porque no hay estudiantes en el curso',
+          );
+        }
+
+        if (data.autogenerate) {
+          const createdDetailReading = await dbTransaction.detailReading
+            .createManyAndReturn({
+              data: students.map(() => ({
+                readingId: reading.id,
+                numberOfImages: data.numImages,
+              })),
+              select: {
+                id: true,
+              },
+            })
+            .catch((e) => {
+              this.logger.error(e.message, e.stack, ReadingsService.name);
+              throw new BadRequestException(
+                `Hubo errores al crear las lecturas para algunos estudiantes`,
+              );
+            });
 
           const studentsOnReadings = students.map((student, index) => ({
             courseStudentId: student.id,
             detailReadingId: createdDetailReading[index].id,
           }));
 
-          await dbTransaction.studentsOnReadings.createMany({
-            data: studentsOnReadings,
-          }).catch((e) => {
-            this.logger.error(e.message, e.stack, ReadingsService.name);
-            throw new BadRequestException(
-              `Hubo errores al crear las lecturas para algunos estudiantes`,
-            );
-          });
-
-        if (data.imageId) {
-            await dbTransaction.detailReading.updateMany({
-              where: {
-                id: {
-                  in: createdDetailReading.map((detail) => detail.id),
-                }
-              },
-              data: {
-                frontPageId: data.imageId,
-                reading: {
-                  connect: {
-                    id: reading.id,
-                  },
-                },
-                studentsOnReadings: {
-                  create: {
-                    courseStudentId: student.id,
-                  },
-                },
-                numberOfImages: data.numImages,
-              },
-            }).catch((e) => {
+          await dbTransaction.studentsOnReadings
+            .createMany({
+              data: studentsOnReadings,
+            })
+            .catch((e) => {
               this.logger.error(e.message, e.stack, ReadingsService.name);
               throw new BadRequestException(
                 `Hubo errores al crear las lecturas para algunos estudiantes`,
               );
             });
-        }
-      } else {
-        const createdDetailReading = await dbTransaction.detailReading
-          .create({
-            data: {
-              readingId: reading.id,
-              studentsOnReadings: {
-                createMany: {
-                  data: students.map((student) => ({
-                    courseStudentId: student.id,
-                  })),
+
+          if (data.imageId) {
+            await dbTransaction.detailReading
+              .updateMany({
+                where: {
+                  id: {
+                    in: createdDetailReading.map((detail) => detail.id),
+                  },
+                },
+                data: {
+                  frontPageId: data.imageId,
+                },
+              })
+              .catch((e) => {
+                this.logger.error(e.message, e.stack, ReadingsService.name);
+                throw new BadRequestException(
+                  `Hubo errores al crear las lecturas para algunos estudiantes`,
+                );
+              });
+          }
+        } else {
+          const createdDetailReading = await dbTransaction.detailReading
+            .create({
+              data: {
+                readingId: reading.id,
+                studentsOnReadings: {
+                  createMany: {
+                    data: students.map((student) => ({
+                      courseStudentId: student.id,
+                    })),
+                  },
+                },
+                numberOfImages: data.numImages,
+              },
+              select: {
+                id: true,
+              },
+            })
+            .catch((error) => {
+              console.log(error);
+              throw new BadRequestException('No se pudo crear la lectura');
+            });
+
+          if (data.imageId) {
+            await dbTransaction.detailReading.update({
+              where: {
+                id: createdDetailReading.id,
+              },
+              data: {
+                frontPage: {
+                  connect: {
+                    id: data.imageId,
+                  },
                 },
               },
-              numberOfImages: data.numImages,
-            },
-            select: {
-              id: true,
-            },
-          })
-          .catch((error) => {
-            console.log(error);
-            throw new BadRequestException('No se pudo crear la lectura');
-          });
-
-        if (data.imageId) {
-          await dbTransaction.detailReading.update({
-            where: {
-              id: createdDetailReading.id,
-            },
-            data: {
-              frontPage: {
-                connect: {
-                  id: data.imageId,
-                },
-              },
-            },
-          });
+            });
+          }
         }
-      }
 
-      return { reading };
-    });
+        return { reading };
+      },
+    );
 
     return { message: 'Lecturas creadas con éxito', data: reading.id };
   }
