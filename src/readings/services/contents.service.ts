@@ -230,7 +230,7 @@ export class ContentsService {
     for (const student of students) {
       await this.generateContentsForOneStudent(student.detailReading.id);
 
-      if (payload.autogenerateActivities){
+      if (payload.autogenerateActivities) {
         await this.activitiesService.generateActivities({
           detailReadingId: student.detailReading.id,
           courseStudentId: student.courseStudent.id,
@@ -238,14 +238,19 @@ export class ContentsService {
       }
 
       if (payload.generateFrontPage)
-        await this.detailReadingService.updateFrontPage(student.detailReading.id);
+        await this.detailReadingService.updateFrontPage(
+          student.detailReading.id,
+        );
     }
     return {
       message: `Contenido agregado correctamente a las lecturas`,
     };
   }
 
-  async generateContentsForOneStudent(detailReadingId: string, numberOfImages: number = 0) {
+  async generateContentsForOneStudent(
+    detailReadingId: string,
+    numberOfImages: number = 0,
+  ) {
     const student = await this.db.studentsOnReadings
       .findFirstOrThrow({
         where: {
