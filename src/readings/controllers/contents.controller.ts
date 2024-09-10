@@ -14,6 +14,7 @@ import { ContentsService } from '../services/contents.service';
 import {
   CreateContentDto,
   CreateContentForAllDto,
+  GenerateContentReadingDto,
   UpdateContentDto,
 } from '../dtos/contents.dto';
 import {
@@ -81,9 +82,9 @@ export class ContentsController {
     return this.service.getContentById(id);
   }
 
-  @Post('generate-reading/:readingId')
-  async generateReading(@Param('readingId') readingId: string) {
-    return this.service.createCustomReadingForAll(readingId);
+  @Post('generate-reading')
+  async generateReading(@Body() data: GenerateContentReadingDto) {
+    return this.service.createCustomReadingForAll(data);
   }
 
   @Post('generate-reading-by-detailReading/:detailReadingId')
@@ -94,6 +95,7 @@ export class ContentsController {
   async generateContentsByDetailReading(
     @Param('detailReadingId') detailReadingId: string,
   ) {
+    // TODO: Revisar si afectan los nuevos cambios
     return this.service.generateContentsByDetailReading(detailReadingId);
   }
 }

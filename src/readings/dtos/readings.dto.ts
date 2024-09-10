@@ -1,12 +1,23 @@
 import { ApiProperty, OmitType } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
+  IsArray,
   IsBoolean,
   IsDateString,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
+  Max,
+  Min,
+  ValidateNested,
 } from 'class-validator';
 
+class StudentsDto {
+  @ApiProperty()
+  @IsString()
+  id: string;
+}
 export class CreateReadingDto {
   @ApiProperty()
   @IsString()
@@ -18,7 +29,7 @@ export class CreateReadingDto {
   @IsNotEmpty()
   title: string;
 
-  @ApiProperty()
+  @ApiProperty({required: false})
   @IsString()
   @IsOptional()
   length?: string;
@@ -35,15 +46,26 @@ export class CreateReadingDto {
   @IsBoolean()
   autogenerate: boolean;
 
-  @ApiProperty()
+  @ApiProperty({required: false})
   @IsString()
   @IsOptional()
   imageId: string;
 
-  @ApiProperty()
+  @ApiProperty({required: false})
   @IsString()
   @IsOptional()
   customPrompt: string;
+
+  @ApiProperty({ type: [StudentsDto] })
+  @Type(() => StudentsDto)
+  @ValidateNested({ always: true, each: true })
+  students: StudentsDto[];
+
+  @ApiProperty()
+  @IsNumber()
+  @Max(3)
+  @Min(0)
+  numImages: number;
 }
 
 export class UpdateReadingDto extends OmitType(CreateReadingDto, [

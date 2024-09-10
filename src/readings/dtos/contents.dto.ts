@@ -1,6 +1,7 @@
 import { ApiProperty, OmitType, PickType } from '@nestjs/swagger';
 import { TypeContent } from '@prisma/client';
 import {
+  IsBoolean,
   IsEnum,
   IsNotEmpty,
   IsNumber,
@@ -55,4 +56,18 @@ export class UpdateContentDto extends PickType(CreateContentDto, [
   @ApiProperty({ enum: TypeContent })
   @IsEnum(TypeContent)
   type: TypeContent;
+}
+
+export class GenerateContentReadingDto {
+  @ApiProperty()
+  @IsString()
+  readingId: string;
+
+  @ApiProperty()
+  @IsBoolean()
+  autogenerateActivities: boolean = false;
+
+  @ApiProperty()
+  @IsBoolean()
+  generateFrontPage: boolean = false;
 }

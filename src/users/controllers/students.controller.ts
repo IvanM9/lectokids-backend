@@ -69,8 +69,8 @@ export class StudentsController {
     return await this.service.getAllMyStudents(
       id,
       courseId,
-      status,
       search,
+      status,
       page,
     );
   }
