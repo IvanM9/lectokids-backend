@@ -1,15 +1,14 @@
 import { PrismaService } from '@/libs/prisma.service';
 import {
   BadRequestException,
-  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
-  forwardRef,
 } from '@nestjs/common';
 import {
   CreateContentDto,
   CreateContentForAllDto,
+  GenerateContentReadingDto,
   UpdateContentDto,
 } from '../dtos/contents.dto';
 import { AiService } from '@/ai/services/ai/ai.service';
@@ -205,7 +204,7 @@ export class ContentsService {
     return { data: content };
   }
 
-  async createCustomReadingForAll(readingId: string) {
+  async createCustomReadingForAll(payload: GenerateContentReadingDto) {
     const students = await this.db.studentsOnReadings.findMany({
       select: {
         courseStudent: {
@@ -222,7 +221,7 @@ export class ContentsService {
       where: {
         detailReading: {
           reading: {
-            id: readingId,
+            id: payload.readingId,
           },
         },
       },
@@ -231,19 +230,22 @@ export class ContentsService {
     for (const student of students) {
       await this.generateContentsForOneStudent(student.detailReading.id);
 
-      await this.activitiesService.generateActivities({
-        detailReadingId: student.detailReading.id,
-        courseStudentId: student.courseStudent.id,
-      });
+      if (payload.autogenerateActivities){
+        await this.activitiesService.generateActivities({
+          detailReadingId: student.detailReading.id,
+          courseStudentId: student.courseStudent.id,
+        });
+      }
 
-      await this.detailReadingService.updateFrontPage(student.detailReading.id);
+      if (payload.generateFrontPage)
+        await this.detailReadingService.updateFrontPage(student.detailReading.id);
     }
     return {
       message: `Contenido agregado correctamente a las lecturas`,
     };
   }
 
-  async generateContentsForOneStudent(detailReadingId: string) {
+  async generateContentsForOneStudent(detailReadingId: string, numberOfImages: number = 0) {
     const student = await this.db.studentsOnReadings
       .findFirstOrThrow({
         where: {
@@ -307,7 +309,6 @@ export class ContentsService {
 
     const contents: any[] = await this.ai.generateReadingService(params);
 
-    let numberOfImages = Math.floor(Math.random() * (4 - 2 + 1)) + 2;
     let index = 0;
     for (const element of contents) {
       await this.create({

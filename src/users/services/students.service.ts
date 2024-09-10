@@ -85,8 +85,8 @@ export class StudentsService {
   async getAllMyStudents(
     teacherId: string,
     courseId: string,
+    search: string = '',
     status?: boolean,
-    search?: string,
     page?: number,
   ) {
     const data = await this.db.student.findMany({
