@@ -63,8 +63,8 @@ export class CreateReadingDto {
 
   @ApiProperty()
   @IsNumber()
-  @Max(3)
-  @Min(0)
+  @Max(3, { message: 'El número de imágenes debe ser menor o igual a 3' })
+  @Min(0, { message: 'El número de imágenes debe ser mayor o igual a 0' })
   numImages: number;
 }
 

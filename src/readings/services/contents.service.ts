@@ -215,6 +215,7 @@ export class ContentsService {
         detailReading: {
           select: {
             id: true,
+            numberOfImages: true,
           },
         },
       },
@@ -228,7 +229,10 @@ export class ContentsService {
     });
 
     for (const student of students) {
-      await this.generateContentsForOneStudent(student.detailReading.id);
+      await this.generateContentsForOneStudent(
+        student.detailReading.id,
+        student.detailReading.numberOfImages,
+      );
 
       if (payload.autogenerateActivities) {
         await this.activitiesService.generateActivities({
@@ -326,12 +330,12 @@ export class ContentsService {
         );
       });
 
-      // if (index % 2 === 0 && numberOfImages-- > 0) {
-      //   await this.generateImageForContent(
-      //     element.content,
-      //     student.detailReading.id,
-      //   );
-      // }
+      if (index % 2 === 0 && numberOfImages-- > 0) {
+        await this.generateImageForContent(
+          element.content,
+          student.detailReading.id,
+        );
+      }
 
       index++;
     }
@@ -367,22 +371,23 @@ export class ContentsService {
   }
 
   async generateContentsByDetailReading(detailReadingId: string) {
-    const reading = await this.db.reading
+    const detailReading = await this.db.detailReading
       .findFirstOrThrow({
         where: {
-          detailReadings: {
-            some: {
-              id: detailReadingId,
-            },
-          },
+          id: detailReadingId,
         },
         select: {
-          id: true,
-          autogenerate: true,
-          title: true,
-          customPrompt: true,
-          goals: true,
-          length: true,
+          reading: {
+            select: {
+              id: true,
+              autogenerate: true,
+              title: true,
+              customPrompt: true,
+              goals: true,
+              length: true,
+            },
+          },
+          numberOfImages: true,
         },
       })
       .catch(() => {
@@ -416,7 +421,7 @@ export class ContentsService {
         data: {
           reading: {
             connect: {
-              id: reading.id,
+              id: detailReading.reading.id,
             },
           },
           studentsOnReadings: {
@@ -432,14 +437,17 @@ export class ContentsService {
         throw new BadRequestException('Error al crear la lectura');
       });
 
-    if (reading.autogenerate) {
-      await this.generateContentsForOneStudent(newDetailReading.id);
+    if (detailReading.reading.autogenerate) {
+      await this.generateContentsForOneStudent(
+        newDetailReading.id,
+        detailReading.numberOfImages,
+      );
     } else {
       const contents = await this.ai.generateGeneralReadingService({
-        title: reading.title,
-        goals: reading.goals,
-        length: reading.length,
-        customPrompt: reading.customPrompt,
+        title: detailReading.reading.title,
+        goals: detailReading.reading.goals,
+        length: detailReading.reading.length,
+        customPrompt: detailReading.reading.customPrompt,
       });
 
       for (const element of contents) {
