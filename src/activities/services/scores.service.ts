@@ -677,9 +677,11 @@ export class ScoresService {
             },
           });
 
+          const nodeBuffer = Buffer.from(buffer);
+
           await browser.close();
 
-          resolve(buffer);
+          resolve(nodeBuffer);
         },
       );
     });
@@ -826,9 +828,11 @@ export class ScoresService {
 
           const buffer = await page.pdf({ format: 'A4' });
 
+          const nodeBuffer = Buffer.from(buffer);
+
           await browser.close();
 
-          resolve(buffer);
+          resolve(nodeBuffer);
         },
       );
     });

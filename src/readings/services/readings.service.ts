@@ -62,42 +62,23 @@ export class ReadingsService {
             throw new BadRequestException('No se pudo crear la lectura');
           });
 
-        let students = [];
+        const studentsId = data.autogenerate
+          ? { id: { in: data.students.map((student) => student.id) } }
+          : undefined;
 
-        if (!data.autogenerate) {
-          students = await dbTransaction.courseStudent.findMany({
-            where: {
-              course: {
-                id: data.courseId,
-              },
-              status: true,
+        const students = await dbTransaction.courseStudent.findMany({
+          where: {
+            course: {
+              id: data.courseId,
             },
-            select: {
-              id: true,
-            },
-            distinct: 'studentId',
-          });
-        } else {
-          students = await dbTransaction.courseStudent
-            .findMany({
-              where: {
-                student: {
-                  id: {
-                    in: data.students.map((student) => student.id),
-                  },
-                },
-              },
-              select: {
-                id: true,
-              },
-            })
-            .catch((e) => {
-              this.logger.error(e.message, e.stack, ReadingsService.name);
-              throw new BadRequestException(
-                'Hubo errores al obtener los estudiantes del curso',
-              );
-            });
-        }
+            status: true,
+            student: studentsId,
+          },
+          select: {
+            id: true,
+          },
+          distinct: 'studentId',
+        });
 
         if (students.length === 0) {
           throw new BadRequestException(
@@ -138,28 +119,8 @@ export class ReadingsService {
                 `Hubo errores al crear las lecturas para algunos estudiantes`,
               );
             });
-
-          if (data.imageId) {
-            await dbTransaction.detailReading
-              .updateMany({
-                where: {
-                  id: {
-                    in: createdDetailReading.map((detail) => detail.id),
-                  },
-                },
-                data: {
-                  frontPageId: data.imageId,
-                },
-              })
-              .catch((e) => {
-                this.logger.error(e.message, e.stack, ReadingsService.name);
-                throw new BadRequestException(
-                  `Hubo errores al crear las lecturas para algunos estudiantes`,
-                );
-              });
-          }
         } else {
-          const createdDetailReading = await dbTransaction.detailReading
+          await dbTransaction.detailReading
             .create({
               data: {
                 readingId: reading.id,
@@ -180,21 +141,17 @@ export class ReadingsService {
               console.log(error);
               throw new BadRequestException('No se pudo crear la lectura');
             });
+        }
 
-          if (data.imageId) {
-            await dbTransaction.detailReading.update({
-              where: {
-                id: createdDetailReading.id,
-              },
-              data: {
-                frontPage: {
-                  connect: {
-                    id: data.imageId,
-                  },
-                },
-              },
-            });
-          }
+        if (data.imageId) {
+          await dbTransaction.detailReading.updateMany({
+            where: {
+              readingId: reading.id,
+            },
+            data: {
+              frontPageId: data.imageId,
+            },
+          });
         }
 
         return { reading };
@@ -519,9 +476,11 @@ export class ReadingsService {
 
           const buffer = await page.pdf({ format: 'A4' });
 
+          const nodeBuffer = Buffer.from(buffer);
+
           await browser.close();
 
-          resolve(buffer);
+          resolve(nodeBuffer);
         },
       );
     });
