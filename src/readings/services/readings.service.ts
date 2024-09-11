@@ -476,9 +476,11 @@ export class ReadingsService {
 
           const buffer = await page.pdf({ format: 'A4' });
 
+          const nodeBuffer = Buffer.from(buffer);
+
           await browser.close();
 
-          resolve(buffer);
+          resolve(nodeBuffer);
         },
       );
     });
