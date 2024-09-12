@@ -143,6 +143,7 @@ export class CoursesService {
             status: true,
           },
         },
+        status: true,
       },
       select: {
         name: true,
@@ -160,7 +161,11 @@ export class CoursesService {
                     id: true,
                     _count: {
                       select: {
-                        activities: true,
+                        activities: {
+                          where: {
+                            status: true,
+                          },
+                        },
                       },
                     },
                     activities: {
@@ -179,6 +184,9 @@ export class CoursesService {
                           },
                         },
                       },
+                      where: {
+                        status: true,
+                      }
                     },
                   },
                   where: {
