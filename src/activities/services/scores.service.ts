@@ -100,19 +100,16 @@ export class ScoresService {
           answer: payload.answer,
         };
       } else {
-        response.data = {
-          isCorrect: await this.ai.generateVerificationOpenTextOrAnswerService({
-            question: question.question,
-            answer: payload.answer,
-            reading: readingText,
-          }),
+        const calification = await this.ai.generateVerificationOpenTextOrAnswerService({
           question: question.question,
-          recommend:
-            await this.ai.generateRecommendationForQuestionsActivitiesService({
-              question: question.question,
-              answer: payload.answer,
-              reading: readingText,
-            }),
+          answer: payload.answer,
+          reading: readingText,
+        });
+
+        response.data = {
+          isCorrect: calification.isCorrect == 'true',
+          question: question.question,
+          recommend: calification.recommendation,
           answer: payload.answer,
         };
       }
