@@ -188,6 +188,11 @@ export class CoursesService {
                         status: true,
                       }
                     },
+                    frontPage: {
+                      select: {
+                        url: true,
+                      }
+                    }
                   },
                   where: {
                     studentsOnReadings: {
