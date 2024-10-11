@@ -1,5 +1,5 @@
 # Primera etapa: instalar las dependencias de desarrollo y construir la aplicación
-FROM node:20-bookworm-slim as builder
+FROM node:20-bookworm-slim AS builder
 WORKDIR /usr/src/app
 # RUN dnf update -y
 # RUN dnf install -y openssl nodejs20.x86_64 npm

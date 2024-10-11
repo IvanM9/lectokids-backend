@@ -19,7 +19,7 @@ async function bootstrap() {
       'https://ivan-manzaba.vercel.app',
       'mauricio.9.inm@gmail.com',
     )
-    .addServer('/api')
+    .addServer(ENVIRONMENT.PREFIX_API)
     .setVersion('1.0')
     .addBearerAuth()
     .build();
@@ -41,9 +41,9 @@ async function bootstrap() {
   );
   app.use(compression());
 
-  app.use('/api', helmet());
+  app.use(ENVIRONMENT.PREFIX_API, helmet());
 
-  app.setGlobalPrefix('api');
+  app.setGlobalPrefix(ENVIRONMENT.PREFIX_API);
   app.enableShutdownHooks();
   await app.listen(ENVIRONMENT.PORT);
 }

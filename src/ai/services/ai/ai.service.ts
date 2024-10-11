@@ -277,7 +277,7 @@ export class AiService {
   ) {
     const prompt = generateVerificationOpenAnswers(params);
     const scoreByAI = await this.generateJSON(prompt);
-    return scoreByAI.isCorrect;
+    return scoreByAI;
   }
 
   async generateFrontPage(reading: string) {

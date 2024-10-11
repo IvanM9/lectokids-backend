@@ -15,4 +15,5 @@ export const ENVIRONMENT = {
   ADMIN_PASSWORD: process.env.ADMIN_PASSWORD || 'admin',
   CORS_ORIGIN: process.env.CORS_ORIGIN || '*',
   PORT: process.env.PORT || 4000,
+  PREFIX_API: process.env.PREFIX_API || '/api',
 };

@@ -136,4 +136,136 @@ export class LevelsService {
 
     return { message: 'Nivel actualizado' };
   }
+
+  async getContentCourse(courseId: string, studentId: string) {
+    return await this.db.level.findMany({
+      select: {
+        id: true,
+        readings: {
+          select: {
+            id: true,
+            title: true,
+            detailReadings: {
+              select: {
+                id: true,
+                status: true,
+                _count: {
+                  select: {
+                    activities: {
+                      where: {
+                        status: true,
+                      },
+                    },
+                  },
+                },
+                activities: {
+                  select: {
+                    _count: {
+                      select: {
+                        scores: {
+                          where: {
+                            courseStudent: {
+                              student: {
+                                userId: studentId,
+                              },
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                  where: {
+                    status: true,
+                  },
+                },
+                frontPage: {
+                  select: {
+                    url: true,
+                  },
+                },
+              },
+              where: {
+                status: true,
+                studentsOnReadings: {
+                  some: {
+                    courseStudent: {
+                      student: {
+                        user: {
+                          id: studentId,
+                        },
+                      },
+                      course: {
+                        id: courseId,
+                      }
+                    },
+                    status: true
+                  },
+                },
+              },
+              orderBy: {
+                createdAt: 'asc',
+              },
+            },
+          },
+          orderBy: {
+            createdAt: 'asc',
+          },
+          where: {
+            status: true,
+            detailReadings: {
+              some: {
+                status: true,
+                studentsOnReadings: {
+                  some: {
+                    courseStudent: {
+                      student: {
+                        user: {
+                          id: studentId,
+                        },
+                      },
+                      course: {
+                        id: courseId,
+                      }
+                    },
+                  }
+                }
+              }
+            }
+          }
+        },
+      },
+      where: {
+        readings: {
+          some: {
+            status: true,
+            detailReadings: {
+              some: {
+                status: true,
+                studentsOnReadings: {
+                  some: {
+                    courseStudent: {
+                      student: {
+                        user: {
+                          id: studentId,
+                        },
+                      },
+                      course: {
+                        id: courseId,
+                      }
+                    },
+                  }
+                }
+              }
+            }
+          },
+        },
+        course: {
+          id: courseId,
+        },
+      },
+      orderBy: {
+        createdAt: 'asc',
+      },
+    });
+  }
 }

@@ -783,7 +783,14 @@ Student's Answer: "${params.answer}"`;
 export function generateVerificationOpenAnswers(
   params: generateRecommendationForQuestionsActivitiesDto,
 ) {
-  return `You are a helpful assistant tasked with evaluating the accuracy of a student's open-ended response to a question based on a given reading passage. The goal is to determine if the student's answer correctly addresses the question using information from the reading. Your response should be in the format: { \"isCorrect\": \"boolean\" }. Here is the reading passage:
+  return `You are a helpful assistant tasked with evaluating the accuracy of a student's open-ended response to a question based on a given reading passage. The goal is to determine if the student's answer correctly addresses the question using information from the reading. 
+  Also, please provide feedback. The feedback should be written in easy-to-understand Spanish (Ecuadorian) for a school student.
+  Your response should be in the format: 
+  
+  { \"isCorrect\": \"boolean\", \"recommendation\": \"string\" }
+  
+  
+  Here is the reading passage:
 
 "${params.reading}"
 

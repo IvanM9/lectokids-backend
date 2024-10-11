@@ -65,4 +65,15 @@ export class LevelsController {
   ) {
     return await this.levelsService.updateStatusLevel(levelId, id);
   }
+
+  @Get('student/:courseId')
+  @Role(RoleEnum.STUDENT)
+  async getAllLevelsStudent(
+    @Param('courseId') courseId: string,
+    @CurrentUser() { id }: { id: string },
+  ) {
+    return {
+      data: await this.levelsService.getContentCourse(courseId, id),
+    };
+  }
 }
