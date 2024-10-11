@@ -100,11 +100,12 @@ export class ScoresService {
           answer: payload.answer,
         };
       } else {
-        const calification = await this.ai.generateVerificationOpenTextOrAnswerService({
-          question: question.question,
-          answer: payload.answer,
-          reading: readingText,
-        });
+        const calification =
+          await this.ai.generateVerificationOpenTextOrAnswerService({
+            question: question.question,
+            answer: payload.answer,
+            reading: readingText,
+          });
 
         response.data = {
           isCorrect: calification.isCorrect == 'true',
