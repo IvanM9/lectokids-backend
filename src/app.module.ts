@@ -14,6 +14,7 @@ import { ReadingsModule } from './readings/readings.module';
 import { AiModule } from './ai/ai.module';
 import { ActivitiesModule } from './activities/activities.module';
 import { MultimediaModule } from './multimedia/multimedia.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { MultimediaModule } from './multimedia/multimedia.module';
     AiModule,
     ActivitiesModule,
     MultimediaModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [

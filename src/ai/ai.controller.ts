@@ -6,6 +6,8 @@ import { ResponseHttpInterceptor } from '@/shared/interceptors/response-http.int
 import {
   Body,
   Controller,
+  HttpException,
+  HttpStatus,
   Post,
   Res,
   UseGuards,
@@ -24,9 +26,9 @@ import { Response } from 'express';
 export class AiController {
   constructor(private service: AiService) {}
 
-  @Post('generate-image')
-  @UseInterceptors(ResponseHttpInterceptor)
-  async generateImage(@Body() { text }: GenerateContentDto) {
-    return this.service.generateFrontPage(text);
-  }
+  // @Post('generate-image')
+  // @UseInterceptors(ResponseHttpInterceptor)
+  // async generateImage(@Body() { text }: GenerateContentDto) {
+  //   return this.service.generateFrontPage(text);
+  // }
 }
