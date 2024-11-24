@@ -1,5 +1,5 @@
 # Primera etapa: instalar las dependencias de desarrollo y construir la aplicación
-FROM node:20-bookworm-slim AS builder
+FROM node:22-bookworm-slim AS builder
 WORKDIR /usr/src/app
 # RUN dnf update -y
 # RUN dnf install -y openssl nodejs20.x86_64 npm
@@ -13,7 +13,7 @@ RUN npx prisma generate
 RUN yarn build:swc
 
 # Segunda etapa: imagen final
-FROM node:20-bookworm-slim
+FROM node:22-bookworm-slim
 WORKDIR /usr/src/app
 # RUN dnf update -y
 # RUN dnf install -y openssl nodejs20.x86_64 npm

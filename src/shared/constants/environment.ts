@@ -16,4 +16,5 @@ export const ENVIRONMENT = {
   CORS_ORIGIN: process.env.CORS_ORIGIN || '*',
   PORT: process.env.PORT || 4000,
   PREFIX_API: process.env.PREFIX_API || '/api',
+  API_KEY_OPENAI: process.env.API_KEY_OPENAI,
 };

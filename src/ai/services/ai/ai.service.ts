@@ -45,7 +45,9 @@ export class AiService {
     private multimedia: MultimediaService,
   ) {}
 
-  openai = new OpenAI();
+  openai = new OpenAI({
+    apiKey: ENVIRONMENT.API_KEY_OPENAI
+  });
   // genAI = new GoogleGenerativeAI(ENVIRONMENT.API_KEY_AI);
 
   // model = this.genAI.getGenerativeModel({
