@@ -20,7 +20,8 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "start:swc": "nest start -b swc --type-check",
     "dev": "nest start -b swc --type-check --watch",
-    "build:swc": "nest build -b swc"
+    "build:swc": "nest build -b swc",
+    "start:migrate:prod": "prisma migrate deploy && yarn start:prod"
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
