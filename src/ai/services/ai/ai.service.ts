@@ -34,20 +34,38 @@ import { TypeActivity, TypeMultimedia } from '@prisma/client';
 import { generatePromptForFrontPage } from '@/ai/prompts/images-prompts';
 import { MultimediaService } from '@/multimedia/services/multimedia.service';
 import { openai } from '@ai-sdk/openai';
+import { google } from '@ai-sdk/google';
 import {
   experimental_generateImage,
   generateObject,
   generateText,
+  LanguageModelV1,
   NoImageGeneratedError,
 } from 'ai';
 import { z, Schema } from 'zod';
+import { ProviderAI } from '@/ai/enums/providers-ai.enum';
 
 @Injectable()
 export class AiService {
   constructor(
     private readonly logger: Logger,
     private multimedia: MultimediaService,
-  ) {}
+  ) {
+    switch (ENVIRONMENT.PROVIDER_AI) {
+      case ProviderAI.google:
+        this.textModelAI = google(ENVIRONMENT.MODEL_TEXT);
+        break;
+
+      case ProviderAI.openAi:
+        this.textModelAI = openai(ENVIRONMENT.MODEL_TEXT);
+        break;
+
+      default:
+        break;
+    }
+  }
+
+  textModelAI: LanguageModelV1;
 
   activitiesSchema = z.object({
     questions: z.array(
@@ -55,12 +73,10 @@ export class AiService {
         question: z.string(),
         answers: z
           .array(
-            z
-              .object({
-                answer: z.string().optional(),
-                isCorrect: z.boolean().optional(),
-              })
-              .optional(),
+            z.object({
+              answer: z.string().optional(),
+              isCorrect: z.boolean().optional(),
+            }),
           )
           .optional(),
       }),
@@ -82,7 +98,7 @@ export class AiService {
   ) {
     const contents = (
       await generateObject({
-        model: openai(ENVIRONMENT.MODEL_TEXT),
+        model: this.textModelAI,
         prompt,
         schema,
         maxRetries: 3,
@@ -96,7 +112,7 @@ export class AiService {
   private async generateText(prompt: string) {
     let textGenerated = (
       await generateText({
-        model: openai(ENVIRONMENT.MODEL_TEXT),
+        model: this.textModelAI,
         prompt,
         maxRetries: 3,
       }).catch((error) => {

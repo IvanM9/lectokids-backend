@@ -1,4 +1,5 @@
 import path from 'path';
+import { z } from 'zod';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require('dotenv').config();
 export const ENVIRONMENT = {
@@ -17,4 +18,5 @@ export const ENVIRONMENT = {
   PORT: process.env.PORT || 4000,
   PREFIX_API: process.env.PREFIX_API || '/api',
   API_KEY_OPENAI: process.env.API_KEY_OPENAI,
+  PROVIDER_AI: process.env.PROVIDER_AI,
 };
