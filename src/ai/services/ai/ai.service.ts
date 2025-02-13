@@ -3,9 +3,6 @@ import {
   InternalServerErrorException,
   Logger,
 } from '@nestjs/common';
-// import { GoogleGenerativeAI } from '@google/generative-ai';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-// const { GoogleGenerativeAI } = require('@google/generative-ai');
 import { ENVIRONMENT } from '@/shared/constants/environment';
 import {
   generateAlphabetSoup,
@@ -34,9 +31,16 @@ import {
   generateRecommendationForQuestionsActivitiesDto,
 } from '@/ai/ai.dto';
 import { TypeActivity, TypeMultimedia } from '@prisma/client';
-import OpenAI from 'openai';
 import { generatePromptForFrontPage } from '@/ai/prompts/images-prompts';
 import { MultimediaService } from '@/multimedia/services/multimedia.service';
+import { openai } from '@ai-sdk/openai';
+import {
+  experimental_generateImage,
+  generateObject,
+  generateText,
+  NoImageGeneratedError,
+} from 'ai';
+import { z, Schema } from 'zod';
 
 @Injectable()
 export class AiService {
@@ -45,144 +49,128 @@ export class AiService {
     private multimedia: MultimediaService,
   ) {}
 
-  openai = new OpenAI({
-    apiKey: ENVIRONMENT.API_KEY_OPENAI
+  activitiesSchema = z.object({
+    questions: z.array(
+      z.object({
+        question: z.string(),
+        answers: z
+          .array(
+            z
+              .object({
+                answer: z.string().optional(),
+                isCorrect: z.boolean().optional(),
+              })
+              .optional(),
+          )
+          .optional(),
+      }),
+    ),
   });
-  // genAI = new GoogleGenerativeAI(ENVIRONMENT.API_KEY_AI);
 
-  // model = this.genAI.getGenerativeModel({
-  // model: 'gemini-pro',
-  //   model: 'gemini-1.5-flash',
-  // });
+  generateContentSchema = z.object({
+    contents: z.array(
+      z.object({
+        content: z.string(),
+      }),
+    ),
+  });
 
-  private async generateJSON(prompt: string) {
-    let contents = null;
-    let attempts = 5;
-
-    while (!contents && attempts-- > 0) {
-      try {
-        // const result = await this.model.generateContent(prompt);
-        // const response = result.response;
-        // contents = JSON.parse(response.text());
-
-        const completion = await this.openai.chat.completions.create({
-          messages: [{ role: 'user', content: prompt }],
-          model: ENVIRONMENT.MODEL_TEXT,
-          response_format: { type: 'json_object' },
-        });
-        // console.log(completion);
-        contents = JSON.parse(completion.choices[0].message.content);
-      } catch (err) {
-        this.logger.error(err.message, err.stack, AiService.name);
-      }
-    }
-
-    if (!contents) {
-      throw new InternalServerErrorException('No se pudo generar el contenido');
-    }
+  private async generateJSON(
+    prompt: string,
+    schema: Schema,
+    temperature: number = 0,
+  ) {
+    const contents = (
+      await generateObject({
+        model: openai(ENVIRONMENT.MODEL_TEXT),
+        prompt,
+        schema,
+        maxRetries: 3,
+        temperature,
+      })
+    ).object;
 
     return contents;
   }
 
   private async generateText(prompt: string) {
-    let textGenerated = null;
-    let attempts = 5;
-    while (!textGenerated && attempts-- > 0) {
-      try {
-        const completion = await this.openai.chat.completions.create({
-          messages: [{ role: 'user', content: prompt }],
-          model: ENVIRONMENT.MODEL_TEXT,
-        });
-
-        textGenerated = completion.choices[0].message.content;
-      } catch (err) {
-        this.logger.error(err.message, err.stack, AiService.name);
-      }
-    }
-
-    if (!textGenerated) {
-      throw new InternalServerErrorException('No se pudo generar el texto');
-    }
+    let textGenerated = (
+      await generateText({
+        model: openai(ENVIRONMENT.MODEL_TEXT),
+        prompt,
+        maxRetries: 3,
+      }).catch((error) => {
+        this.logger.error(error.message, error.stack, AiService.name);
+        throw new InternalServerErrorException('No se pudo generar el texto');
+      })
+    ).text;
 
     return textGenerated;
   }
 
-  private async generateImage(prompt: string, base64: boolean = true) {
-    let attempts = 5;
-    let imageGenerated = null;
-    while (!imageGenerated && attempts-- > 0) {
-      try {
-        const response = await this.openai.images.generate({
-          model: ENVIRONMENT.MODEL_IMAGE,
-          prompt,
-          n: 1,
-          size: '1024x1024',
-          response_format: base64 ? 'b64_json' : 'url',
-          quality: 'standard',
-        });
-
-        imageGenerated = base64
-          ? response.data[0].b64_json
-          : response.data[0].url;
-      } catch (err) {
-        this.logger.error(err.message, err.stack, AiService.name);
+  private async generateImage(prompt: string) {
+    const imageGenerated = await experimental_generateImage({
+      model: openai.image(ENVIRONMENT.MODEL_IMAGE, {
+        maxImagesPerCall: 1,
+      }),
+      prompt,
+      size: `${1024}x${1024}`,
+      maxRetries: 3,
+      n: 1,
+    }).catch((error) => {
+      if (NoImageGeneratedError.isInstance(error)) {
+        console.log('NoImageGeneratedError');
+        console.log('Responses:', error.responses);
       }
-    }
 
-    if (!imageGenerated) {
+      this.logger.error(error.message, error, AiService.name);
       throw new InternalServerErrorException('No se pudo generar la imagen');
-    }
+    });
 
-    let imageId = '';
-    if (base64) {
-      imageId = (
-        await this.multimedia.createMultimediaFromBuffer(
-          Buffer.from(imageGenerated, 'base64'),
-          {
-            type: TypeMultimedia.IMAGE,
-            description: 'Imagen generada por IA',
-            fileName: `image_generated_${Date.now()}.webp`,
-          },
-        )
-      ).data[0].id;
-    } else
-      imageId = (
-        await this.multimedia.uploadUrl({
-          url: imageGenerated,
+    const imageId = (
+      await this.multimedia.createMultimediaFromBuffer(
+        Buffer.from(imageGenerated.image.base64, 'base64'),
+        {
           type: TypeMultimedia.IMAGE,
           description: 'Imagen generada por IA',
-        })
-      ).data.id;
+          fileName: `image_generated_${Date.now()}.webp`,
+        },
+      )
+    ).data[0].id;
 
     return imageId;
   }
 
-  async generateSpeechService(text: string) {
-    const response = await this.openai.audio.speech.create({
-      model: 'tts-1',
-      voice: 'alloy',
-      input: text,
-    });
+  // async generateSpeechService(text: string) {
+  //   const response = await this.openai.audio.speech.create({
+  //     model: 'tts-1',
+  //     voice: 'alloy',
+  //     input: text,
+  //   });
 
-    const audioId = await this.multimedia.createMultimediaFromBuffer(
-      Buffer.from(await response.arrayBuffer()),
-      {
-        type: TypeMultimedia.AUDIO,
-        description: 'Audio generado por IA',
-        fileName: `audio_generated_${Date.now()}.mp3`,
-      },
-    );
-    return audioId.data[0].id;
-  }
+  //   const audioId = await this.multimedia.createMultimediaFromBuffer(
+  //     Buffer.from(await response.arrayBuffer()),
+  //     {
+  //       type: TypeMultimedia.AUDIO,
+  //       description: 'Audio generado por IA',
+  //       fileName: `audio_generated_${Date.now()}.mp3`,
+  //     },
+  //   );
+  //   return audioId.data[0].id;
+  // }
 
   async generateReadingService(params: GenerateReadingDto) {
     const prompt = generateReading2(params);
-    return (await this.generateJSON(prompt)).contents;
+
+    return (await this.generateJSON(prompt, this.generateContentSchema, 0.7))
+      .contents;
   }
 
   async generateGeneralReadingService(params: GenerateGeneralReadingDto) {
     const prompt = generateReading(params);
-    return (await this.generateJSON(prompt)).contents;
+
+    return (await this.generateJSON(prompt, this.generateContentSchema, 0.7))
+      .contents;
   }
 
   async generateQuizService(
@@ -222,7 +210,7 @@ export class AiService {
       throw new InternalServerErrorException('Tipo de actividad no soportado');
     }
 
-    return (await this.generateJSON(prompt)).questions;
+    return (await this.generateJSON(prompt, this.activitiesSchema)).questions;
   }
 
   async generateGeneralQuizService(reading: string, type: TypeActivity) {
@@ -259,26 +247,45 @@ export class AiService {
       throw new InternalServerErrorException('Tipo de actividad no soportado');
     }
 
-    return (await this.generateJSON(prompt)).questions;
+    return (await this.generateJSON(prompt, this.activitiesSchema)).questions;
   }
 
   async determineTypeActivities(params: GenerateQuestionsActivitiesDto) {
     const prompt = getTypeActivities(params);
-    return (await this.generateJSON(prompt)).typeActivities;
+    const schema = z.object({
+      typeActivities: z.array(
+        z.object({
+          activityType: z.enum(
+            Object.values(TypeActivity) as [string, ...string[]],
+          ),
+        }),
+      ),
+    });
+
+    return (await this.generateJSON(prompt, schema, 0.6)).typeActivities;
   }
 
   async generateRecommendationForQuestionsActivitiesService(
     params: generateRecommendationForQuestionsActivitiesDto,
   ) {
     const prompt = generateRecommendationForQuestionsActivities(params);
-    return (await this.generateJSON(prompt)).recommendation;
+    const schema = z.object({
+      recommendation: z.string(),
+    });
+
+    return (await this.generateJSON(prompt, schema)).recommendation;
   }
 
   async generateVerificationOpenTextOrAnswerService(
     params: generateRecommendationForQuestionsActivitiesDto,
   ) {
     const prompt = generateVerificationOpenAnswers(params);
-    const scoreByAI = await this.generateJSON(prompt);
+    const schema = z.object({
+      isCorrect: z.boolean(),
+      recommendation: z.string(),
+    });
+
+    const scoreByAI = await this.generateJSON(prompt, schema);
     return scoreByAI;
   }
 
@@ -289,7 +296,11 @@ export class AiService {
 
   async generateReadingInformationService() {
     const prompt = generateReadingInformation();
+    const schema = z.object({
+      title: z.string(),
+      objectives: z.string(),
+    });
 
-    return await this.generateJSON(prompt);
+    return await this.generateJSON(prompt, schema, 0.9);
   }
 }

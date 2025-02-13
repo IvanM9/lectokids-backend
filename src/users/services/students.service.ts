@@ -29,9 +29,18 @@ export class StudentsService {
         );
       });
 
-    let student = await this.db.student.findFirst({
-      where: { user: { identification: data.identification } },
+    let { student, role } = await this.db.user.findFirst({
+      where: { identification: data.identification },
+      select: {
+        role: true,
+        student: true,
+      },
     });
+
+    if (role && role != RoleEnum.STUDENT)
+      throw new BadRequestException(
+        'El usuario no debe estar registrado con otro rol',
+      );
 
     if (!student) {
       student = await this.db.student

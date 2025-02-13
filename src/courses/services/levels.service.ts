@@ -196,9 +196,9 @@ export class LevelsService {
                       },
                       course: {
                         id: courseId,
-                      }
+                      },
                     },
-                    status: true
+                    status: true,
                   },
                 },
               },
@@ -225,13 +225,13 @@ export class LevelsService {
                       },
                       course: {
                         id: courseId,
-                      }
+                      },
                     },
-                  }
-                }
-              }
-            }
-          }
+                  },
+                },
+              },
+            },
+          },
         },
       },
       where: {
@@ -251,12 +251,12 @@ export class LevelsService {
                       },
                       course: {
                         id: courseId,
-                      }
+                      },
                     },
-                  }
-                }
-              }
-            }
+                  },
+                },
+              },
+            },
           },
         },
         course: {
