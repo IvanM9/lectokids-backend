@@ -1,19 +1,19 @@
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
-import { Injectable } from '@nestjs/common';
-// import { Environment } from '@shared/constants/environment';
+import { Inject, Injectable } from '@nestjs/common';
 import { InfoUserInterface } from '@/security/jwt-strategy/info-user.interface';
-import { ENVIRONMENT } from '@/shared/constants/environment';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-require('dotenv').config();
+import jwtConfig from '../config/jwt.config';
+import { ConfigType } from '@nestjs/config';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor() {
+  constructor(
+    @Inject(jwtConfig.KEY) private environment: ConfigType<typeof jwtConfig>,
+  ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: ENVIRONMENT.JWT_SECRET_KEY,
+      secretOrKey: environment.secret,
     });
   }
   async validate(payload: InfoUserInterface) {

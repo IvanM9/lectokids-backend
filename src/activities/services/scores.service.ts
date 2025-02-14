@@ -1,6 +1,7 @@
 import { PrismaService } from '@/libs/prisma.service';
 import {
   BadRequestException,
+  Inject,
   Injectable,
   Logger,
   NotFoundException,
@@ -14,8 +15,9 @@ import { ScoreQuestionActivityInterface } from '../interfaces/score.interface';
 import { AiService } from '@/ai/services/ai/ai.service';
 import { TypeContent } from '@prisma/client';
 import { renderFile } from 'ejs';
-import { ENVIRONMENT } from '@/shared/constants/environment';
 import puppeteer from 'puppeteer';
+import serverConfig from '@/shared/config/server.config';
+import { ConfigType } from '@nestjs/config';
 
 @Injectable()
 export class ScoresService {
@@ -23,6 +25,8 @@ export class ScoresService {
     private db: PrismaService,
     private readonly logger: Logger,
     private readonly ai: AiService,
+    @Inject(serverConfig.KEY)
+    private environment: ConfigType<typeof serverConfig>,
   ) {}
 
   async getScoreByActivity(activityId: string) {
@@ -650,7 +654,7 @@ export class ScoresService {
 
     return new Promise<Buffer>((resolve, reject) => {
       renderFile(
-        ENVIRONMENT.VIEWS_DIR + '/report-by-course.ejs',
+        this.environment.viewsDir + '/report-by-course.ejs',
         { course: data },
         async (err, html) => {
           if (err) {
@@ -809,7 +813,7 @@ export class ScoresService {
 
     return new Promise<Buffer>((resolve, reject) => {
       renderFile(
-        ENVIRONMENT.VIEWS_DIR + '/report-by-student.ejs',
+        this.environment.viewsDir + '/report-by-student.ejs',
         { data },
         async (err, html) => {
           if (err) {

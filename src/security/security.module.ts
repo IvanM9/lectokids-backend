@@ -5,15 +5,14 @@ import { AuthController } from './auth/auth.controller';
 import { AuthService } from './auth/auth.service';
 import { PrismaService } from '@/libs/prisma.service';
 import { JwtStrategy } from './jwt-strategy/jwt.strategy';
-import { ENVIRONMENT } from '@/shared/constants/environment';
+import { ConfigModule } from '@nestjs/config';
+import jwtConfig from './config/jwt.config';
 
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt' }),
-    JwtModule.register({
-      global: true,
-      secret: ENVIRONMENT.JWT_SECRET_KEY,
-    }),
+    JwtModule.registerAsync(jwtConfig.asProvider()),
+    ConfigModule.forFeature(jwtConfig),
   ],
   controllers: [AuthController],
   providers: [AuthService, PrismaService, JwtStrategy],

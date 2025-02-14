@@ -15,6 +15,8 @@ import { AiModule } from './ai/ai.module';
 import { ActivitiesModule } from './activities/activities.module';
 import { MultimediaModule } from './multimedia/multimedia.module';
 import { AdminModule } from './admin/admin.module';
+import { ConfigModule } from '@nestjs/config';
+import serverConfig from './shared/config/server.config';
 
 @Module({
   imports: [
@@ -45,6 +47,11 @@ import { AdminModule } from './admin/admin.module';
     ActivitiesModule,
     MultimediaModule,
     AdminModule,
+    ConfigModule.forRoot({
+      isGlobal: true,
+      expandVariables: true,
+      load: [serverConfig],
+    }),
   ],
   controllers: [AppController],
   providers: [

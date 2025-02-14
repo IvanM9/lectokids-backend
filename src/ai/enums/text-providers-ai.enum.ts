@@ -1,4 +1,4 @@
-export enum ProviderAI {
+export enum TextProviderAI {
   google = 'google',
   openAi = 'openai',
 }

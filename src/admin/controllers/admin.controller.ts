@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  NotImplementedException,
   Put,
   UseGuards,
   UseInterceptors,
@@ -26,11 +27,11 @@ export class AdminController {
 
   @Get('config')
   getConfig() {
-    return this.service.getConfig();
+    throw new NotImplementedException();
   }
 
   @Put('config')
   setConfig(@Body() config: ConfigDto) {
-    return this.service.updateConfig(config);
+    throw new NotImplementedException();
   }
 }

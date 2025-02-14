@@ -1,9 +1,9 @@
 import {
+  Inject,
   Injectable,
   InternalServerErrorException,
   Logger,
 } from '@nestjs/common';
-import { ENVIRONMENT } from '@/shared/constants/environment';
 import {
   generateAlphabetSoup,
   generateAlphabetSoupGeneral,
@@ -41,31 +41,55 @@ import {
   generateText,
   LanguageModelV1,
   NoImageGeneratedError,
+  ImageModel,
 } from 'ai';
 import { z, Schema } from 'zod';
-import { ProviderAI } from '@/ai/enums/providers-ai.enum';
+import { TextProviderAI } from '@/ai/enums/text-providers-ai.enum';
+import aiConfig from '@/ai/config/ai.config';
+import { ConfigType } from '@nestjs/config';
+import { ImageProviderAI } from '@/ai/enums/image-providers-ai.enum';
+import { vertex } from '@ai-sdk/google-vertex';
 
 @Injectable()
 export class AiService {
   constructor(
     private readonly logger: Logger,
     private multimedia: MultimediaService,
+    @Inject(aiConfig.KEY) private environment: ConfigType<typeof aiConfig>,
   ) {
-    switch (ENVIRONMENT.PROVIDER_AI) {
-      case ProviderAI.google:
-        this.textModelAI = google(ENVIRONMENT.MODEL_TEXT);
+    switch (this.environment.textProviderAI) {
+      case TextProviderAI.google:
+        this.textModelAI = google(environment.modelText);
         break;
 
-      case ProviderAI.openAi:
-        this.textModelAI = openai(ENVIRONMENT.MODEL_TEXT);
+      case TextProviderAI.openAi:
+        this.textModelAI = openai(environment.modelText);
         break;
 
       default:
+        throw new InternalServerErrorException(
+          'No hay un modelo de IA para generar texto',
+        );
+    }
+
+    switch (this.environment.imageProviderAI) {
+      case ImageProviderAI.google:
+        this.imageModelAI = vertex.image(environment.modelImage);
         break;
+
+      case ImageProviderAI.openAi:
+        this.imageModelAI = openai.image(environment.modelImage);
+        break;
+
+      default:
+        throw new InternalServerErrorException(
+          'No hay un modelo de IA para generar imagenes',
+        );
     }
   }
 
   textModelAI: LanguageModelV1;
+  imageModelAI: ImageModel;
 
   activitiesSchema = z.object({
     questions: z.array(
@@ -126,9 +150,7 @@ export class AiService {
 
   private async generateImage(prompt: string) {
     const imageGenerated = await experimental_generateImage({
-      model: openai.image(ENVIRONMENT.MODEL_IMAGE, {
-        maxImagesPerCall: 1,
-      }),
+      model: this.imageModelAI,
       prompt,
       size: `${1024}x${1024}`,
       maxRetries: 3,
