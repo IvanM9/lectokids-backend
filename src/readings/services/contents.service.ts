@@ -16,6 +16,9 @@ import { TypeContent } from '@prisma/client';
 import { ActivitiesService } from '@/activities/services/activities.service';
 import { GenerateReadingDto } from '@/ai/ai.dto';
 import { DetailsReadingsService } from './details-readings.service';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
+import { GenerateContentI } from '../interfaces/generate-content.interface';
 
 @Injectable()
 export class ContentsService {
@@ -24,6 +27,8 @@ export class ContentsService {
     private ai: AiService,
     private activitiesService: ActivitiesService,
     private detailReadingService: DetailsReadingsService,
+    @InjectQueue('generate_content')
+    private generateContentQueue: Queue,
   ) {}
 
   async create(data: CreateContentDto) {
@@ -229,26 +234,34 @@ export class ContentsService {
     });
 
     for (const student of students) {
-      await this.generateContentsForOneStudent(
-        student.detailReading.id,
-        student.detailReading.numberOfImages,
-      );
-
-      if (payload.autogenerateActivities) {
-        await this.activitiesService.generateActivities({
-          detailReadingId: student.detailReading.id,
-          courseStudentId: student.courseStudent.id,
-        });
-      }
-
-      if (payload.generateFrontPage)
-        await this.detailReadingService.updateFrontPage(
-          student.detailReading.id,
-        );
+      await this.generateContentQueue.add('reading', {
+        detailReadingId: student.detailReading.id,
+        numberOfImages: student.detailReading.numberOfImages,
+        courseStudentId: student.courseStudent.id,
+        autogenerateActivities: payload.autogenerateActivities,
+        generateFrontPage: payload.generateFrontPage,
+      });
     }
     return {
-      message: `Contenido agregado correctamente a las lecturas`,
+      message: `Se está generando el contenido, espere hasta que se complete`,
     };
+  }
+
+  async generateContent(data: GenerateContentI) {
+    await this.generateContentsForOneStudent(
+      data.detailReadingId,
+      data.numberOfImages,
+    );
+
+    if (data.autogenerateActivities) {
+      await this.activitiesService.generateActivities({
+        detailReadingId: data.detailReadingId,
+        courseStudentId: data.courseStudentId,
+      });
+    }
+
+    if (data.generateFrontPage)
+      await this.detailReadingService.updateFrontPage(data.detailReadingId);
   }
 
   async generateContentsForOneStudent(

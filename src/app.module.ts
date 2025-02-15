@@ -13,8 +13,10 @@ import { AiModule } from './ai/ai.module';
 import { ActivitiesModule } from './activities/activities.module';
 import { MultimediaModule } from './multimedia/multimedia.module';
 import { AdminModule } from './admin/admin.module';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import serverConfig from './shared/config/server.config';
+import { BullModule } from '@nestjs/bullmq';
+import redisConfig from './shared/config/redis.config';
 
 @Module({
   imports: [
@@ -41,7 +43,29 @@ import serverConfig from './shared/config/server.config';
     ConfigModule.forRoot({
       isGlobal: true,
       expandVariables: true,
-      load: [serverConfig],
+      load: [serverConfig, redisConfig],
+    }),
+    BullModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        connection: {
+          host: configService.get('redis.host'),
+          port: configService.get('redis.port'),
+          username: configService.get('redis.username'),
+          password: configService.get('redis.password'),
+          tls: configService.get('redis.ssl')
+            ? {
+                rejectUnauthorized: false,
+              }
+            : null,
+        },
+        defaultJobOptions: {
+          attempts: 3,
+          removeOnComplete: 50,
+          removeOnFail: 1000,
+        },
+      }),
+      inject: [ConfigService],
     }),
   ],
   controllers: [AppController],
