@@ -4,8 +4,6 @@ import { AppService } from './app.service';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { CacheModule } from '@nestjs/cache-manager';
-import { ServeStaticModule } from '@nestjs/serve-static';
-import { join } from 'path';
 import { SecurityModule } from '@/security/security.module';
 import { SharedModule } from './shared/shared.module';
 import { UsersModule } from './users/users.module';
@@ -30,13 +28,6 @@ import serverConfig from './shared/config/server.config';
       isGlobal: true,
       ttl: 2000,
       max: 1000,
-    }),
-    ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'client'),
-      exclude: ['/api/(.*)', '/api-docs'],
-      serveStaticOptions: {
-        cacheControl: true,
-      },
     }),
     SecurityModule,
     SharedModule,
