@@ -5,5 +5,9 @@ export interface GenerateContentI {
   autogenerateActivities: boolean;
   generateFrontPage: boolean;
   processId: string;
-  totalJobs: number;
+}
+
+export interface GenerateProgressI {
+  total: number;
+  current: number;
 }

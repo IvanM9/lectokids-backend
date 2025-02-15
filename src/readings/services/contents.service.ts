@@ -1,6 +1,7 @@
 import { PrismaService } from '@/libs/prisma.service';
 import {
   BadRequestException,
+  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -17,7 +18,9 @@ import { GenerateReadingDto } from '@/ai/ai.dto';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { v4 as uuidv4 } from 'uuid';
-
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
+import { GenerateProgressI } from '../interfaces/generate-content.interface';
 
 @Injectable()
 export class ContentsService {
@@ -26,6 +29,7 @@ export class ContentsService {
     private ai: AiService,
     @InjectQueue('generate_content')
     private generateContentQueue: Queue,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
   async create(data: CreateContentDto) {
@@ -230,8 +234,20 @@ export class ContentsService {
       },
     });
 
-    const processId = uuidv4();
     const totalJobs = students.length;
+    if (totalJobs == 0)
+      throw new BadRequestException('No hay estudiantes en esta lectura');
+
+    const processId = uuidv4();
+
+    const cached = await this.cacheManager.set<GenerateProgressI>(
+      processId,
+      {
+        total: totalJobs,
+        current: 0,
+      },
+      1000 * 60 * 30,
+    );
 
     for (const student of students) {
       await this.generateContentQueue.add('reading', {
@@ -241,9 +257,9 @@ export class ContentsService {
         autogenerateActivities: payload.autogenerateActivities,
         generateFrontPage: payload.generateFrontPage,
         processId,
-        totalJobs
       });
     }
+
     return {
       message: `Se está generando el contenido. Esto puede tomar un momento`,
     };

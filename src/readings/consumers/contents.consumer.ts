@@ -6,9 +6,15 @@ import {
 } from '@nestjs/bullmq';
 import { Job, Queue } from 'bullmq';
 import { ContentsService } from '../services/contents.service';
-import { GenerateContentI } from '../interfaces/generate-content.interface';
+import {
+  GenerateContentI,
+  GenerateProgressI,
+} from '../interfaces/generate-content.interface';
 import { ActivitiesService } from '@/activities/services/activities.service';
 import { DetailsReadingsService } from '../services/details-readings.service';
+import { Inject } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 
 @Processor('generate_content')
 export class ContentsConsumer extends WorkerHost {
@@ -18,6 +24,7 @@ export class ContentsConsumer extends WorkerHost {
     private detailReadingService: DetailsReadingsService,
     @InjectQueue('generate_content')
     private generateContentQueue: Queue,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {
     super();
   }
@@ -63,6 +70,22 @@ export class ContentsConsumer extends WorkerHost {
           priority: 3,
         });
       }
+
+      const currentProgress = await this.cacheManager.get<GenerateProgressI>(
+        job.data.processId,
+      );
+
+      const newProgress = await this.cacheManager.set<GenerateProgressI>(
+        job.data.processId,
+        {
+          current: currentProgress.current + 1,
+          total: currentProgress.total,
+        },
+        1000 * 60 * 30,
+      );
+
+      if (newProgress.current >= newProgress.total)
+        console.log('Generación terminada: ', job.data.processId);
     }
   }
 }
