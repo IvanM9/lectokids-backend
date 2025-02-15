@@ -13,20 +13,17 @@ import {
 } from '../dtos/contents.dto';
 import { AiService } from '@/ai/services/ai/ai.service';
 import { TypeContent } from '@prisma/client';
-import { ActivitiesService } from '@/activities/services/activities.service';
 import { GenerateReadingDto } from '@/ai/ai.dto';
-import { DetailsReadingsService } from './details-readings.service';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
-import { GenerateContentI } from '../interfaces/generate-content.interface';
+import { v4 as uuidv4 } from 'uuid';
+
 
 @Injectable()
 export class ContentsService {
   constructor(
     private db: PrismaService,
     private ai: AiService,
-    private activitiesService: ActivitiesService,
-    private detailReadingService: DetailsReadingsService,
     @InjectQueue('generate_content')
     private generateContentQueue: Queue,
   ) {}
@@ -233,6 +230,9 @@ export class ContentsService {
       },
     });
 
+    const processId = uuidv4();
+    const totalJobs = students.length;
+
     for (const student of students) {
       await this.generateContentQueue.add('reading', {
         detailReadingId: student.detailReading.id,
@@ -240,28 +240,13 @@ export class ContentsService {
         courseStudentId: student.courseStudent.id,
         autogenerateActivities: payload.autogenerateActivities,
         generateFrontPage: payload.generateFrontPage,
+        processId,
+        totalJobs
       });
     }
     return {
-      message: `Se está generando el contenido, espere hasta que se complete`,
+      message: `Se está generando el contenido. Esto puede tomar un momento`,
     };
-  }
-
-  async generateContent(data: GenerateContentI) {
-    await this.generateContentsForOneStudent(
-      data.detailReadingId,
-      data.numberOfImages,
-    );
-
-    if (data.autogenerateActivities) {
-      await this.activitiesService.generateActivities({
-        detailReadingId: data.detailReadingId,
-        courseStudentId: data.courseStudentId,
-      });
-    }
-
-    if (data.generateFrontPage)
-      await this.detailReadingService.updateFrontPage(data.detailReadingId);
   }
 
   async generateContentsForOneStudent(
