@@ -17,6 +17,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import serverConfig from './shared/config/server.config';
 import { BullModule } from '@nestjs/bullmq';
 import redisConfig from './shared/config/redis.config';
+import KeyvRedis, { Keyv } from '@keyv/redis';
+import { CacheableMemory } from 'cacheable';
 
 @Module({
   imports: [
@@ -26,10 +28,20 @@ import redisConfig from './shared/config/redis.config';
         limit: 15,
       },
     ]),
-    CacheModule.register({
+    CacheModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        stores: [
+          new Keyv({
+            store: new CacheableMemory({ ttl: 6000, lruSize: 5000 }),
+          }),
+          new KeyvRedis(
+            `redis://${configService.get('redis.host')}:${configService.get('redis.port')}`,
+          ),
+        ],
+      }),
+      inject: [ConfigService],
       isGlobal: true,
-      ttl: 2000,
-      max: 1000,
     }),
     SecurityModule,
     SharedModule,

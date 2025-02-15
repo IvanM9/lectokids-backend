@@ -81,7 +81,7 @@ export class ContentsConsumer extends WorkerHost {
           current: currentProgress.current + 1,
           total: currentProgress.total,
         },
-        1000 * 60 * 30,
+        1000 * 60 * 10,
       );
 
       if (newProgress.current >= newProgress.total)

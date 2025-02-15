@@ -240,13 +240,13 @@ export class ContentsService {
 
     const processId = uuidv4();
 
-    const cached = await this.cacheManager.set<GenerateProgressI>(
+    await this.cacheManager.set<GenerateProgressI>(
       processId,
       {
         total: totalJobs,
         current: 0,
       },
-      1000 * 60 * 30,
+      1000 * 60 * 10,
     );
 
     for (const student of students) {
