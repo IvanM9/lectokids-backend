@@ -5,12 +5,14 @@ import helmet from 'helmet';
 import { ValidationPipe } from '@nestjs/common';
 import compression from 'compression';
 import { LoggerFactory } from './libs/LoggerFactory';
-import { ENVIRONMENT } from './shared/constants/environment';
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger: LoggerFactory('LectoKids'),
   });
+  const configService = app.get(ConfigService);
+  const prefixApi = configService.get('server.prefixApi');
   const config = new DocumentBuilder()
     .setTitle('Lectokids API')
     .setDescription('Documentación de la API de Lectokids')
@@ -19,7 +21,7 @@ async function bootstrap() {
       'https://ivan-manzaba.vercel.app',
       'mauricio.9.inm@gmail.com',
     )
-    .addServer(ENVIRONMENT.PREFIX_API)
+    .addServer(prefixApi)
     .setVersion('1.0')
     .addBearerAuth()
     .build();
@@ -28,7 +30,7 @@ async function bootstrap() {
   SwaggerModule.setup('api-docs', app, document);
 
   app.enableCors({
-    origin: ENVIRONMENT.CORS_ORIGIN,
+    origin: configService.get('server.origin'),
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   });
 
@@ -41,10 +43,10 @@ async function bootstrap() {
   );
   app.use(compression());
 
-  app.use(ENVIRONMENT.PREFIX_API, helmet());
+  app.use(prefixApi, helmet());
 
-  app.setGlobalPrefix(ENVIRONMENT.PREFIX_API);
+  app.setGlobalPrefix(prefixApi);
   app.enableShutdownHooks();
-  await app.listen(ENVIRONMENT.PORT);
+  await app.listen(configService.getOrThrow('server.port'));
 }
 bootstrap();

@@ -1,3 +1,0 @@
-User-agent: *
-Allow: /
-Sitemap: https://fyc.uteq.edu.ec/sitemap-index.xml

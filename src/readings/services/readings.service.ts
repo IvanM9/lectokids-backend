@@ -1,6 +1,7 @@
 import { PrismaService } from '@/libs/prisma.service';
 import {
   BadRequestException,
+  Inject,
   Injectable,
   Logger,
   NotFoundException,
@@ -9,8 +10,9 @@ import { CreateReadingDto, UpdateReadingDto } from '../dtos/readings.dto';
 import { AiService } from '@/ai/services/ai/ai.service';
 import puppeteer from 'puppeteer';
 import { renderFile } from 'ejs';
-import { ENVIRONMENT } from '@/shared/constants/environment';
 import { TypeContent } from '@prisma/client';
+import { ConfigType } from '@nestjs/config';
+import serverConfig from '@/shared/config/server.config';
 
 @Injectable()
 export class ReadingsService {
@@ -18,6 +20,8 @@ export class ReadingsService {
     private db: PrismaService,
     private readonly logger: Logger,
     private ai: AiService,
+    @Inject(serverConfig.KEY)
+    private environment: ConfigType<typeof serverConfig>,
   ) {}
 
   async create(data: CreateReadingDto, userId: string) {
@@ -458,7 +462,7 @@ export class ReadingsService {
 
     return new Promise<Buffer>((resolve, reject) => {
       renderFile(
-        ENVIRONMENT.VIEWS_DIR + '/reading.ejs',
+        this.environment.viewsDir + '/reading.ejs',
         data,
         async (err, html) => {
           if (err) {

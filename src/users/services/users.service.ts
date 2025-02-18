@@ -1,6 +1,7 @@
 import { PrismaService } from '@/libs/prisma.service';
 import {
   BadRequestException,
+  Inject,
   Injectable,
   Logger,
   NotFoundException,
@@ -8,13 +9,16 @@ import {
 import { Role } from '@prisma/client';
 import { hashSync } from 'bcrypt';
 import { CreateUserDto } from '../dtos/users.dto';
-import { ENVIRONMENT } from '@/shared/constants/environment';
+import adminConfig from '../config/admin.config';
+import { ConfigType } from '@nestjs/config';
 
 @Injectable()
 export class UsersService {
   constructor(
     private db: PrismaService,
     private logger: Logger,
+    @Inject(adminConfig.KEY)
+    private environment: ConfigType<typeof adminConfig>,
   ) {
     this.createAdmin();
   }
@@ -30,8 +34,8 @@ export class UsersService {
       await this.db.user
         .create({
           data: {
-            user: ENVIRONMENT.ADMIN_USER,
-            password: hashSync(ENVIRONMENT.ADMIN_PASSWORD, 10),
+            user: this.environment.user,
+            password: hashSync(this.environment.password, 10),
             role: Role.ADMIN,
             identification: 'admin',
             birthDate: new Date(),

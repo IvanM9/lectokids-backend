@@ -42,4 +42,4 @@ COPY --from=builder /usr/src/app/dist ./dist
 COPY --from=builder /usr/src/app/views ./views
 COPY --from=builder /usr/src/app/client ./client
 EXPOSE 4000
-CMD ["node", "dist/main"]
+CMD ["npm", "run", "start:migrate:prod"]

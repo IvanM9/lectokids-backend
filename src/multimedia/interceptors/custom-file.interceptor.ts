@@ -1,5 +1,5 @@
-import { ENVIRONMENT } from '@/shared/constants/environment';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import {
   MulterModuleOptions,
   MulterOptionsFactory,
@@ -9,10 +9,12 @@ import { extname } from 'path';
 
 @Injectable()
 export class CustomFileInterceptor implements MulterOptionsFactory {
+  constructor(private configService: ConfigService) {}
+
   createMulterOptions(): MulterModuleOptions {
     return {
       storage: diskStorage({
-        destination: ENVIRONMENT.PUBLIC_DIR,
+        destination: this.configService.get('multimedia.publicPath'),
         filename: (req, file, cb) => {
           file.originalname = file.originalname.replace(/\s/g, '_');
           const newName = `${file.originalname.split('.')[0]}_${Date.now()}`;

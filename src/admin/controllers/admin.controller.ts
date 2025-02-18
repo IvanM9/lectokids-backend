@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Put, UseGuards, UseInterceptors } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  NotImplementedException,
+  Put,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { AdminService } from '../services/admin.service';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '@/security/jwt-strategy/jwt-auth.guard';
@@ -15,15 +23,15 @@ import { ResponseHttpInterceptor } from '@/shared/interceptors/response-http.int
 @UseGuards(JwtAuthGuard, RoleGuard)
 @Role(RoleEnum.ADMIN)
 export class AdminController {
-    constructor(private service: AdminService) {}
+  constructor(private service: AdminService) {}
 
-    @Get('config')
-    getConfig() {
-        return this.service.getConfig();
-    }
+  @Get('config')
+  getConfig() {
+    throw new NotImplementedException();
+  }
 
-    @Put('config')
-    setConfig(@Body() config: ConfigDto) {
-        return this.service.updateConfig(config);
-    }
+  @Put('config')
+  setConfig(@Body() config: ConfigDto) {
+    throw new NotImplementedException();
+  }
 }

@@ -1,6 +1,7 @@
 import { PrismaService } from '@/libs/prisma.service';
 import {
   BadRequestException,
+  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -13,17 +14,22 @@ import {
 } from '../dtos/contents.dto';
 import { AiService } from '@/ai/services/ai/ai.service';
 import { TypeContent } from '@prisma/client';
-import { ActivitiesService } from '@/activities/services/activities.service';
 import { GenerateReadingDto } from '@/ai/ai.dto';
-import { DetailsReadingsService } from './details-readings.service';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
+import { v4 as uuidv4 } from 'uuid';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
+import { GenerateProgressI } from '../interfaces/generate-content.interface';
 
 @Injectable()
 export class ContentsService {
   constructor(
     private db: PrismaService,
     private ai: AiService,
-    private activitiesService: ActivitiesService,
-    private detailReadingService: DetailsReadingsService,
+    @InjectQueue('generate_content')
+    private generateContentQueue: Queue,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
   async create(data: CreateContentDto) {
@@ -228,26 +234,35 @@ export class ContentsService {
       },
     });
 
+    const totalJobs = students.length;
+    if (totalJobs == 0)
+      throw new BadRequestException('No hay estudiantes en esta lectura');
+
+    const processId = uuidv4();
+
+    await this.cacheManager.set<GenerateProgressI>(
+      processId,
+      {
+        total: totalJobs,
+        current: 0,
+      },
+      1000 * 60 * 10,
+    );
+
     for (const student of students) {
-      await this.generateContentsForOneStudent(
-        student.detailReading.id,
-        student.detailReading.numberOfImages,
-      );
-
-      if (payload.autogenerateActivities) {
-        await this.activitiesService.generateActivities({
-          detailReadingId: student.detailReading.id,
-          courseStudentId: student.courseStudent.id,
-        });
-      }
-
-      if (payload.generateFrontPage)
-        await this.detailReadingService.updateFrontPage(
-          student.detailReading.id,
-        );
+      await this.generateContentQueue.add('reading', {
+        detailReadingId: student.detailReading.id,
+        numberOfImages: student.detailReading.numberOfImages,
+        courseStudentId: student.courseStudent.id,
+        autogenerateActivities: payload.autogenerateActivities,
+        generateFrontPage: payload.generateFrontPage,
+        processId,
+      });
     }
+
     return {
-      message: `Contenido agregado correctamente a las lecturas`,
+      message: `Se está generando el contenido. Esto puede tomar un momento`,
+      data: { processId },
     };
   }
 

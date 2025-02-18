@@ -1,7 +1,7 @@
 import { PrismaService } from '@/libs/prisma.service';
-import { ENVIRONMENT } from '@/shared/constants/environment';
 import {
   BadRequestException,
+  Inject,
   Injectable,
   Logger,
   NotFoundException,
@@ -11,16 +11,20 @@ import firebase from 'firebase-admin';
 import * as fs from 'fs';
 import { CreateLinkMultimediaDto } from '../dtos/multimedia.dto';
 import { Readable } from 'stream';
+import multimediaConfig from '../config/multimedia.config';
+import { ConfigType } from '@nestjs/config';
 
 @Injectable()
 export class MultimediaService {
   constructor(
     private db: PrismaService,
     private readonly logger: Logger,
+    @Inject(multimediaConfig.KEY)
+    private environment: ConfigType<typeof multimediaConfig>,
   ) {
     firebase.initializeApp({
       credential: firebase.credential.cert(
-        JSON.parse(ENVIRONMENT.FIREBASE_CONFIG),
+        JSON.parse(environment.firebaseConfig),
       ),
     });
   }
@@ -30,7 +34,7 @@ export class MultimediaService {
       files.map(async (file) => {
         const uploaded = await firebase
           .storage()
-          .bucket(ENVIRONMENT.BUCKET_NAME)
+          .bucket(this.environment.bucketName)
           .upload(file.path, {
             destination: file.filename,
             public: true,
@@ -78,7 +82,10 @@ export class MultimediaService {
     buffer: Buffer,
     extraData: { fileName: string; type: TypeMultimedia; description?: string },
   ) {
-    fs.writeFileSync(`${ENVIRONMENT.PUBLIC_DIR}/${extraData.fileName}`, buffer);
+    fs.writeFileSync(
+      `${this.environment.publicDir}/${extraData.fileName}`,
+      buffer,
+    );
 
     let mimetype = '';
 
@@ -106,9 +113,9 @@ export class MultimediaService {
           encoding: '7bit',
           size: 0,
           stream: new Readable(),
-          destination: ENVIRONMENT.PUBLIC_DIR,
+          destination: this.environment.publicDir,
           filename: extraData.fileName,
-          path: `${ENVIRONMENT.PUBLIC_DIR}/${extraData.fileName}`,
+          path: `${this.environment.publicDir}/${extraData.fileName}`,
         },
       ],
       {
@@ -135,7 +142,7 @@ export class MultimediaService {
     if (multimedia.fileName) {
       await firebase
         .storage()
-        .bucket(ENVIRONMENT.BUCKET_NAME)
+        .bucket(this.environment.bucketName)
         .file(multimedia.fileName)
         .delete()
         .catch((e) => {
@@ -176,7 +183,7 @@ export class MultimediaService {
 
     const file = await firebase
       .storage()
-      .bucket(ENVIRONMENT.BUCKET_NAME)
+      .bucket(this.environment.bucketName)
       .file(multimedia.fileName)
       .download()
       .catch((err) => {

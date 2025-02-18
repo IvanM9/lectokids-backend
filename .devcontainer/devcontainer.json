@@ -16,8 +16,8 @@
 		"prisma.prisma",
 		"cweijan.vscode-database-client2"
 	]}},
-	"forwardPorts": [4000, 5432],
-	"postCreateCommand": "yarn install"
+	"forwardPorts": [4000],
+	"postCreateCommand": "yarn install; yarn prisma generate; yarn prisma migrate deploy"
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},

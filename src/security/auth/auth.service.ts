@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -7,14 +8,16 @@ import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from '@/security/auth/dtos/LoginDto';
 import { PrismaService } from '@/libs/prisma.service';
 import { compare } from 'bcrypt';
-import { ENVIRONMENT } from '@/shared/constants/environment';
 import { RoleEnum } from '../jwt-strategy/role.enum';
+import { ConfigType } from '@nestjs/config';
+import jwtConfig from '../config/jwt.config';
 
 @Injectable()
 export class AuthService {
   constructor(
     private jwt: JwtService,
     private db: PrismaService,
+    @Inject(jwtConfig.KEY) private environment: ConfigType<typeof jwtConfig>,
   ) {}
 
   async login(payload: LoginDto) {
@@ -62,7 +65,7 @@ export class AuthService {
         },
         {
           expiresIn: '12h',
-          secret: ENVIRONMENT.JWT_SECRET_KEY,
+          secret: this.environment.secret,
         },
       ),
       role: user.role,

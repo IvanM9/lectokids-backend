@@ -5,8 +5,8 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
-  binaryTargets = ["native", "linux-musl", "debian-openssl-3.0.x" ,"darwin", "windows", "rhel-openssl-3.0.x"]
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl", "debian-openssl-3.0.x", "darwin", "windows", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
@@ -47,7 +47,7 @@ model Teacher {
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamptz()
 
-  courses                 Course[]
+  courses Course[]
 
   @@map("teachers")
 }
@@ -62,7 +62,7 @@ model Student {
   updatedAt    DateTime? @updatedAt @map("updated_at") @db.Timestamptz()
   haveDyslexia Boolean   @default(false) @map("have_dyslexia")
 
-  coursesStudent          CourseStudent[]
+  coursesStudent CourseStudent[]
 
   @@map("students")
 }
@@ -138,17 +138,17 @@ model Reading {
 }
 
 model DetailReading {
-  id          String      @id @default(cuid())
-  reading     Reading     @relation(fields: [readingId], references: [id])
-  readingId   String      @map("reading_id")
-  frontPage   Multimedia? @relation("FrontPageRelation", fields: [frontPageId], references: [id])
-  frontPageId String?     @map("front_page_id")
-  status      Boolean     @default(true)
-  audio       Multimedia? @relation("AudioRelation", fields: [audioId], references: [id])
-  audioId     String?     @map("audio_id") @unique
-  createdAt   DateTime    @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt   DateTime?   @updatedAt @map("updated_at") @db.Timestamptz()
-  numberOfImages Int?     @map("number_of_images")
+  id             String      @id @default(cuid())
+  reading        Reading     @relation(fields: [readingId], references: [id])
+  readingId      String      @map("reading_id")
+  frontPage      Multimedia? @relation("FrontPageRelation", fields: [frontPageId], references: [id])
+  frontPageId    String?     @map("front_page_id")
+  status         Boolean     @default(true)
+  audio          Multimedia? @relation("AudioRelation", fields: [audioId], references: [id])
+  audioId        String?     @unique @map("audio_id")
+  createdAt      DateTime    @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt      DateTime?   @updatedAt @map("updated_at") @db.Timestamptz()
+  numberOfImages Int?        @map("number_of_images")
 
   contentsLecture    ContentLecture[]
   studentsOnReadings StudentsOnReadings[]
@@ -270,10 +270,10 @@ model Multimedia {
   createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt   DateTime?      @updatedAt @map("updated_at") @db.Timestamptz()
 
-  detailReadingFrontPage DetailReading[]  @relation("FrontPageRelation")
+  detailReadingFrontPage DetailReading[] @relation("FrontPageRelation")
 
-  detailReadingAudio     DetailReading?  @relation("AudioRelation")
-  detailReadingAudioId   String?         @map("detail_reading_audio_id") @unique
+  detailReadingAudio   DetailReading? @relation("AudioRelation")
+  detailReadingAudioId String?        @unique @map("detail_reading_audio_id")
 
   contentsLecture ContentLecture[]
 
@@ -282,32 +282,33 @@ model Multimedia {
 
 model Score {
   id             String    @id @default(cuid())
-  score          Decimal  @db.Decimal(5, 2)
+  score          Decimal   @db.Decimal(5, 2)
   recommendation String?   @db.Text
   reponses       Json[]    @default([]) @db.Json
   createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt      DateTime? @updatedAt @map("updated_at") @db.Timestamptz()
 
   activity        Activity      @relation(fields: [activityId], references: [id])
-  activityId      String
+  activityId      String        @map("activity_id")
   courseStudent   CourseStudent @relation(fields: [courseStudentId], references: [id])
-  courseStudentId String
+  courseStudentId String        @map("course_student_id")
 
   @@map("scores")
 }
 
 model TimeSpend {
-  id         String   @id @default(cuid())
-  startTime DateTime @map("start_time") @db.Timestamptz()
-  endTime   DateTime @map("end_time") @db.Timestamptz()
-  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt  DateTime? @updatedAt @map("updated_at") @db.Timestamptz()
+  id        String    @id @default(cuid())
+  startTime DateTime  @map("start_time") @db.Timestamptz()
+  endTime   DateTime  @map("end_time") @db.Timestamptz()
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamptz()
 
   detailReading   DetailReading? @relation(fields: [detailReadingId], references: [id])
   detailReadingId String?        @map("detail_lecture_id")
   activity        Activity?      @relation(fields: [activityId], references: [id])
-  activityId      String?
-  courseStudent   CourseStudent @relation(fields: [courseStudentId], references: [id])
-  courseStudentId String
+  activityId      String?        @map("activity_id")
+  courseStudent   CourseStudent  @relation(fields: [courseStudentId], references: [id])
+  courseStudentId String         @map("course_student_id")
+
   @@map("time_spend")
 }

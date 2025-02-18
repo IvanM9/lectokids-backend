@@ -4,6 +4,8 @@ import { DateFormatInterceptor } from './interceptors/date-format.interceptor';
 import { TerminusModule } from '@nestjs/terminus';
 import { HealthController } from './controllers/health.controller';
 import { PrismaService } from '@/libs/prisma.service';
+import { ConfigModule } from '@nestjs/config';
+import serverConfig from './config/server.config';
 
 @Module({
   providers: [

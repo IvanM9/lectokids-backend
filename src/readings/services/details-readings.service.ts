@@ -171,63 +171,63 @@ export class DetailsReadingsService {
     return { message: 'Tiempo de lectura registrado con éxito' };
   }
 
-  async getAudio(detailReadingId: string) {
-    const detailReading = await this.db.detailReading
-      .findUniqueOrThrow({
-        where: {
-          id: detailReadingId,
-        },
-        select: {
-          audio: {
-            select: {
-              id: true,
-            },
-          },
-          contentsLecture: {
-            select: {
-              content: true,
-            },
-            where: {
-              type: TypeContent.TEXT,
-              status: true,
-            },
-            orderBy: {
-              createdAt: 'asc',
-            },
-          },
-        },
-      })
-      .catch(() => {
-        throw new NotFoundException('Detalle de lectura no encontrado');
-      });
+  // async getAudio(detailReadingId: string) {
+  //   const detailReading = await this.db.detailReading
+  //     .findUniqueOrThrow({
+  //       where: {
+  //         id: detailReadingId,
+  //       },
+  //       select: {
+  //         audio: {
+  //           select: {
+  //             id: true,
+  //           },
+  //         },
+  //         contentsLecture: {
+  //           select: {
+  //             content: true,
+  //           },
+  //           where: {
+  //             type: TypeContent.TEXT,
+  //             status: true,
+  //           },
+  //           orderBy: {
+  //             createdAt: 'asc',
+  //           },
+  //         },
+  //       },
+  //     })
+  //     .catch(() => {
+  //       throw new NotFoundException('Detalle de lectura no encontrado');
+  //     });
 
-    let audioId = null;
-    if (!detailReading.audio) {
-      const textReading = detailReading.contentsLecture
-        .map((content) => content.content)
-        .join('\n');
-      audioId = await this.ai.generateSpeechService(textReading);
+  //   let audioId = null;
+  //   if (!detailReading.audio) {
+  //     const textReading = detailReading.contentsLecture
+  //       .map((content) => content.content)
+  //       .join('\n');
+  //     audioId = await this.ai.generateSpeechService(textReading);
 
-      await this.db.detailReading
-        .update({
-          where: {
-            id: detailReadingId,
-          },
-          data: {
-            audio: {
-              connect: {
-                id: audioId,
-              },
-            },
-          },
-        })
-        .catch(() => {
-          throw new BadRequestException('No se pudo guardar el audio');
-        });
-    } else {
-      audioId = detailReading.audio.id;
-    }
+  //     await this.db.detailReading
+  //       .update({
+  //         where: {
+  //           id: detailReadingId,
+  //         },
+  //         data: {
+  //           audio: {
+  //             connect: {
+  //               id: audioId,
+  //             },
+  //           },
+  //         },
+  //       })
+  //       .catch(() => {
+  //         throw new BadRequestException('No se pudo guardar el audio');
+  //       });
+  //   } else {
+  //     audioId = detailReading.audio.id;
+  //   }
 
-    return await this.multimediaService.downloadMultimedia(audioId);
-  }
+  //   return await this.multimediaService.downloadMultimedia(audioId);
+  // }
 }

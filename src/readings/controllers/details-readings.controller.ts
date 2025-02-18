@@ -7,6 +7,7 @@ import {
   Body,
   Controller,
   Get,
+  NotImplementedException,
   Param,
   Post,
   Res,
@@ -47,9 +48,10 @@ export class DetailsReadingsController {
   @Get(':id/audio')
   @Role(RoleEnum.STUDENT)
   async getAudio(@Param('id') id: string, @Res() res: Response) {
-    const audio = await this.service.getAudio(id);
-    res.setHeader('Content-Type', 'audio/mp3');
-    res.setHeader('Content-Disposition', `attachment; filename=${audio.name}`);
-    res.send(audio.buffer);
+    throw new NotImplementedException('Generación de audio en mantenimiento');
+    // const audio = await this.service.getAudio(id);
+    // res.setHeader('Content-Type', 'audio/mp3');
+    // res.setHeader('Content-Disposition', `attachment; filename=${audio.name}`);
+    // res.send(audio.buffer);
   }
 }

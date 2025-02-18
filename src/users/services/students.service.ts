@@ -29,35 +29,39 @@ export class StudentsService {
         );
       });
 
-    let student = await this.db.student.findFirst({
-      where: { user: { identification: data.identification } },
+    const user = await this.db.user.findFirst({
+      where: { identification: data.identification },
+      select: {
+        role: true,
+        student: true,
+      },
     });
 
-    if (!student) {
-      student = await this.db.student
-        .create({
-          data: {
-            user: {
-              create: {
-                firstName: data.firstName,
-                lastName: data.lastName,
-                identification: data.identification,
-                genre: data.genre,
-                birthDate: data.birthDate,
-                password: hashSync(data.identification, 10),
-                role: RoleEnum.STUDENT,
-                user: data.identification,
-              },
+    let student = null;
+    if (user && user.role != RoleEnum.STUDENT)
+      throw new BadRequestException(
+        'El usuario no debe estar registrado con otro rol',
+      );
+    else {
+      student = await this.db.student.create({
+        data: {
+          user: {
+            create: {
+              firstName: data.firstName,
+              lastName: data.lastName,
+              identification: data.identification,
+              genre: data.genre,
+              birthDate: data.birthDate,
+              password: hashSync(data.identification, 10),
+              role: RoleEnum.STUDENT,
+              user: data.identification,
             },
-            interests: data.interests,
-            city: data.city,
-            haveDyslexia: data.haveDyslexia,
           },
-        })
-        .catch((e) => {
-          this.logger.error(e.message, e.stack, StudentsService.name);
-          throw new BadRequestException('No se pudo crear el estudiante');
-        });
+          interests: data.interests,
+          city: data.city,
+          haveDyslexia: data.haveDyslexia,
+        },
+      });
     }
 
     await this.db.courseStudent
@@ -67,7 +71,9 @@ export class StudentsService {
             connect: { id: data.courseId },
           },
           student: {
-            connect: { id: student.id },
+            connect: {
+              id: user ? user.student.id : student.id,
+            },
           },
           grade: data.grade,
           customPrompt: data.customPrompt,

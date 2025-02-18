@@ -9,6 +9,8 @@ import { ActivitiesModule } from '@/activities/activities.module';
 import { DetailsReadingsService } from './services/details-readings.service';
 import { DetailsReadingsController } from './controllers/details-readings.controller';
 import { MultimediaModule } from '@/multimedia/multimedia.module';
+import { BullModule } from '@nestjs/bullmq';
+import { ContentsConsumer } from './consumers/contents.consumer';
 
 @Module({
   controllers: [
@@ -22,7 +24,13 @@ import { MultimediaModule } from '@/multimedia/multimedia.module';
     ContentsService,
     Logger,
     DetailsReadingsService,
+    ContentsConsumer,
   ],
-  imports: [AiModule, ActivitiesModule, MultimediaModule],
+  imports: [
+    AiModule,
+    ActivitiesModule,
+    MultimediaModule,
+    BullModule.registerQueue({ name: 'generate_content' }),
+  ],
 })
 export class ReadingsModule {}
