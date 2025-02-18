@@ -75,7 +75,6 @@ export class ContentsController {
   }
 
   @UseGuards(JwtAuthGuard, RoleGuard)
-  @Role(RoleEnum.TEACHER)
   @Get('by-reading/:detailReadingId')
   @Role(RoleEnum.TEACHER, RoleEnum.STUDENT)
   @ApiParam({
@@ -124,8 +123,6 @@ export class ContentsController {
 
   @Sse('finished_generation/:process_id')
   async getFinishedGeneration(@Param('process_id') processId: string) {
-    console.log('conectadoa sse');
-
     return new Observable((subscriber) => {
       const onProgressComplete = (data: { processId: string }) => {
         if (data.processId === processId) {
