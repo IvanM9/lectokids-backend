@@ -262,6 +262,7 @@ export class ContentsService {
 
     return {
       message: `Se está generando el contenido. Esto puede tomar un momento`,
+      data: { processId },
     };
   }
 

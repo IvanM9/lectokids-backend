@@ -15,6 +15,7 @@ import { DetailsReadingsService } from '../services/details-readings.service';
 import { Inject } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
+import { EventEmitter } from 'stream';
 
 @Processor('generate_content')
 export class ContentsConsumer extends WorkerHost {
@@ -28,6 +29,8 @@ export class ContentsConsumer extends WorkerHost {
   ) {
     super();
   }
+
+  eventEmitter = new EventEmitter();
 
   async process(job: Job<GenerateContentI>, token?: string): Promise<any> {
     switch (job.name) {
@@ -71,21 +74,25 @@ export class ContentsConsumer extends WorkerHost {
         });
       }
 
-      const currentProgress = await this.cacheManager.get<GenerateProgressI>(
-        job.data.processId,
-      );
+      await this.updateProgress(job.data.processId);
+    }
+  }
 
-      const newProgress = await this.cacheManager.set<GenerateProgressI>(
-        job.data.processId,
-        {
-          current: currentProgress.current + 1,
-          total: currentProgress.total,
-        },
-        1000 * 60 * 10,
-      );
+  private async updateProgress(processId: string) {
+    const currentProgress =
+      await this.cacheManager.get<GenerateProgressI>(processId);
 
-      if (newProgress.current >= newProgress.total)
-        console.log('Generación terminada: ', job.data.processId);
+    const newProgress = await this.cacheManager.set<GenerateProgressI>(
+      processId,
+      {
+        current: currentProgress.current + 1,
+        total: currentProgress.total,
+      },
+      1000 * 60 * 10,
+    );
+
+    if (newProgress.current >= newProgress.total) {
+      this.eventEmitter.emit('progressComplete', { processId });
     }
   }
 }
