@@ -5,9 +5,9 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { InfoUserInterface } from '@/security/jwt-strategy/info-user.interface';
+import { InfoUserInterface } from '@/security/interfaces/info-user.interface';
 import { PrismaService } from '@/libs/prisma.service';
-import { RoleEnum } from './role.enum';
+import { RoleEnum } from '../enums/role.enum';
 
 export const CurrentUser = createParamDecorator(
   async (

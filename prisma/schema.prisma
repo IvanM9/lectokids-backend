@@ -42,17 +42,18 @@ model User {
 }
 
 model Session {
-  id          String    @id @default(cuid())
-  firstDate   DateTime  @default(now()) @map("first_date") @db.Timestamptz()
-  lastDate    DateTime? @map("last_date") @db.Timestamptz()
-  userId      String    @map("user_id")
-  user        User      @relation(fields: [userId], references: [id])
-  failed      Boolean   @default(false)
-  ipAddress   String?   @map("ip_address") @db.VarChar(45)
-  device      String?   @map("device") @db.VarChar(100)
-  location    String?   @map("location") @db.VarChar(100)
-  isActive    Boolean?  @default(true) @map("is_active")
-  expiresDate DateTime  @map("expires_date") @db.Timestamp()
+  id           String    @id @default(cuid())
+  firstDate    DateTime  @default(now()) @map("first_date") @db.Timestamptz()
+  lastDate     DateTime? @map("last_date") @db.Timestamptz()
+  userId       String    @map("user_id")
+  user         User      @relation(fields: [userId], references: [id])
+  failed       Boolean   @default(false)
+  ipAddress    String?   @map("ip_address") @db.VarChar(45)
+  device       String?   @map("device") @db.VarChar(100)
+  location     String?   @map("location") @db.VarChar(100)
+  isActive     Boolean?  @default(true) @map("is_active")
+  expiresDate  DateTime? @map("expires_date") @db.Timestamp()
+  hashedRefreshToken String?    @map("hashed_refresh_token")
 
   @@map("sessions")
 }

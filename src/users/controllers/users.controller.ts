@@ -11,15 +11,15 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { UsersService } from '@/users/services/users.service';
-import { RoleGuard } from '@/security/jwt-strategy/roles.guard';
-import { JwtAuthGuard } from '@/security/jwt-strategy/jwt-auth.guard';
-import { Role } from '@/security/jwt-strategy/roles.decorator';
-import { RoleEnum } from '@/security/jwt-strategy/role.enum';
+import { RoleGuard } from '@/security/guards/roles.guard';
+import { JwtAuthGuard } from '@/security/guards/jwt-auth.guard';
+import { Role } from '@/security/decorators/roles.decorator';
+import { RoleEnum } from '@/security/enums/role.enum';
 import { ResponseHttpInterceptor } from '@/shared/interceptors/response-http.interceptor';
 import { CreateUserDto } from '../dtos/users.dto';
 import { OptionalBooleanPipe } from '@/shared/pipes/optional-boolean.pipe';
-import { CurrentUser } from '@/security/jwt-strategy/auth.decorator';
-import { InfoUserInterface } from '@/security/jwt-strategy/info-user.interface';
+import { CurrentUser } from '@/security/decorators/auth.decorator';
+import { InfoUserInterface } from '@/security/interfaces/info-user.interface';
 
 @Controller('users')
 @ApiTags('users')

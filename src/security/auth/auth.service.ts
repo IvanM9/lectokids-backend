@@ -9,11 +9,13 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { DetailLoginDto, LoginDto } from '@/security/auth/dtos/LoginDto';
 import { PrismaService } from '@/libs/prisma.service';
-import { compare } from 'bcrypt';
-import { RoleEnum } from '../jwt-strategy/role.enum';
+import { compare, hashSync } from 'bcrypt';
+import { RoleEnum } from '../enums/role.enum';
 import { ConfigType } from '@nestjs/config';
 import jwtConfig from '../config/jwt.config';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import refreshJwtConfig from '../config/refresh-jwt.config';
+import { InfoUserInterface } from '../interfaces/info-user.interface';
 
 @Injectable()
 export class AuthService {
@@ -21,6 +23,8 @@ export class AuthService {
     private jwt: JwtService,
     private db: PrismaService,
     @Inject(jwtConfig.KEY) private environment: ConfigType<typeof jwtConfig>,
+    @Inject(refreshJwtConfig.KEY)
+    private refreshTokenConfig: ConfigType<typeof refreshJwtConfig>,
   ) {}
 
   async login(payload: LoginDto, detail: DetailLoginDto) {
@@ -59,25 +63,16 @@ export class AuthService {
         throw new UnauthorizedException('El usuario no tiene un rol válido');
     }
 
-    const expiresIn = 60 * 60 * 12;
-    const session = await this.registerSession(
+    const tokens = await this.registerSession(
       user.id,
       false,
       detail,
-      expiresIn,
+      this.refreshTokenConfig.expiresIn as number,
     );
 
     return {
-      token: this.jwt.sign(
-        {
-          id: session.id,
-          role: user.role,
-        },
-        {
-          expiresIn,
-          secret: this.environment.secret,
-        },
-      ),
+      token: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
       role: user.role,
     };
   }
@@ -88,17 +83,48 @@ export class AuthService {
     detailSession: DetailLoginDto,
     expiresIn: number,
   ) {
-    return await this.db.session.create({
-      data: {
-        userId,
-        failed,
-        ...detailSession,
-        expiresDate: new Date(Date.now() + expiresIn * 1000),
-      },
-      select: {
-        id: true,
-      },
+    return await this.db.$transaction(async (cnx) => {
+      const session = await cnx.session.create({
+        data: {
+          userId,
+          failed,
+          ...detailSession,
+          expiresDate: new Date(Date.now() + expiresIn * 1000),
+        },
+        select: {
+          id: true,
+          user: {
+            select: {
+              role: true,
+            },
+          },
+        },
+      });
+
+      const tokens = await this.generateTokens(
+        session.id,
+        session.user.role as RoleEnum,
+      );
+
+      await cnx.session.update({
+        where: { id: session.id },
+        data: { hashedRefreshToken: hashSync(tokens.refreshToken, 12) },
+      });
+
+      return tokens;
     });
+  }
+
+  private async generateTokens(sessionId: string, role: RoleEnum) {
+    const payload: InfoUserInterface = { id: sessionId, role };
+    const [accessToken, refreshToken] = await Promise.all([
+      this.jwt.signAsync(payload),
+      this.jwt.signAsync(payload, this.refreshTokenConfig),
+    ]);
+    return {
+      accessToken,
+      refreshToken,
+    };
   }
 
   private async validateTeacher(id: string) {
@@ -155,7 +181,7 @@ export class AuthService {
     };
   }
 
-  @Cron(CronExpression.EVERY_5_MINUTES)
+  // @Cron(CronExpression.EVERY_5_MINUTES)
   async automaticLogout() {
     const sessions = await this.db.session.findMany({
       where: {
@@ -172,5 +198,66 @@ export class AuthService {
     for (const session of sessions) {
       await this.logout(session.id);
     }
+  }
+
+  async validateRefreshToken(sessionId: string, refreshToken: string) {
+    const session = await this.db.session
+      .findUniqueOrThrow({
+        where: { id: sessionId },
+      })
+      .catch(() => {
+        throw new NotFoundException('Sesión no encontrada');
+      });
+
+    if (!session.hashedRefreshToken)
+      throw new UnauthorizedException('Invalid Refresh Token');
+
+    const refreshTokenMatches = await compare(
+      refreshToken,
+      session.hashedRefreshToken,
+    );
+
+    if (!refreshTokenMatches)
+      throw new UnauthorizedException('Invalid Refresh Token');
+
+    return { id: sessionId };
+  }
+
+  async refreshToken(sessionId: string) {
+    const session = await this.db.session
+      .findUniqueOrThrow({
+        where: {
+          id: sessionId,
+          failed: false,
+        },
+        select: {
+          user: {
+            select: {
+              role: true,
+            },
+          },
+        },
+      })
+      .catch(() => {
+        throw new NotFoundException('Sesión no encontrada');
+      });
+
+    const { accessToken, refreshToken } = await this.generateTokens(
+      sessionId,
+      session.user.role as RoleEnum,
+    );
+    const hashedRefreshToken = hashSync(refreshToken, 12);
+
+    await this.db.session.update({
+      where: { id: sessionId },
+      data: {
+        hashedRefreshToken,
+      },
+    });
+
+    return {
+      token: accessToken,
+      refreshToken,
+    };
   }
 }

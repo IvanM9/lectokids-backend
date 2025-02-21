@@ -1,5 +1,5 @@
 import { PrismaService } from '@/libs/prisma.service';
-import { RoleEnum } from '@/security/jwt-strategy/role.enum';
+import { RoleEnum } from '@/security/enums/role.enum';
 import {
   BadRequestException,
   Injectable,

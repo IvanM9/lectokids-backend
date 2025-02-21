@@ -8,10 +8,10 @@ import {
 import { QuestionsActivitiesService } from '../services/questions-activities.service';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { ResponseHttpInterceptor } from '@/shared/interceptors/response-http.interceptor';
-import { RoleGuard } from '@/security/jwt-strategy/roles.guard';
-import { JwtAuthGuard } from '@/security/jwt-strategy/jwt-auth.guard';
-import { Role } from '@/security/jwt-strategy/roles.decorator';
-import { RoleEnum } from '@/security/jwt-strategy/role.enum';
+import { RoleGuard } from '@/security/guards/roles.guard';
+import { JwtAuthGuard } from '@/security/guards/jwt-auth.guard';
+import { Role } from '@/security/decorators/roles.decorator';
+import { RoleEnum } from '@/security/enums/role.enum';
 
 @Controller('questions-activities')
 @ApiTags('questions-activities')

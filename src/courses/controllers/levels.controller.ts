@@ -12,13 +12,13 @@ import {
 import { LevelsService } from '../services/levels.service';
 import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { ResponseHttpInterceptor } from '@/shared/interceptors/response-http.interceptor';
-import { JwtAuthGuard } from '@/security/jwt-strategy/jwt-auth.guard';
-import { RoleGuard } from '@/security/jwt-strategy/roles.guard';
-import { CurrentUser } from '@/security/jwt-strategy/auth.decorator';
+import { JwtAuthGuard } from '@/security/guards/jwt-auth.guard';
+import { RoleGuard } from '@/security/guards/roles.guard';
+import { CurrentUser } from '@/security/decorators/auth.decorator';
 import { CreateLevelDto } from '../dtos/levels.dto';
 import { OptionalBooleanPipe } from '@/shared/pipes/optional-boolean.pipe';
-import { Role } from '@/security/jwt-strategy/roles.decorator';
-import { RoleEnum } from '@/security/jwt-strategy/role.enum';
+import { Role } from '@/security/decorators/roles.decorator';
+import { RoleEnum } from '@/security/enums/role.enum';
 
 @Controller('levels')
 @ApiTags('levels')

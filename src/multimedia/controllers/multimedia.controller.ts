@@ -1,7 +1,7 @@
-import { JwtAuthGuard } from '@/security/jwt-strategy/jwt-auth.guard';
-import { RoleEnum } from '@/security/jwt-strategy/role.enum';
-import { Role } from '@/security/jwt-strategy/roles.decorator';
-import { RoleGuard } from '@/security/jwt-strategy/roles.guard';
+import { JwtAuthGuard } from '@/security/guards/jwt-auth.guard';
+import { RoleEnum } from '@/security/enums/role.enum';
+import { Role } from '@/security/decorators/roles.decorator';
+import { RoleGuard } from '@/security/guards/roles.guard';
 import { ResponseHttpInterceptor } from '@/shared/interceptors/response-http.interceptor';
 import {
   Body,

@@ -1,7 +1,7 @@
-import { JwtAuthGuard } from '@/security/jwt-strategy/jwt-auth.guard';
-import { RoleEnum } from '@/security/jwt-strategy/role.enum';
-import { Role } from '@/security/jwt-strategy/roles.decorator';
-import { RoleGuard } from '@/security/jwt-strategy/roles.guard';
+import { JwtAuthGuard } from '@/security/guards/jwt-auth.guard';
+import { RoleEnum } from '@/security/enums/role.enum';
+import { Role } from '@/security/decorators/roles.decorator';
+import { RoleGuard } from '@/security/guards/roles.guard';
 import { ResponseHttpInterceptor } from '@/shared/interceptors/response-http.interceptor';
 import {
   Body,
@@ -17,8 +17,8 @@ import {
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { DetailsReadingsService } from '../services/details-readings.service';
 import { CreateTimeSpendDto } from '../dtos/readings.dto';
-import { CurrentUser } from '@/security/jwt-strategy/auth.decorator';
-import { InfoUserInterface } from '@/security/jwt-strategy/info-user.interface';
+import { CurrentUser } from '@/security/decorators/auth.decorator';
+import { InfoUserInterface } from '@/security/interfaces/info-user.interface';
 import { Response } from 'express';
 
 @Controller('details-readings')

@@ -16,7 +16,7 @@ import {
 } from '../dtos/activities.dto';
 import { GenerateQuestionsActivitiesDto } from '@/ai/ai.dto';
 import { AiService } from '@/ai/services/ai/ai.service';
-import { RoleEnum } from '@/security/jwt-strategy/role.enum';
+import { RoleEnum } from '@/security/enums/role.enum';
 
 @Injectable()
 export class ActivitiesService {
