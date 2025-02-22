@@ -1,7 +1,10 @@
 import { registerAs } from '@nestjs/config';
+import { multimediaSchema } from './multimedia.validation';
+
+const env = multimediaSchema.parse(process.env);
 
 export default registerAs('multimedia', () => ({
-  firebaseConfig: process.env.FIREBASE_CONFIG,
-  bucketName: process.env.BUCKET_NAME,
-  publicDir: process.env.PUBLIC_DIR || './src/public',
+  firebaseConfig: env.FIREBASE_CONFIG,
+  bucketName: env.BUCKET_NAME,
+  publicDir: env.PUBLIC_DIR,
 }));
