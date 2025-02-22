@@ -17,15 +17,20 @@ $ yarn install
 
 Crea un archivo `.env` en la raíz del proyecto con las siguientes variables de entorno:
 
-```bash
-PORT=""
-DATABSE_URL=""
-BUCCKET_NAME=""
-FIREBASE_CONFIG=""
+```env
+BUCKET_NAME=""
+DATABASE_URL=""
+FIREBASE_CONFIG=''
 OPENAI_API_KEY=""
-JWT_SECRET_KEY=""
-PUBLIC_DIR=""
-VIEWS_DIR=""
+GOOGLE_GENERATIVE_AI_API_KEY=""
+MODEL_TEXT=""
+TEXT_PROVIDER_AI=""
+REDIS_HOST=""
+REDIS_PASSWORD=""
+REDIS_SSL=false
+REDIS_USERNAME=""
+IMAGE_PROVIDER_AI=""
+MODEL_IMAGE=""
 ADMIN_USER=""
 ADMIN_PASSWORD=""
 MODEL_TEXT=""

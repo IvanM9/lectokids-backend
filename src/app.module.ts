@@ -37,7 +37,9 @@ import { ScheduleModule } from '@nestjs/schedule';
             store: new CacheableMemory({ ttl: 6000, lruSize: 5000 }),
           }),
           new KeyvRedis(
-            `redis://${configService.get('redis.host')}:${configService.get('redis.port')}`,
+            configService.get('redis.username')
+              ? `rediss://${configService.get('redis.username')}:${configService.get('redis.password')}@${configService.get('redis.host')}:${configService.get('redis.port')}`
+              : `redis://${configService.get('redis.host')}:${configService.get('redis.port')}`,
           ),
         ],
       }),

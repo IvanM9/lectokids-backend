@@ -1,10 +1,11 @@
 import { registerAs } from '@nestjs/config';
-import path from 'path';
+import { serverSchema } from './validations/server.validation';
+
+const env = serverSchema.parse(process.env);
 
 export default registerAs('server', () => ({
-  port: parseInt(process.env.PORT, 10) || 4000,
-  origin: process.env.CORS_ORIGIN || '*',
-  prefixApi: process.env.PREFIX_API || '/api',
-  viewsDir:
-    process.env.VIEWS_DIR || path.join(__dirname, '..', '..', '..', 'views'),
+  port: env.PORT,
+  origin: env.CORS_ORIGIN,
+  prefixApi: env.PREFIX_API,
+  viewsDir: env.VIEWS_DIR,
 }));
