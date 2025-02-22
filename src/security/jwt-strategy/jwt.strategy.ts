@@ -1,7 +1,7 @@
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { Inject, Injectable } from '@nestjs/common';
-import { InfoUserInterface } from '@/security/jwt-strategy/info-user.interface';
+import { InfoUserInterface } from '@/security/interfaces/info-user.interface';
 import jwtConfig from '../config/jwt.config';
 import { ConfigType } from '@nestjs/config';
 
@@ -17,6 +17,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
   async validate(payload: InfoUserInterface) {
-    return { id: payload.id, user: payload.user, role: payload.role };
+    return { id: payload.id, role: payload.role };
   }
 }

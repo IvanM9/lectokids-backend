@@ -11,15 +11,15 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { ReadingsService } from '../services/readings.service';
-import { CurrentUser } from '@/security/jwt-strategy/auth.decorator';
-import { InfoUserInterface } from '@/security/jwt-strategy/info-user.interface';
+import { CurrentUser } from '@/security/decorators/auth.decorator';
+import { InfoUserInterface } from '@/security/interfaces/info-user.interface';
 import { CreateReadingDto, UpdateReadingDto } from '../dtos/readings.dto';
 import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { ResponseHttpInterceptor } from '@/shared/interceptors/response-http.interceptor';
-import { JwtAuthGuard } from '@/security/jwt-strategy/jwt-auth.guard';
-import { RoleGuard } from '@/security/jwt-strategy/roles.guard';
-import { Role } from '@/security/jwt-strategy/roles.decorator';
-import { RoleEnum } from '@/security/jwt-strategy/role.enum';
+import { JwtAuthGuard } from '@/security/guards/jwt-auth.guard';
+import { RoleGuard } from '@/security/guards/roles.guard';
+import { Role } from '@/security/decorators/roles.decorator';
+import { RoleEnum } from '@/security/enums/role.enum';
 import { OptionalBooleanPipe } from '@/shared/pipes/optional-boolean.pipe';
 import { Response } from 'express';
 

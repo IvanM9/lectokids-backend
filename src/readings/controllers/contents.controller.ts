@@ -26,11 +26,11 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { ResponseHttpInterceptor } from '@/shared/interceptors/response-http.interceptor';
-import { JwtAuthGuard } from '@/security/jwt-strategy/jwt-auth.guard';
-import { RoleGuard } from '@/security/jwt-strategy/roles.guard';
+import { JwtAuthGuard } from '@/security/guards/jwt-auth.guard';
+import { RoleGuard } from '@/security/guards/roles.guard';
 import { TypeContent } from '@prisma/client';
-import { Role } from '@/security/jwt-strategy/roles.decorator';
-import { RoleEnum } from '@/security/jwt-strategy/role.enum';
+import { Role } from '@/security/decorators/roles.decorator';
+import { RoleEnum } from '@/security/enums/role.enum';
 import { OptionalBooleanPipe } from '@/shared/pipes/optional-boolean.pipe';
 import { map, Observable } from 'rxjs';
 import { ContentsConsumer } from '../consumers/contents.consumer';

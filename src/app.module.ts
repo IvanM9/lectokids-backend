@@ -19,6 +19,7 @@ import { BullModule } from '@nestjs/bullmq';
 import redisConfig from './shared/config/redis.config';
 import KeyvRedis, { Keyv } from '@keyv/redis';
 import { CacheableMemory } from 'cacheable';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -79,6 +80,7 @@ import { CacheableMemory } from 'cacheable';
       }),
       inject: [ConfigService],
     }),
+    ScheduleModule.forRoot(),
   ],
   controllers: [AppController],
   providers: [

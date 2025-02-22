@@ -12,12 +12,12 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { StudentsService } from '../services/students.service';
-import { RoleEnum } from '@/security/jwt-strategy/role.enum';
-import { JwtAuthGuard } from '@/security/jwt-strategy/jwt-auth.guard';
-import { RoleGuard } from '@/security/jwt-strategy/roles.guard';
-import { Role } from '@/security/jwt-strategy/roles.decorator';
-import { CurrentUser } from '@/security/jwt-strategy/auth.decorator';
-import { InfoUserInterface } from '@/security/jwt-strategy/info-user.interface';
+import { RoleEnum } from '@/security/enums/role.enum';
+import { JwtAuthGuard } from '@/security/guards/jwt-auth.guard';
+import { RoleGuard } from '@/security/guards/roles.guard';
+import { Role } from '@/security/decorators/roles.decorator';
+import { CurrentUser } from '@/security/decorators/auth.decorator';
+import { InfoUserInterface } from '@/security/interfaces/info-user.interface';
 import {
   CreateStudentDto,
   ImportFromExcelDto,
