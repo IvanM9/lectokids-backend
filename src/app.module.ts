@@ -17,9 +17,10 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import serverConfig from './shared/config/server.config';
 import { BullModule } from '@nestjs/bullmq';
 import redisConfig from './shared/config/redis.config';
-import KeyvRedis, { Keyv } from '@keyv/redis';
+import KeyvRedis from '@keyv/redis';
 import { CacheableMemory } from 'cacheable';
 import { ScheduleModule } from '@nestjs/schedule';
+import Keyv from 'keyv';
 
 @Module({
   imports: [
