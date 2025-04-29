@@ -34,7 +34,7 @@ import { TypeActivity, TypeMultimedia } from '@prisma/client';
 import { generatePromptForFrontPage } from '@/ai/prompts/images-prompts';
 import { MultimediaService } from '@/multimedia/services/multimedia.service';
 import { openai } from '@ai-sdk/openai';
-import { google } from '@ai-sdk/google';
+import { google, createGoogleGenerativeAI } from '@ai-sdk/google';
 import {
   experimental_generateImage,
   generateObject,
@@ -48,7 +48,9 @@ import { TextProviderAI } from '@/ai/enums/text-providers-ai.enum';
 import aiConfig from '@/ai/config/ai.config';
 import { ConfigType } from '@nestjs/config';
 import { ImageProviderAI } from '@/ai/enums/image-providers-ai.enum';
-import { vertex } from '@ai-sdk/google-vertex';
+import googleVertexConfig from '@/ai/config/providers/google-vertex.config';
+import { createVertex } from '@ai-sdk/google-vertex';
+import { googleVertexSchema } from '@/ai/config/providers/validators/google-vertex.validation';
 
 @Injectable()
 export class AiService {
@@ -56,6 +58,8 @@ export class AiService {
     private readonly logger: Logger,
     private multimedia: MultimediaService,
     @Inject(aiConfig.KEY) private environment: ConfigType<typeof aiConfig>,
+    @Inject(googleVertexConfig.KEY)
+    private googleVertexEnv: ConfigType<typeof googleVertexConfig>,
   ) {
     switch (this.environment.textProviderAI) {
       case TextProviderAI.google:
@@ -74,7 +78,20 @@ export class AiService {
 
     switch (this.environment.imageProviderAI) {
       case ImageProviderAI.google:
-        this.imageModelAI = vertex.image(environment.modelImage);
+        googleVertexSchema.parse(process.env);
+
+        const vertex = createVertex({
+          googleAuthOptions: {
+            credentials: {
+              client_email: googleVertexEnv.email,
+              private_key: googleVertexEnv.privateKey,
+            },
+          },
+          location: googleVertexEnv.location,
+          project: googleVertexEnv.project,
+        });
+
+        this.imageModelAI = vertex.imageModel(environment.modelImage);
         break;
 
       case ImageProviderAI.openAi:
