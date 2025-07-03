@@ -19,8 +19,7 @@ export class CreateUserDto extends PickType(CreateStudentDto, [
 
   @ApiProperty({ required: false })
   @IsEmail({}, { message: 'Debe proporcionar un correo electrónico válido' })
-  @IsOptional()
-  email?: string;
+  email: string;
 
   @ApiProperty({ required: false })
   @IsStrongPassword(

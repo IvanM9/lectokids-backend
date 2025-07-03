@@ -114,7 +114,7 @@ export class UsersService {
           OR: [
             { user: data.user ?? data.identification },
             { identification: data.identification },
-            ...(data.email ? [{ email: data.email }] : []),
+            { email: data.email },
           ],
         },
       },
