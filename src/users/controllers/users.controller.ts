@@ -20,6 +20,8 @@ import { CreateUserDto } from '../dtos/users.dto';
 import { OptionalBooleanPipe } from '@/shared/pipes/optional-boolean.pipe';
 import { CurrentUser } from '@/security/decorators/auth.decorator';
 import { InfoUserInterface } from '@/security/interfaces/info-user.interface';
+import { ApplyPagination } from '../shared/decorators/pagination.decorator';
+import { PaginationParams } from '../shared/interfaces/pagination.interface';
 
 @Controller('users')
 @ApiTags('users')
@@ -40,6 +42,33 @@ export class UsersController {
     @Query('page') page?: number,
   ) {
     return { data: await this.service.getAllTeachers(status, search, page) };
+  }
+
+  @Get('teachers-paginated')
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @ApplyPagination()
+  @ApiQuery({ name: 'status', required: false })
+  @ApiQuery({ name: 'search', required: false })
+  @Role(RoleEnum.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({ 
+    summary: 'Obtener profesores con paginación mejorada', 
+    description: 'Obtiene la lista de profesores con paginación, ordenamiento y filtros validados automáticamente' 
+  })
+  async getAllTeachersPaginated(
+    @Query('status', OptionalBooleanPipe) status: boolean,
+    @Query('search') search?: string,
+    @Query() pagination: PaginationParams,
+  ) {
+    return { 
+      data: await this.service.getAllTeachersWithPagination(status, search, pagination),
+      pagination: {
+        page: pagination.page,
+        limit: pagination.limit,
+        sort: pagination.sort,
+        order: pagination.order
+      }
+    };
   }
 
   @Post('teachers')

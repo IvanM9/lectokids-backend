@@ -11,6 +11,7 @@ import { hashSync } from 'bcrypt';
 import { CreateUserDto } from '../dtos/users.dto';
 import adminConfig from '../config/admin.config';
 import { ConfigType } from '@nestjs/config';
+import { PaginationParams } from '../../shared/interfaces/pagination.interface';
 
 @Injectable()
 export class UsersService {
@@ -104,6 +105,80 @@ export class UsersService {
     return {
       teachers,
       total,
+    };
+  }
+
+  /**
+   * Método de demostración que muestra cómo usar los parámetros de paginación validados
+   */
+  async getAllTeachersWithPagination(status?: boolean, search?: string, pagination?: PaginationParams) {
+    // Aquí se demuestra cómo usar los parámetros validados del interceptor
+    const { page, limit, sort, order } = pagination || {};
+    
+    // Calcular el skip basado en la página y límite validados
+    const skip = ((page || 1) - 1) * (limit || 10);
+    
+    // Para este ejemplo, reutilizamos la lógica existente pero con parámetros validados
+    const teachers = await this.db.teacher.findMany({
+      select: {
+        id: true,
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            status: true,
+            genre: true,
+            birthDate: true,
+            identification: true,
+          },
+        },
+        createdAt: true,
+        updatedAt: true,
+        isPending: true,
+      },
+      where: {
+        user: {
+          OR: [
+            { firstName: { contains: search, mode: 'insensitive' } },
+            { lastName: { contains: search, mode: 'insensitive' } },
+          ],
+          status,
+          role: Role.TEACHER,
+        },
+      },
+      skip,
+      take: limit,
+      orderBy: {
+        // Usar el campo de ordenamiento dinámicamente basado en el parámetro sort
+        [sort === 'createdAt' ? 'createdAt' : 'user']: 
+          sort === 'createdAt' ? order : { firstName: order },
+      },
+    });
+
+    const total = await this.db.teacher.count({
+      where: {
+        user: {
+          OR: [
+            { firstName: { contains: search, mode: 'insensitive' } },
+            { lastName: { contains: search, mode: 'insensitive' } },
+          ],
+          status,
+          role: Role.TEACHER,
+        },
+      },
+    });
+
+    return {
+      teachers,
+      total,
+      pagination: {
+        page,
+        limit,
+        sort,
+        order,
+        totalPages: Math.ceil(total / (limit || 10)),
+      },
     };
   }
 
