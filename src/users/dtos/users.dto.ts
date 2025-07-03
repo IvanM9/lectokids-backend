@@ -1,6 +1,7 @@
 import { ApiProperty, PickType } from '@nestjs/swagger';
 import { CreateStudentDto } from './students.dto';
 import {
+  IsEmail,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -15,6 +16,11 @@ export class CreateUserDto extends PickType(CreateStudentDto, [
   'genre',
 ]) {
   isPending: boolean;
+
+  @ApiProperty({ required: false })
+  @IsEmail({}, { message: 'Debe proporcionar un correo electrónico válido' })
+  @IsOptional()
+  email?: string;
 
   @ApiProperty({ required: false })
   @IsStrongPassword(

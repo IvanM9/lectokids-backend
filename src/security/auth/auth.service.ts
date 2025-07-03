@@ -28,12 +28,16 @@ export class AuthService {
   ) {}
 
   async login(payload: LoginDto, detail: DetailLoginDto) {
+    // Check if the user field is an email or username
+    const isEmail = payload.user.includes('@');
+    
     const user = await this.db.user
       .findUniqueOrThrow({
-        where: { user: payload.user },
+        where: isEmail ? { email: payload.user } : { user: payload.user },
         select: {
           id: true,
           user: true,
+          email: true,
           password: true,
           role: true,
           status: true,
