@@ -114,6 +114,7 @@ export class UsersService {
           OR: [
             { user: data.user ?? data.identification },
             { identification: data.identification },
+            { email: data.email },
           ],
         },
       },
@@ -121,7 +122,7 @@ export class UsersService {
 
     if (existTeacher) {
       throw new BadRequestException(
-        'Ya existe un profesor con esa identificación o usuario',
+        'Ya existe un profesor con esa identificación, usuario o correo electrónico',
       );
     }
 
@@ -138,6 +139,7 @@ export class UsersService {
               birthDate: data.birthDate,
               genre: data.genre,
               user: data.user ?? data.identification,
+              email: data.email,
             },
           },
           isPending: data.isPending ?? true,

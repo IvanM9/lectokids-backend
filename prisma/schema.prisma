@@ -25,6 +25,7 @@ model User {
   firstName      String?   @map("first_name")
   lastName       String?   @map("last_name")
   user           String    @unique @db.VarChar(50)
+  email          String?   @unique @db.VarChar(100)
   password       String
   role           Role
   genre          String?   @db.VarChar(1)
