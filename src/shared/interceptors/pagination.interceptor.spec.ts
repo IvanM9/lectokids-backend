@@ -44,6 +44,8 @@ describe('PaginationInterceptor', () => {
       expect(mockRequest.query.limit).toBe(10);
       expect(mockRequest.query.sort).toBe('createdAt');
       expect(mockRequest.query.order).toBe('asc');
+      expect(mockRequest.query.search).toBeUndefined();
+      expect(mockRequest.query.status).toBeUndefined();
     });
 
     it('should validate and convert valid page parameter', () => {
@@ -124,6 +126,78 @@ describe('PaginationInterceptor', () => {
       interceptor.intercept(mockExecutionContext as ExecutionContext, mockCallHandler as CallHandler);
 
       expect(mockRequest.query.order).toBe('desc');
+    });
+
+    it('should validate and trim search parameter', () => {
+      mockRequest.query.search = '  test search  ';
+
+      interceptor.intercept(mockExecutionContext as ExecutionContext, mockCallHandler as CallHandler);
+
+      expect(mockRequest.query.search).toBe('test search');
+    });
+
+    it('should remove empty search parameter after trimming', () => {
+      mockRequest.query.search = '   ';
+
+      interceptor.intercept(mockExecutionContext as ExecutionContext, mockCallHandler as CallHandler);
+
+      expect(mockRequest.query.search).toBeUndefined();
+    });
+
+    it('should throw error for non-string search parameter', () => {
+      mockRequest.query.search = 123;
+
+      expect(() => {
+        interceptor.intercept(mockExecutionContext as ExecutionContext, mockCallHandler as CallHandler);
+      }).toThrow(BadRequestException);
+    });
+
+    it('should convert string "true" to boolean true for status', () => {
+      mockRequest.query.status = 'true';
+
+      interceptor.intercept(mockExecutionContext as ExecutionContext, mockCallHandler as CallHandler);
+
+      expect(mockRequest.query.status).toBe(true);
+    });
+
+    it('should convert string "false" to boolean false for status', () => {
+      mockRequest.query.status = 'false';
+
+      interceptor.intercept(mockExecutionContext as ExecutionContext, mockCallHandler as CallHandler);
+
+      expect(mockRequest.query.status).toBe(false);
+    });
+
+    it('should convert string "1" to boolean true for status', () => {
+      mockRequest.query.status = '1';
+
+      interceptor.intercept(mockExecutionContext as ExecutionContext, mockCallHandler as CallHandler);
+
+      expect(mockRequest.query.status).toBe(true);
+    });
+
+    it('should convert string "0" to boolean false for status', () => {
+      mockRequest.query.status = '0';
+
+      interceptor.intercept(mockExecutionContext as ExecutionContext, mockCallHandler as CallHandler);
+
+      expect(mockRequest.query.status).toBe(false);
+    });
+
+    it('should preserve boolean status parameter', () => {
+      mockRequest.query.status = true;
+
+      interceptor.intercept(mockExecutionContext as ExecutionContext, mockCallHandler as CallHandler);
+
+      expect(mockRequest.query.status).toBe(true);
+    });
+
+    it('should throw error for invalid status parameter', () => {
+      mockRequest.query.status = 'invalid';
+
+      expect(() => {
+        interceptor.intercept(mockExecutionContext as ExecutionContext, mockCallHandler as CallHandler);
+      }).toThrow(BadRequestException);
     });
   });
 });

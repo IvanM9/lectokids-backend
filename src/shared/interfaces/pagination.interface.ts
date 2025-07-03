@@ -3,6 +3,8 @@ export interface PaginationParams {
   limit?: number;
   sort?: string;
   order?: 'asc' | 'desc';
+  search?: string;
+  status?: boolean;
 }
 
 export interface PaginationDefaults {

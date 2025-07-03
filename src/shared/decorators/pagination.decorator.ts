@@ -9,6 +9,11 @@ import { PaginationInterceptor } from '../interceptors/pagination.interceptor';
  * - PaginationInterceptor: Para validar y asignar valores por defecto
  * - Documentación de Swagger para los parámetros de paginación
  * 
+ * Parámetros incluidos:
+ * - page, limit, sort, order: Parámetros de paginación estándar
+ * - search: Término de búsqueda opcional
+ * - status: Estado de filtrado opcional (booleano)
+ * 
  * Uso:
  * @ApplyPagination()
  * async getItems(@Query() query: PaginationParams) {
@@ -45,6 +50,20 @@ export function ApplyPagination() {
       enum: ['asc', 'desc'],
       description: 'Dirección del ordenamiento (por defecto: asc)',
       example: 'asc'
+    }),
+    ApiQuery({ 
+      name: 'search', 
+      required: false, 
+      type: String,
+      description: 'Término de búsqueda para filtrar resultados',
+      example: 'texto de búsqueda'
+    }),
+    ApiQuery({ 
+      name: 'status', 
+      required: false, 
+      type: Boolean,
+      description: 'Estado de filtrado (true/false, 1/0)',
+      example: true
     }),
   );
 }

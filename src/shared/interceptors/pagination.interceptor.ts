@@ -16,6 +16,8 @@ import { PAGINATION_DEFAULTS } from '../interfaces/pagination.interface';
  * - limit: Número de elementos por página (por defecto: 10, máximo: 100)
  * - sort: Campo de ordenamiento (por defecto: 'createdAt')
  * - order: Dirección del ordenamiento (por defecto: 'asc', valores permitidos: 'asc', 'desc')
+ * - search: Término de búsqueda (opcional, sin valor por defecto)
+ * - status: Estado de filtrado (opcional, acepta valores booleanos)
  * 
  * Uso:
  * @UseInterceptors(PaginationInterceptor)
@@ -73,6 +75,32 @@ export class PaginationInterceptor implements NestInterceptor {
       query.order = order;
     } else {
       query.order = PAGINATION_DEFAULTS.order;
+    }
+
+    // Validar parámetro search (opcional)
+    if (query.search !== undefined) {
+      if (typeof query.search !== 'string') {
+        throw new BadRequestException('El parámetro "search" debe ser una cadena de texto');
+      }
+      query.search = query.search.trim();
+      // Si está vacío después del trim, lo eliminamos
+      if (query.search === '') {
+        delete query.search;
+      }
+    }
+
+    // Validar parámetro status (opcional)
+    if (query.status !== undefined) {
+      const statusStr = query.status as string;
+      if (statusStr === 'true' || statusStr === '1') {
+        query.status = true;
+      } else if (statusStr === 'false' || statusStr === '0') {
+        query.status = false;
+      } else if (typeof query.status === 'boolean') {
+        // Ya es booleano, no hacer nada
+      } else {
+        throw new BadRequestException('El parámetro "status" debe ser un valor booleano (true, false, 1, 0)');
+      }
     }
 
     return next.handle();
