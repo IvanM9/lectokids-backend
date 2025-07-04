@@ -1,69 +1,49 @@
-import { applyDecorators, UseInterceptors } from '@nestjs/common';
-import { ApiQuery } from '@nestjs/swagger';
-import { PaginationInterceptor } from '../interceptors/pagination.interceptor';
+import {
+  BadRequestException,
+  createParamDecorator,
+  ExecutionContext,
+  Logger,
+} from '@nestjs/common';
+import { Request } from 'express';
+import { isBooleanString, isNumberString } from 'class-validator';
+import { PaginationDto } from '../dtos/pagination.dto';
 
-/**
- * Decorador que aplica el interceptor de paginación y documenta los parámetros de query en Swagger.
- * 
- * Este decorador combina:
- * - PaginationInterceptor: Para validar y asignar valores por defecto
- * - Documentación de Swagger para los parámetros de paginación
- * 
- * Parámetros incluidos:
- * - page, limit, sort, order: Parámetros de paginación estándar
- * - search: Término de búsqueda opcional
- * - status: Estado de filtrado opcional (booleano)
- * 
- * Uso:
- * @ApplyPagination()
- * async getItems(@Query() query: PaginationParams) {
- *   // Los parámetros están validados y documentados
- * }
- */
-export function ApplyPagination() {
-  return applyDecorators(
-    UseInterceptors(PaginationInterceptor),
-    ApiQuery({ 
-      name: 'page', 
-      required: false, 
-      type: Number,
-      description: 'Número de página (por defecto: 1, mínimo: 1)',
-      example: 1
-    }),
-    ApiQuery({ 
-      name: 'limit', 
-      required: false, 
-      type: Number,
-      description: 'Número de elementos por página (por defecto: 10, máximo: 100)',
-      example: 10
-    }),
-    ApiQuery({ 
-      name: 'sort', 
-      required: false, 
-      type: String,
-      description: 'Campo de ordenamiento (por defecto: createdAt)',
-      example: 'createdAt'
-    }),
-    ApiQuery({ 
-      name: 'order', 
-      required: false, 
-      enum: ['asc', 'desc'],
-      description: 'Dirección del ordenamiento (por defecto: asc)',
-      example: 'asc'
-    }),
-    ApiQuery({ 
-      name: 'search', 
-      required: false, 
-      type: String,
-      description: 'Término de búsqueda para filtrar resultados',
-      example: 'texto de búsqueda'
-    }),
-    ApiQuery({ 
-      name: 'status', 
-      required: false, 
-      type: Boolean,
-      description: 'Estado de filtrado (true/false, 1/0)',
-      example: true
-    }),
-  );
-}
+export const GetPagination = createParamDecorator(
+  (data: unknown, ctx: ExecutionContext) => {
+    const logger = new Logger();
+    try {
+      const request = ctx.switchToHttp().getRequest<Request>();
+      const queries = request.query;
+
+      // Valores predeterminados
+      const defaultValues = {
+        page: 1,
+        limit: 10,
+        search: '',
+      };
+
+      if (queries.page && !isNumberString(queries.page))
+        throw new BadRequestException('La página debe ser número');
+
+      if (queries.limit && !isNumberString(queries.limit))
+        throw new BadRequestException('El límite debe ser número');
+
+      if (queries.status && !isBooleanString(queries.status))
+        throw new BadRequestException('El status debe ser booleano');
+
+      // Transformar y asignar valores predeterminados
+      const page = parseInt(queries.page as string) || defaultValues.page;
+      const paginationParams: PaginationDto = {
+        page: (page - 1) * 10,
+        limit: parseInt(queries.limit as string) || defaultValues.limit,
+        search: (queries.search as string) || defaultValues.search,
+        status: queries.status ? queries.status == 'true' : undefined,
+      };
+
+      return paginationParams;
+    } catch (error) {
+      logger.error(error.message);
+      throw new BadRequestException(error.message);
+    }
+  },
+);
