@@ -74,7 +74,7 @@ export class AuthService {
       this.refreshTokenConfig.expiresIn as number,
     );
 
-    const hasEmail: boolean = user.role === RoleEnum.TEACHER && !!user.email;
+    const hasEmail: boolean = !!user.email;
 
     return {
       token: tokens.accessToken,
