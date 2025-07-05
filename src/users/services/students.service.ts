@@ -9,6 +9,7 @@ import {
 import { hashSync } from 'bcrypt';
 import { CreateStudentDto, UpdateStudentDto } from '../dtos/students.dto';
 import * as XLSX from 'xlsx';
+import { PaginationDto } from '@/shared/dtos/pagination.dto';
 
 @Injectable()
 export class StudentsService {
@@ -91,10 +92,10 @@ export class StudentsService {
   async getAllMyStudents(
     teacherId: string,
     courseId: string,
-    search: string = '',
-    status?: boolean,
-    page?: number,
+    pagination: PaginationDto
   ) {
+    const { page, limit, search, status } = pagination;
+
     const data = await this.db.student.findMany({
       where: {
         coursesStudent: {
@@ -138,8 +139,8 @@ export class StudentsService {
           },
         },
       },
-      skip: page ? (page - 1) * 10 : 0,
-      take: 10,
+      skip: page,
+      take: limit,
       orderBy: {
         user: {
           firstName: 'asc',

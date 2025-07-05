@@ -11,6 +11,7 @@ import { hashSync } from 'bcrypt';
 import { CreateUserDto } from '../dtos/users.dto';
 import adminConfig from '../config/admin.config';
 import { ConfigType } from '@nestjs/config';
+import { PaginationDto } from '@/shared/dtos/pagination.dto';
 
 @Injectable()
 export class UsersService {
@@ -50,7 +51,14 @@ export class UsersService {
     }
   }
 
-  async getAllTeachers(status?: boolean, search?: string, page?: number) {
+  async getAllTeachers(pagination: PaginationDto) {
+    const {
+      page,
+      limit,
+      search,
+      status
+    }: PaginationDto = pagination;
+
     const teachers = await this.db.teacher.findMany({
       select: {
         id: true,
@@ -75,12 +83,12 @@ export class UsersService {
             { firstName: { contains: search, mode: 'insensitive' } },
             { lastName: { contains: search, mode: 'insensitive' } },
           ],
-          status,
+          status: status,
           role: Role.TEACHER,
         },
       },
-      skip: page ? (page - 1) * 10 : 0,
-      take: 10,
+      skip: page,
+      take: limit,
       orderBy: {
         user: {
           firstName: 'asc',
@@ -95,7 +103,7 @@ export class UsersService {
             { firstName: { contains: search, mode: 'insensitive' } },
             { lastName: { contains: search, mode: 'insensitive' } },
           ],
-          status,
+          status: status,
           role: Role.TEACHER,
         },
       },

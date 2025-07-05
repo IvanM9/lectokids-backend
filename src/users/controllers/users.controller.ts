@@ -17,9 +17,10 @@ import { Role } from '@/security/decorators/roles.decorator';
 import { RoleEnum } from '@/security/enums/role.enum';
 import { ResponseHttpInterceptor } from '@/shared/interceptors/response-http.interceptor';
 import { CreateUserDto } from '../dtos/users.dto';
-import { OptionalBooleanPipe } from '@/shared/pipes/optional-boolean.pipe';
 import { CurrentUser } from '@/security/decorators/auth.decorator';
 import { InfoUserInterface } from '@/security/interfaces/info-user.interface';
+import { GetPagination } from '@/shared/decorators/pagination.decorator';
+import { PaginationDto } from '@/shared/dtos/pagination.dto';
 
 @Controller('users')
 @ApiTags('users')
@@ -29,17 +30,13 @@ export class UsersController {
 
   @Get('teachers')
   @UseGuards(JwtAuthGuard, RoleGuard)
-  @ApiQuery({ name: 'status', required: false })
-  @ApiQuery({ name: 'search', required: false })
-  @ApiQuery({ name: 'page', required: false })
   @Role(RoleEnum.ADMIN)
   @ApiBearerAuth()
+  @ApiQuery({ type: PaginationDto })
   async getAllTeachers(
-    @Query('status', OptionalBooleanPipe) status: boolean,
-    @Query('search') search?: string,
-    @Query('page') page?: number,
+    @GetPagination() pagination: PaginationDto,
   ) {
-    return { data: await this.service.getAllTeachers(status, search, page) };
+    return { data: await this.service.getAllTeachers(pagination) };
   }
 
   @Post('teachers')

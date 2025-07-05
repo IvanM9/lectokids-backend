@@ -5,7 +5,6 @@ import {
   Param,
   Patch,
   Post,
-  Query,
   Res,
   UploadedFile,
   UseGuards,
@@ -31,9 +30,10 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { ResponseHttpInterceptor } from '@/shared/interceptors/response-http.interceptor';
-import { OptionalBooleanPipe } from '@/shared/pipes/optional-boolean.pipe';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
+import { GetPagination } from '@/shared/decorators/pagination.decorator';
+import { PaginationDto } from '@/shared/dtos/pagination.dto';
 
 @Controller('students')
 @ApiTags('students')
@@ -56,22 +56,16 @@ export class StudentsController {
   @UseGuards(JwtAuthGuard, RoleGuard)
   @UseInterceptors(ResponseHttpInterceptor)
   @Role(RoleEnum.TEACHER)
-  @ApiQuery({ name: 'status', required: false })
-  @ApiQuery({ name: 'search', required: false })
-  @ApiQuery({ name: 'page', required: false })
+  @ApiQuery({ type: PaginationDto })
   async getAllStudents(
     @CurrentUser() { id }: InfoUserInterface,
     @Param('courseId') courseId: string,
-    @Query('status', OptionalBooleanPipe) status: boolean,
-    @Query('search') search?: string,
-    @Query('page') page?: number,
+    @GetPagination() pagination: PaginationDto,
   ) {
     return await this.service.getAllMyStudents(
       id,
       courseId,
-      search,
-      status,
-      page,
+      pagination
     );
   }
 
