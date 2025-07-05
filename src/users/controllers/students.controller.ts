@@ -62,11 +62,7 @@ export class StudentsController {
     @Param('courseId') courseId: string,
     @GetPagination() pagination: PaginationDto,
   ) {
-    return await this.service.getAllMyStudents(
-      id,
-      courseId,
-      pagination
-    );
+    return await this.service.getAllMyStudents(id, courseId, pagination);
   }
 
   @Patch(':studentId')

@@ -30,7 +30,7 @@ export class AuthService {
   async login(payload: LoginDto, detail: DetailLoginDto) {
     // Check if the user field is an email or username
     const isEmail = payload.user.includes('@');
-    
+
     const user = await this.db.user
       .findUniqueOrThrow({
         where: isEmail ? { email: payload.user } : { user: payload.user },
@@ -74,10 +74,13 @@ export class AuthService {
       this.refreshTokenConfig.expiresIn as number,
     );
 
+    const hasEmail: boolean = user.role === RoleEnum.TEACHER && !!user.email;
+
     return {
       token: tokens.accessToken,
       refreshToken: tokens.refreshToken,
       role: user.role,
+      hasEmail,
     };
   }
 

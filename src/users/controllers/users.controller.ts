@@ -9,7 +9,12 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
 import { UsersService } from '@/users/services/users.service';
 import { RoleGuard } from '@/security/guards/roles.guard';
 import { JwtAuthGuard } from '@/security/guards/jwt-auth.guard';
@@ -33,9 +38,7 @@ export class UsersController {
   @Role(RoleEnum.ADMIN)
   @ApiBearerAuth()
   @ApiQuery({ type: PaginationDto })
-  async getAllTeachers(
-    @GetPagination() pagination: PaginationDto,
-  ) {
+  async getAllTeachers(@GetPagination() pagination: PaginationDto) {
     return { data: await this.service.getAllTeachers(pagination) };
   }
 
@@ -43,14 +46,22 @@ export class UsersController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Role(RoleEnum.ADMIN)
-  @ApiOperation({ summary: 'Crear un profesor', description: 'Crea un nuevo profesor en el sistema. Sólo para administradores' })
+  @ApiOperation({
+    summary: 'Crear un profesor',
+    description:
+      'Crea un nuevo profesor en el sistema. Sólo para administradores',
+  })
   async createTeacher(@Body() data: CreateUserDto) {
     data.isPending = false;
     return { data: await this.service.createTeacher(data) };
   }
 
   @Post()
-  @ApiOperation({ summary: 'Registro de profesor' , description: 'Permite a un profesor registrarse en el sistema. El profesor será creado con estado pendiente.' })
+  @ApiOperation({
+    summary: 'Registro de profesor',
+    description:
+      'Permite a un profesor registrarse en el sistema. El profesor será creado con estado pendiente.',
+  })
   async createUser(@Body() data: CreateUserDto) {
     data.isPending = true;
     return { data: await this.service.createTeacher(data) };

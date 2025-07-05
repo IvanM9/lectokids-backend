@@ -52,12 +52,7 @@ export class UsersService {
   }
 
   async getAllTeachers(pagination: PaginationDto) {
-    const {
-      page,
-      limit,
-      search,
-      status
-    }: PaginationDto = pagination;
+    const { page, limit, search, status }: PaginationDto = pagination;
 
     const teachers = await this.db.teacher.findMany({
       select: {
