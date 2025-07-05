@@ -21,16 +21,20 @@ export class MinioStorageProvider implements StorageProvider {
     private readonly bucketName: string,
     private readonly publicUrl?: string,
   ) {
-    this.minioClient = new MinioClient({
-      endPoint,
-      port,
-      useSSL,
-      accessKey,
-      secretKey,
-    });
+    try {
+      this.minioClient = new MinioClient({
+        endPoint,
+        port,
+        useSSL,
+        accessKey,
+        secretKey,
+      });
 
-    // Ensure bucket exists
-    this.ensureBucketExists();
+      // Ensure bucket exists
+      this.ensureBucketExists();
+    } catch (error) {
+      throw new Error(`Failed to initialize MINIO client: ${error.message}`);
+    }
   }
 
   private async ensureBucketExists(): Promise<void> {

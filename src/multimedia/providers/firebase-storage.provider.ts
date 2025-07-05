@@ -1,5 +1,5 @@
 import { Injectable, Logger, BadRequestException, NotFoundException } from '@nestjs/common';
-import firebase from 'firebase-admin';
+import * as firebase from 'firebase-admin';
 import {
   StorageProvider,
   StorageUploadResult,
@@ -14,10 +14,14 @@ export class FirebaseStorageProvider implements StorageProvider {
     private readonly bucketName: string,
     private readonly firebaseConfig: string,
   ) {
-    if (!firebase.apps.length) {
-      firebase.initializeApp({
-        credential: firebase.credential.cert(JSON.parse(firebaseConfig)),
-      });
+    try {
+      if (!firebase.apps.length) {
+        firebase.initializeApp({
+          credential: firebase.credential.cert(JSON.parse(firebaseConfig)),
+        });
+      }
+    } catch (error) {
+      throw new Error(`Failed to initialize Firebase: ${error.message}`);
     }
   }
 

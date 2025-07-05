@@ -5,6 +5,29 @@
 
 LectoKids es una plataforma educativa que ayuda a mejorar la comprensión lectora de los niños a través de lecturas adaptadas a su nivel e intereses.
 
+## Almacenamiento de Archivos
+
+Esta aplicación soporta múltiples proveedores de almacenamiento para archivos multimedia:
+
+- **Firebase Storage** (predeterminado): Almacenamiento basado en Google Cloud
+- **MINIO**: Almacenamiento de objetos de código abierto compatible con S3
+
+Para configuración detallada, consulta la [Documentación de Almacenamiento MINIO](./docs/MINIO_STORAGE.md).
+
+### Configuración Rápida
+
+1. **Para Firebase Storage:**
+   ```bash
+   cp .env.firebase.example .env
+   # Edita .env con tus credenciales de Firebase
+   ```
+
+2. **Para MINIO Storage:**
+   ```bash
+   cp .env.minio.example .env
+   # Edita .env con tu configuración de MINIO
+   ```
+
 ## Instalación
 
 ```bash
@@ -17,24 +40,51 @@ $ yarn install
 
 Crea un archivo `.env` en la raíz del proyecto con las siguientes variables de entorno:
 
+#### Configuración General
 ```env
-BUCKET_NAME=""
 DATABASE_URL=""
+BUCKET_NAME=""
+STORAGE_PROVIDER="firebase" # o "minio"
+PUBLIC_DIR="./src/public"
+```
+
+#### Configuración Firebase (cuando STORAGE_PROVIDER=firebase)
+```env
 FIREBASE_CONFIG=''
+```
+
+#### Configuración MINIO (cuando STORAGE_PROVIDER=minio)
+```env
+MINIO_ENDPOINT="localhost"
+MINIO_PORT=9000
+MINIO_USE_SSL=false
+MINIO_ACCESS_KEY="minioadmin"
+MINIO_SECRET_KEY="minioadmin"
+MINIO_PUBLIC_URL="http://localhost:9000"
+```
+
+#### Configuración AI
+```env
 OPENAI_API_KEY=""
 GOOGLE_GENERATIVE_AI_API_KEY=""
 MODEL_TEXT=""
 TEXT_PROVIDER_AI=""
+IMAGE_PROVIDER_AI=""
+MODEL_IMAGE=""
+```
+
+#### Configuración Redis
+```env
 REDIS_HOST=""
 REDIS_PASSWORD=""
 REDIS_SSL=false
 REDIS_USERNAME=""
-IMAGE_PROVIDER_AI=""
-MODEL_IMAGE=""
+```
+
+#### Configuración Admin
+```env
 ADMIN_USER=""
 ADMIN_PASSWORD=""
-MODEL_TEXT=""
-MODEL_IMAGE=""
 ```
 
 ### Puppeteer
