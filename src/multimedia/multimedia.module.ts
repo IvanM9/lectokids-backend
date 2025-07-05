@@ -6,9 +6,10 @@ import { MulterModule } from '@nestjs/platform-express';
 import { CustomFileInterceptor } from './interceptors/custom-file.interceptor';
 import { ConfigModule } from '@nestjs/config';
 import multimediaConfig from './config/multimedia.config';
+import { StorageProviderFactory } from './providers/storage-provider.factory';
 
 @Module({
-  providers: [MultimediaService, PrismaService, Logger],
+  providers: [MultimediaService, PrismaService, Logger, StorageProviderFactory],
   controllers: [MultimediaController],
   imports: [
     MulterModule.registerAsync({
