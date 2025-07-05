@@ -7,38 +7,35 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { TypeMultimedia } from '@prisma/client';
-import firebase from 'firebase-admin';
 import * as fs from 'fs';
 import { CreateLinkMultimediaDto } from '../dtos/multimedia.dto';
 import { Readable } from 'stream';
 import multimediaConfig from '../config/multimedia.config';
 import { ConfigType } from '@nestjs/config';
+import { StorageProvider } from '../interfaces/storage-provider.interface';
+import { StorageProviderFactory } from '../providers/storage-provider.factory';
 
 @Injectable()
 export class MultimediaService {
+  private readonly storageProvider: StorageProvider;
+
   constructor(
     private db: PrismaService,
     private readonly logger: Logger,
     @Inject(multimediaConfig.KEY)
     private environment: ConfigType<typeof multimediaConfig>,
+    private storageProviderFactory: StorageProviderFactory,
   ) {
-    firebase.initializeApp({
-      credential: firebase.credential.cert(
-        JSON.parse(environment.firebaseConfig),
-      ),
-    });
+    this.storageProvider = this.storageProviderFactory.createStorageProvider(
+      this.environment,
+    );
   }
 
   async createMultimedia(files: Express.Multer.File[], extraData?: any) {
     const uploaded = await Promise.all(
       files.map(async (file) => {
-        const uploaded = await firebase
-          .storage()
-          .bucket(this.environment.bucketName)
-          .upload(file.path, {
-            destination: file.filename,
-            public: true,
-          })
+        const uploadResult = await this.storageProvider
+          .uploadFile(file.path, file.filename, true)
           .catch((e) => {
             this.logger.error(e.message, e.stack, MultimediaService.name);
             throw new BadRequestException(
@@ -47,8 +44,8 @@ export class MultimediaService {
           });
 
         const object = {
-          url: uploaded[0].publicUrl(),
-          fileName: file.filename,
+          url: uploadResult.url,
+          fileName: uploadResult.fileName,
           type: extraData?.type ?? TypeMultimedia.IMAGE,
           description: extraData?.description,
         };
@@ -140,11 +137,8 @@ export class MultimediaService {
       });
 
     if (multimedia.fileName) {
-      await firebase
-        .storage()
-        .bucket(this.environment.bucketName)
-        .file(multimedia.fileName)
-        .delete()
+      await this.storageProvider
+        .deleteFile(multimedia.fileName)
         .catch((e) => {
           this.logger.error(e.message, e.stack, MultimediaService.name);
           throw new BadRequestException('Error al eliminar el archivo');
@@ -181,17 +175,14 @@ export class MultimediaService {
         );
       });
 
-    const file = await firebase
-      .storage()
-      .bucket(this.environment.bucketName)
-      .file(multimedia.fileName)
-      .download()
+    const downloadResult = await this.storageProvider
+      .downloadFile(multimedia.fileName)
       .catch((err) => {
         this.logger.error(err.message, err.stack, MultimediaService.name);
         throw new NotFoundException('Multimedia no encontrado');
       });
 
-    return { buffer: file[0], name: multimedia.url };
+    return { buffer: downloadResult.buffer, name: multimedia.url };
   }
 
   async getMultimedia(id: string) {
