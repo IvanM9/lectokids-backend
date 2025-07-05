@@ -92,7 +92,7 @@ export class StudentsService {
   async getAllMyStudents(
     teacherId: string,
     courseId: string,
-    pagination: PaginationDto
+    pagination: PaginationDto,
   ) {
     const { page, limit, search, status } = pagination;
 

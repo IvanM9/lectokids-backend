@@ -40,7 +40,7 @@ export class CreateStudentDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  @Length(1,1)
+  @Length(1, 1)
   genre: string;
 
   @ApiProperty()

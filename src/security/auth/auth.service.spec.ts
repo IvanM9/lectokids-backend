@@ -107,8 +107,10 @@ describe('AuthService - Email Login', () => {
 
       (compare as jest.Mock).mockResolvedValue(true);
       mockPrismaService.user.findUniqueOrThrow.mockResolvedValue(mockUser);
-      mockPrismaService.teacher.findFirstOrThrow.mockResolvedValue({ id: 'teacher-id' });
-      
+      mockPrismaService.teacher.findFirstOrThrow.mockResolvedValue({
+        id: 'teacher-id',
+      });
+
       mockPrismaService.$transaction.mockImplementation(async (callback) => {
         const mockCnx = {
           session: {
@@ -171,8 +173,10 @@ describe('AuthService - Email Login', () => {
 
       (compare as jest.Mock).mockResolvedValue(true);
       mockPrismaService.user.findUniqueOrThrow.mockResolvedValue(mockUser);
-      mockPrismaService.teacher.findFirstOrThrow.mockResolvedValue({ id: 'teacher-id' });
-      
+      mockPrismaService.teacher.findFirstOrThrow.mockResolvedValue({
+        id: 'teacher-id',
+      });
+
       mockPrismaService.$transaction.mockImplementation(async (callback) => {
         const mockCnx = {
           session: {
