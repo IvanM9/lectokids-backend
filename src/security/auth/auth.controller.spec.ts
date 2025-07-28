@@ -45,7 +45,12 @@ describe('AuthController', () => {
         device: 'test-device',
         location: 'test-location',
       };
-      const expectedResult = { token: 'test-token', refreshToken: 'test-refresh-token', role: Role.Estudiante, hasEmail: true };
+      const expectedResult = {
+        token: 'test-token',
+        refreshToken: 'test-refresh-token',
+        role: Role.Estudiante,
+        hasEmail: true,
+      };
 
       vi.spyOn(service, 'login').mockResolvedValue(expectedResult);
 
@@ -68,7 +73,9 @@ describe('AuthController', () => {
 
       vi.spyOn(service, 'login').mockRejectedValue(new UnauthorizedException());
 
-      await expect(controller.login(loginDto, detailDto)).rejects.toThrow(UnauthorizedException);
+      await expect(controller.login(loginDto, detailDto)).rejects.toThrow(
+        UnauthorizedException,
+      );
     });
   });
 

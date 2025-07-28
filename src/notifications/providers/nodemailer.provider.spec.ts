@@ -18,7 +18,9 @@ describe('NodemailerProvider', () => {
       sendMail: vi.fn(),
     } as any;
 
-    (nodemailer.createTransport as unknown as vi.Mock).mockReturnValue(mockTransporter);
+    (nodemailer.createTransport as unknown as vi.Mock).mockReturnValue(
+      mockTransporter,
+    );
 
     mockConfigService = {
       get: vi.fn(),
