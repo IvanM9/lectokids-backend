@@ -20,6 +20,7 @@ import redisConfig from './shared/config/redis.config';
 import KeyvRedis from '@keyv/redis';
 import { CacheableMemory } from 'cacheable';
 import { ScheduleModule } from '@nestjs/schedule';
+import { NotificationsModule } from './notifications/notifications.module';
 import Keyv from 'keyv';
 
 @Module({
@@ -84,6 +85,7 @@ import Keyv from 'keyv';
       inject: [ConfigService],
     }),
     ScheduleModule.forRoot(),
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [

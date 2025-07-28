@@ -39,7 +39,6 @@ lerna-debug.log*
 
 # Local env files
 .env
-.env.*
 !.env.example
 firebase.json
 
