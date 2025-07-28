@@ -9,7 +9,7 @@ global.fetch = vi.fn();
 
 describe('ResendProvider', () => {
   let provider: ResendProvider;
-  let mockConfigService: jest.Mocked<ConfigService>;
+  let mockConfigService: vi.Mocked<ConfigService>;
 
   beforeEach(async () => {
     mockConfigService = {
