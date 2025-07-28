@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Logger } from '@nestjs/common';
 import { EmailService } from './email.service';
@@ -11,17 +12,17 @@ import {
 
 describe('EmailService', () => {
   let service: EmailService;
-  let mockEmailProviderFactory: jest.Mocked<EmailProviderFactory>;
-  let mockEmailProvider: jest.Mocked<IEmailProvider>;
+  let mockEmailProviderFactory: vi.Mocked<EmailProviderFactory>;
+  let mockEmailProvider: vi.Mocked<IEmailProvider>;
 
   beforeEach(async () => {
     mockEmailProvider = {
-      sendEmail: jest.fn(),
+      sendEmail: vi.fn(),
     };
 
     mockEmailProviderFactory = {
-      createProvider: jest.fn().mockReturnValue(mockEmailProvider),
-      getDefaultProvider: jest.fn().mockReturnValue(mockEmailProvider),
+      createProvider: vi.fn().mockReturnValue(mockEmailProvider),
+      getDefaultProvider: vi.fn().mockReturnValue(mockEmailProvider),
     } as any;
 
     const module: TestingModule = await Test.createTestingModule({
@@ -36,12 +37,12 @@ describe('EmailService', () => {
 
     service = module.get<EmailService>(EmailService);
 
-    jest.spyOn(Logger.prototype, 'log').mockImplementation();
-    jest.spyOn(Logger.prototype, 'error').mockImplementation();
+    vi.spyOn(Logger.prototype, 'log').mockImplementation();
+    vi.spyOn(Logger.prototype, 'error').mockImplementation();
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('sendEmail', () => {

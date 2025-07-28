@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { EmailProviderFactory } from './email-provider.factory';
@@ -7,11 +8,11 @@ import { ResendProvider } from '../providers/resend.provider';
 
 describe('EmailProviderFactory', () => {
   let factory: EmailProviderFactory;
-  let mockConfigService: jest.Mocked<ConfigService>;
+  let mockConfigService: vi.Mocked<ConfigService>;
 
   beforeEach(async () => {
     mockConfigService = {
-      get: jest.fn(),
+      get: vi.fn(),
     } as any;
 
     const module: TestingModule = await Test.createTestingModule({
@@ -28,7 +29,7 @@ describe('EmailProviderFactory', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('createProvider', () => {

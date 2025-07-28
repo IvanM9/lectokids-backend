@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersService } from './users.service';
 import { PrismaService } from '@/libs/prisma.service';
@@ -19,17 +20,17 @@ describe('UsersService - Email Registration', () => {
 
   const mockPrismaService = {
     teacher: {
-      findFirst: jest.fn(),
-      create: jest.fn(),
+      findFirst: vi.fn(),
+      create: vi.fn(),
     },
     user: {
-      findFirst: jest.fn(),
-      create: jest.fn(),
+      findFirst: vi.fn(),
+      create: vi.fn(),
     },
   };
 
   const mockLogger = {
-    error: jest.fn(),
+    error: vi.fn(),
   };
 
   const mockAdminConfig = {
@@ -38,6 +39,10 @@ describe('UsersService - Email Registration', () => {
   };
 
   beforeEach(async () => {
+    // Mock initial calls made by the UsersService constructor (createAdmin)
+    mockPrismaService.user.findFirst.mockResolvedValue(null); // Simulate no admin exists
+    mockPrismaService.user.create.mockResolvedValue({ id: 'mock-admin-id' }); // Simulate admin creation
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UsersService,
@@ -61,7 +66,14 @@ describe('UsersService - Email Registration', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
+    // Reset mocks for subsequent tests if needed
+    mockPrismaService.user.findFirst.mockReset();
+    mockPrismaService.user.create.mockReset();
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
   });
 
   describe('createTeacher with email', () => {
@@ -154,6 +166,7 @@ describe('UsersService - Email Registration', () => {
         identification: '1234567890',
         firstName: 'John',
         lastName: 'Doe',
+        email: undefined,
         birthDate: '1990-01-01',
         genre: 'M',
         password: 'Password123',
@@ -178,6 +191,7 @@ describe('UsersService - Email Registration', () => {
             OR: [
               { user: createUserDto.identification },
               { identification: createUserDto.identification },
+              { email: undefined },
             ],
           },
         },

@@ -1,10 +1,11 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { Logger } from '@nestjs/common';
 import { ResendProvider } from './resend.provider';
 import { EmailOptions } from '../interfaces/email-provider.interface';
 
-global.fetch = jest.fn();
+global.fetch = vi.fn();
 
 describe('ResendProvider', () => {
   let provider: ResendProvider;
@@ -12,7 +13,7 @@ describe('ResendProvider', () => {
 
   beforeEach(async () => {
     mockConfigService = {
-      get: jest.fn(),
+      get: vi.fn(),
     } as any;
 
     mockConfigService.get
@@ -31,13 +32,13 @@ describe('ResendProvider', () => {
 
     provider = module.get<ResendProvider>(ResendProvider);
 
-    jest.spyOn(Logger.prototype, 'log').mockImplementation();
-    jest.spyOn(Logger.prototype, 'error').mockImplementation();
+    vi.spyOn(Logger.prototype, 'log').mockImplementation();
+    vi.spyOn(Logger.prototype, 'error').mockImplementation();
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
-    (fetch as jest.Mock).mockClear();
+    vi.clearAllMocks();
+    (fetch as unknown as vi.Mock).mockClear();
   });
 
   describe('sendEmail', () => {
@@ -50,10 +51,10 @@ describe('ResendProvider', () => {
     it('should send email successfully', async () => {
       const mockResponse = {
         ok: true,
-        json: jest.fn().mockResolvedValue({ id: 'resend-message-id' }),
+        json: vi.fn().mockResolvedValue({ id: 'resend-message-id' }),
       };
 
-      (fetch as jest.Mock).mockResolvedValue(mockResponse);
+      (fetch as unknown as vi.Mock).mockResolvedValue(mockResponse);
 
       const result = await provider.sendEmail(mockEmailOptions);
 
@@ -84,10 +85,10 @@ describe('ResendProvider', () => {
     it('should handle multiple recipients', async () => {
       const mockResponse = {
         ok: true,
-        json: jest.fn().mockResolvedValue({ id: 'resend-message-id' }),
+        json: vi.fn().mockResolvedValue({ id: 'resend-message-id' }),
       };
 
-      (fetch as jest.Mock).mockResolvedValue(mockResponse);
+      (fetch as unknown as vi.Mock).mockResolvedValue(mockResponse);
 
       const emailOptionsWithMultipleRecipients: EmailOptions = {
         ...mockEmailOptions,
@@ -107,7 +108,7 @@ describe('ResendProvider', () => {
         body: expect.stringContaining('"from":"from@example.com"'),
       });
 
-      const callArgs = (fetch as jest.Mock).mock.calls[0][1];
+      const callArgs = (fetch as unknown as vi.Mock).mock.calls[0][1];
       const payload = JSON.parse(callArgs.body);
 
       expect(payload).toEqual({
@@ -123,10 +124,10 @@ describe('ResendProvider', () => {
     it('should handle single string recipients', async () => {
       const mockResponse = {
         ok: true,
-        json: jest.fn().mockResolvedValue({ id: 'resend-message-id' }),
+        json: vi.fn().mockResolvedValue({ id: 'resend-message-id' }),
       };
 
-      (fetch as jest.Mock).mockResolvedValue(mockResponse);
+      (fetch as unknown as vi.Mock).mockResolvedValue(mockResponse);
 
       const emailOptionsWithSingleRecipients: EmailOptions = {
         ...mockEmailOptions,
@@ -145,7 +146,7 @@ describe('ResendProvider', () => {
         body: expect.stringContaining('"from":"from@example.com"'),
       });
 
-      const callArgs = (fetch as jest.Mock).mock.calls[0][1];
+      const callArgs = (fetch as unknown as vi.Mock).mock.calls[0][1];
       const payload = JSON.parse(callArgs.body);
 
       expect(payload).toEqual({
@@ -161,10 +162,10 @@ describe('ResendProvider', () => {
     it('should handle attachments with string content', async () => {
       const mockResponse = {
         ok: true,
-        json: jest.fn().mockResolvedValue({ id: 'resend-message-id' }),
+        json: vi.fn().mockResolvedValue({ id: 'resend-message-id' }),
       };
 
-      (fetch as jest.Mock).mockResolvedValue(mockResponse);
+      (fetch as unknown as vi.Mock).mockResolvedValue(mockResponse);
 
       const emailOptionsWithAttachments: EmailOptions = {
         ...mockEmailOptions,
@@ -204,10 +205,10 @@ describe('ResendProvider', () => {
     it('should handle attachments with Buffer content', async () => {
       const mockResponse = {
         ok: true,
-        json: jest.fn().mockResolvedValue({ id: 'resend-message-id' }),
+        json: vi.fn().mockResolvedValue({ id: 'resend-message-id' }),
       };
 
-      (fetch as jest.Mock).mockResolvedValue(mockResponse);
+      (fetch as unknown as vi.Mock).mockResolvedValue(mockResponse);
 
       const bufferContent = Buffer.from('Test content');
       const emailOptionsWithBufferAttachments: EmailOptions = {
@@ -248,10 +249,10 @@ describe('ResendProvider', () => {
     it('should use custom from address when provided', async () => {
       const mockResponse = {
         ok: true,
-        json: jest.fn().mockResolvedValue({ id: 'resend-message-id' }),
+        json: vi.fn().mockResolvedValue({ id: 'resend-message-id' }),
       };
 
-      (fetch as jest.Mock).mockResolvedValue(mockResponse);
+      (fetch as unknown as vi.Mock).mockResolvedValue(mockResponse);
 
       const emailOptionsWithCustomFrom: EmailOptions = {
         ...mockEmailOptions,
@@ -278,10 +279,10 @@ describe('ResendProvider', () => {
     it('should include both text and html when provided', async () => {
       const mockResponse = {
         ok: true,
-        json: jest.fn().mockResolvedValue({ id: 'resend-message-id' }),
+        json: vi.fn().mockResolvedValue({ id: 'resend-message-id' }),
       };
 
-      (fetch as jest.Mock).mockResolvedValue(mockResponse);
+      (fetch as unknown as vi.Mock).mockResolvedValue(mockResponse);
 
       const emailOptionsWithTextAndHtml: EmailOptions = {
         ...mockEmailOptions,
@@ -309,12 +310,12 @@ describe('ResendProvider', () => {
     it('should handle API errors', async () => {
       const mockResponse = {
         ok: false,
-        json: jest.fn().mockResolvedValue({
+        json: vi.fn().mockResolvedValue({
           message: 'Invalid API key',
         }),
       };
 
-      (fetch as jest.Mock).mockResolvedValue(mockResponse);
+      (fetch as unknown as vi.Mock).mockResolvedValue(mockResponse);
 
       const result = await provider.sendEmail(mockEmailOptions);
 
@@ -331,7 +332,7 @@ describe('ResendProvider', () => {
 
     it('should handle network errors', async () => {
       const error = new Error('Network error');
-      (fetch as jest.Mock).mockRejectedValue(error);
+      (fetch as unknown as vi.Mock).mockRejectedValue(error);
 
       const result = await provider.sendEmail(mockEmailOptions);
 

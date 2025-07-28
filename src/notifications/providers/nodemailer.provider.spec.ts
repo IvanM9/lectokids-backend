@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { Logger } from '@nestjs/common';
@@ -5,7 +6,7 @@ import { NodemailerProvider } from './nodemailer.provider';
 import { EmailOptions } from '../interfaces/email-provider.interface';
 import * as nodemailer from 'nodemailer';
 
-jest.mock('nodemailer');
+vi.mock('nodemailer');
 
 describe('NodemailerProvider', () => {
   let provider: NodemailerProvider;
@@ -14,13 +15,13 @@ describe('NodemailerProvider', () => {
 
   beforeEach(async () => {
     mockTransporter = {
-      sendMail: jest.fn(),
+      sendMail: vi.fn(),
     } as any;
 
-    (nodemailer.createTransport as jest.Mock).mockReturnValue(mockTransporter);
+    (nodemailer.createTransport as unknown as vi.Mock).mockReturnValue(mockTransporter);
 
     mockConfigService = {
-      get: jest.fn(),
+      get: vi.fn(),
     } as any;
 
     const module: TestingModule = await Test.createTestingModule({
@@ -35,12 +36,12 @@ describe('NodemailerProvider', () => {
 
     provider = module.get<NodemailerProvider>(NodemailerProvider);
 
-    jest.spyOn(Logger.prototype, 'log').mockImplementation();
-    jest.spyOn(Logger.prototype, 'error').mockImplementation();
+    vi.spyOn(Logger.prototype, 'log').mockImplementation();
+    vi.spyOn(Logger.prototype, 'error').mockImplementation();
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('sendEmail', () => {
@@ -203,7 +204,7 @@ describe('NodemailerProvider', () => {
 
     it('should throw error when required SMTP configuration is missing', async () => {
       const providerWithMissingConfig = new NodemailerProvider({
-        get: jest.fn().mockImplementation((key) => {
+        get: vi.fn().mockImplementation((key) => {
           const config = {
             SMTP_USER: 'user@example.com',
             SMTP_PASSWORD: 'password',
