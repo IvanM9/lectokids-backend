@@ -10,8 +10,8 @@ vi.mock('nodemailer');
 
 describe('NodemailerProvider', () => {
   let provider: NodemailerProvider;
-  let mockConfigService: jest.Mocked<ConfigService>;
-  let mockTransporter: jest.Mocked<nodemailer.Transporter>;
+  let mockConfigService: vi.Mocked<ConfigService>;
+  let mockTransporter: vi.Mocked<nodemailer.Transporter>;
 
   beforeEach(async () => {
     mockTransporter = {
