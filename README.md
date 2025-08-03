@@ -4,6 +4,7 @@
   <img src="https://via.placeholder.com/200x200/4CAF50/FFFFFF?text=LK" width="200" alt="LectoKids Logo" />
 </p>
 
+
 <p align="center">
   <strong>Backend API para LectoKids - Plataforma educativa que mejora la comprensión lectora infantil</strong>
 </p>
@@ -118,6 +119,7 @@ LectoKids es una plataforma educativa innovadora diseñada para mejorar la compr
 ### Variables de entorno
 
 Copia el archivo `.env.example` a `.env` y configura las siguientes variables según tu entorno:
+
 
 ```bash
 cp .env.example .env

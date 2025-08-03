@@ -334,45 +334,33 @@ export class ScoresService {
       select: {
         id: true,
         typeActivity: true,
+        scores: {
+          where: {
+            courseStudentId: courseStudent.id,
+          },
+          select: {
+            score: true,
+            createdAt: true,
+            reponses: true,
+          },
+          orderBy: {
+            createdAt: 'asc',
+          },
+        },
       },
     });
 
-    const scores = [];
-    for (const activity of activities) {
-      const count = await this.db.score.count({
-        where: {
-          activityId: activity.id,
-          courseStudentId: courseStudent.id,
-        },
-      });
-
-      const allScores = await this.db.score.findMany({
-        where: {
-          activityId: activity.id,
-          courseStudentId: courseStudent.id,
-        },
-        select: {
-          score: true,
-          createdAt: true,
-          reponses: true,
-        },
-        orderBy: {
-          createdAt: 'asc',
-        },
-      });
-
-      scores.push({
-        activityId: activity.id,
-        score: Number(allScores[allScores.length - 1]?.score ?? 0).toFixed(2),
-        allScores: allScores.map((item) => ({
-          score: Number(item.score).toFixed(2),
-          createdAt: item.createdAt,
-          responses: item.reponses,
-        })),
-        typeActivity: activity.typeActivity,
-        count,
-      });
-    }
+    const scores = activities.map((activity) => ({
+      activityId: activity.id,
+      score: Number(activity.scores[activity.scores.length - 1]?.score ?? 0).toFixed(2),
+      allScores: activity.scores.map((item) => ({
+        score: Number(item.score).toFixed(2),
+        createdAt: item.createdAt,
+        responses: item.reponses,
+      })),
+      typeActivity: activity.typeActivity,
+      count: activity.scores.length,
+    }));
 
     return {
       data: scores,
@@ -390,6 +378,7 @@ export class ScoresService {
       select: {
         courseStudent: {
           select: {
+            id: true,
             student: {
               select: {
                 id: true,
@@ -405,6 +394,30 @@ export class ScoresService {
           },
         },
         detailReadingId: true,
+        detailReading: {
+          select: {
+            activities: {
+              where: {
+                status: true,
+              },
+              select: {
+                id: true,
+                typeActivity: true,
+                scores: {
+                  select: {
+                    courseStudentId: true,
+                    score: true,
+                    createdAt: true,
+                    reponses: true,
+                  },
+                  orderBy: {
+                    createdAt: 'asc',
+                  },
+                },
+              },
+            },
+          },
+        },
       },
       orderBy: {
         detailReading: {
@@ -413,26 +426,33 @@ export class ScoresService {
       },
     });
 
-    const scores: {
-      studentId: string;
-      studentName: string;
-      scores: any[];
-      detailReadingId: string;
-    }[] = [];
+    const scores = studentsOnReadings.map((student) => {
+      const activities = student.detailReading.activities;
+      const studentScores = activities.map((activity) => {
+        const activityScores = activity.scores.filter(
+          (score) => score.courseStudentId === student.courseStudent.id,
+        );
+        
+        return {
+          activityId: activity.id,
+          score: Number(activityScores[activityScores.length - 1]?.score ?? 0).toFixed(2),
+          allScores: activityScores.map((item) => ({
+            score: Number(item.score).toFixed(2),
+            createdAt: item.createdAt,
+            responses: item.reponses,
+          })),
+          typeActivity: activity.typeActivity,
+          count: activityScores.length,
+        };
+      });
 
-    for (const student of studentsOnReadings) {
-      const scoreByStudent = await this.getScoreByDetailReading(
-        student.detailReadingId,
-        student.courseStudent.student.user.id,
-      );
-
-      scores.push({
+      return {
         studentId: student.courseStudent.student.id,
         studentName: `${student.courseStudent.student.user.firstName} ${student.courseStudent.student.user.lastName}`,
-        scores: scoreByStudent.data,
+        scores: studentScores,
         detailReadingId: student.detailReadingId,
-      });
-    }
+      };
+    });
 
     return {
       data: scores,
@@ -451,6 +471,7 @@ export class ScoresService {
         status: true,
       },
       select: {
+        id: true,
         course: {
           select: {
             id: true,
@@ -477,6 +498,32 @@ export class ScoresService {
                       },
                       select: {
                         id: true,
+                        activities: {
+                          where: {
+                            status: true,
+                          },
+                          select: {
+                            id: true,
+                            typeActivity: true,
+                            scores: {
+                              where: {
+                                courseStudent: {
+                                  student: {
+                                    userId,
+                                  },
+                                },
+                              },
+                              select: {
+                                score: true,
+                                createdAt: true,
+                                reponses: true,
+                              },
+                              orderBy: {
+                                createdAt: 'asc',
+                              },
+                            },
+                          },
+                        },
                       },
                     },
                   },
@@ -498,30 +545,38 @@ export class ScoresService {
       },
     });
 
-    const scores = [];
-    for (const course of courses) {
-      const readings = [];
-      for (const level of course.course.levels) {
-        for (const reading of level.readings) {
-          if (reading.detailReadings.length === 0) continue;
+    const scores = courses.map((course) => {
+      const readings = course.course.levels.flatMap((level) =>
+        level.readings
+          .filter((reading) => reading.detailReadings.length > 0)
+          .map((reading) => {
+            const detailReading = reading.detailReadings[0];
+            const activityScores = detailReading.activities.map((activity) => ({
+              activityId: activity.id,
+              score: Number(activity.scores[activity.scores.length - 1]?.score ?? 0).toFixed(2),
+              allScores: activity.scores.map((item) => ({
+                score: Number(item.score).toFixed(2),
+                createdAt: item.createdAt,
+                responses: item.reponses,
+              })),
+              typeActivity: activity.typeActivity,
+              count: activity.scores.length,
+            }));
 
-          const score = await this.getScoreByDetailReading(
-            reading.detailReadings[0].id,
-            userId,
-          );
-          readings.push({
-            readingId: reading.id,
-            readingTitle: reading.title,
-            scores: score.data,
-          });
-        }
-      }
-      scores.push({
+            return {
+              readingId: reading.id,
+              readingTitle: reading.title,
+              scores: activityScores,
+            };
+          }),
+      );
+
+      return {
         courseId: course.course.id,
         courseName: course.course.name,
         readings,
-      });
-    }
+      };
+    });
 
     return {
       data: scores,
@@ -543,6 +598,7 @@ export class ScoresService {
           levels: {
             select: {
               id: true,
+              name: true,
               readings: {
                 select: {
                   id: true,
@@ -553,6 +609,68 @@ export class ScoresService {
                     },
                     select: {
                       id: true,
+                      studentsOnReadings: {
+                        select: {
+                          courseStudent: {
+                            select: {
+                              id: true,
+                              student: {
+                                select: {
+                                  id: true,
+                                  user: {
+                                    select: {
+                                      id: true,
+                                      firstName: true,
+                                      lastName: true,
+                                    },
+                                  },
+                                },
+                              },
+                            },
+                          },
+                        },
+                      },
+                      activities: {
+                        where: {
+                          status: true,
+                        },
+                        select: {
+                          id: true,
+                          typeActivity: true,
+                          scores: {
+                            select: {
+                              courseStudentId: true,
+                              score: true,
+                              createdAt: true,
+                              reponses: true,
+                              courseStudent: {
+                                select: {
+                                  studentId: true,
+                                },
+                              },
+                            },
+                            orderBy: {
+                              createdAt: 'asc',
+                            },
+                          },
+                        },
+                      },
+                      timeSpends: {
+                        select: {
+                          courseStudentId: true,
+                          startTime: true,
+                          endTime: true,
+                          createdAt: true,
+                          courseStudent: {
+                            select: {
+                              studentId: true,
+                            },
+                          },
+                        },
+                        orderBy: {
+                          createdAt: 'desc',
+                        },
+                      },
                     },
                   },
                 },
@@ -563,7 +681,6 @@ export class ScoresService {
                   createdAt: 'asc',
                 },
               },
-              name: true,
             },
             where: {
               status: true,
@@ -584,65 +701,69 @@ export class ScoresService {
         throw new NotFoundException('Curso no encontrado');
       });
 
-    const levels = [];
-    for (const levelItem of course.levels) {
-      const readings = [];
-      for (const reading of levelItem.readings) {
-        const score = (await this.getScoreByReading(reading.id)).data;
-
-        const scores = [];
-
-        for (const item of score) {
-          const readingTimeSpends = await this.db.timeSpend.findMany({
-            where: {
-              detailReadingId: item.detailReadingId,
-              courseStudent: {
-                studentId: item.studentId,
-              },
-            },
-            select: {
-              startTime: true,
-              endTime: true,
-              createdAt: true,
-            },
-            orderBy: {
-              createdAt: 'desc',
-            },
-          });
-
-          scores.push({
-            studentId: item.studentId,
-            studentName: item.studentName,
-            scores: item.scores,
-            detailReadingId: item.detailReadingId,
-            readingTimeSpends: readingTimeSpends.map((time) => {
-              const timeSpendAux =
-                (time.endTime.getTime() - time.startTime.getTime()) / 1000;
-
+    const levels = course.levels.map((levelItem) => {
+      const readings = levelItem.readings.map((reading) => {
+        const scores = reading.detailReadings.flatMap((detailReading) => {
+          return detailReading.studentsOnReadings.map((studentOnReading) => {
+            const student = studentOnReading.courseStudent.student;
+            const studentId = student.id;
+            
+            const studentScores = detailReading.activities.map((activity) => {
+              const activityScores = activity.scores.filter(
+                (score) => score.courseStudent.studentId === studentId,
+              );
+              
               return {
-                createdAt: time.createdAt,
-                timeSpend:
-                  timeSpendAux > 60
-                    ? (timeSpendAux / 60).toFixed(2) + ' minutos'
-                    : timeSpendAux.toFixed(0) + ' segundos',
+                activityId: activity.id,
+                score: Number(activityScores[activityScores.length - 1]?.score ?? 0).toFixed(2),
+                allScores: activityScores.map((item) => ({
+                  score: Number(item.score).toFixed(2),
+                  createdAt: item.createdAt,
+                  responses: item.reponses,
+                })),
+                typeActivity: activity.typeActivity,
+                count: activityScores.length,
               };
-            }),
-          });
-        }
+            });
 
-        readings.push({
+            const readingTimeSpends = detailReading.timeSpends
+              .filter((timeSpend) => timeSpend.courseStudent.studentId === studentId)
+              .map((time) => {
+                const timeSpendAux =
+                  (time.endTime.getTime() - time.startTime.getTime()) / 1000;
+
+                return {
+                  createdAt: time.createdAt,
+                  timeSpend:
+                    timeSpendAux > 60
+                      ? (timeSpendAux / 60).toFixed(2) + ' minutos'
+                      : timeSpendAux.toFixed(0) + ' segundos',
+                };
+              });
+
+            return {
+              studentId,
+              studentName: `${student.user.firstName} ${student.user.lastName}`,
+              scores: studentScores,
+              detailReadingId: detailReading.id,
+              readingTimeSpends,
+            };
+          });
+        });
+
+        return {
           readingId: reading.id,
           readingTitle: reading.title,
           scores,
-        });
-      }
+        };
+      });
 
-      levels.push({
+      return {
         levelId: levelItem.id,
         levelName: levelItem.name,
         readings,
-      });
-    }
+      };
+    });
 
     return {
       data: levels,
@@ -704,6 +825,7 @@ export class ScoresService {
           levels: {
             select: {
               id: true,
+              name: true,
               readings: {
                 select: {
                   id: true,
@@ -711,9 +833,76 @@ export class ScoresService {
                   detailReadings: {
                     where: {
                       status: true,
+                      studentsOnReadings: {
+                        some: {
+                          courseStudent: {
+                            studentId,
+                          },
+                        },
+                      },
                     },
                     select: {
                       id: true,
+                      studentsOnReadings: {
+                        where: {
+                          courseStudent: {
+                            studentId,
+                          },
+                        },
+                        select: {
+                          courseStudent: {
+                            select: {
+                              student: {
+                                select: {
+                                  id: true,
+                                  user: {
+                                    select: {
+                                      firstName: true,
+                                      lastName: true,
+                                    },
+                                  },
+                                },
+                              },
+                            },
+                          },
+                        },
+                      },
+                      activities: {
+                        where: {
+                          status: true,
+                        },
+                        select: {
+                          id: true,
+                          typeActivity: true,
+                          scores: {
+                            where: {
+                              courseStudent: {
+                                studentId,
+                              },
+                            },
+                            select: {
+                              score: true,
+                              createdAt: true,
+                              reponses: true,
+                            },
+                            orderBy: {
+                              createdAt: 'asc',
+                            },
+                          },
+                        },
+                      },
+                      timeSpends: {
+                        where: {
+                          courseStudent: {
+                            studentId,
+                          },
+                        },
+                        select: {
+                          startTime: true,
+                          endTime: true,
+                          createdAt: true,
+                        },
+                      },
                     },
                   },
                 },
@@ -721,7 +910,6 @@ export class ScoresService {
                   status: true,
                 },
               },
-              name: true,
             },
             where: {
               status: true,
@@ -730,6 +918,13 @@ export class ScoresService {
                   detailReadings: {
                     some: {
                       status: true,
+                      studentsOnReadings: {
+                        some: {
+                          courseStudent: {
+                            studentId,
+                          },
+                        },
+                      },
                     },
                   },
                 },
@@ -742,37 +937,26 @@ export class ScoresService {
         throw new NotFoundException('Curso no encontrado');
       });
 
-    const levels = [];
-    for (const levelItem of course.levels) {
-      const readings = [];
-      for (const reading of levelItem.readings) {
-        const score = (await this.getScoreByReading(reading.id)).data;
+    const levels = course.levels.map((levelItem) => {
+      const readings = levelItem.readings
+        .filter((reading) => reading.detailReadings.length > 0)
+        .map((reading) => {
+          const scores = reading.detailReadings.map((detailReading) => {
+            const student = detailReading.studentsOnReadings[0]?.courseStudent.student;
+            
+            const studentScores = detailReading.activities.map((activity) => ({
+              activityId: activity.id,
+              score: Number(activity.scores[activity.scores.length - 1]?.score ?? 0).toFixed(2),
+              allScores: activity.scores.map((item) => ({
+                score: Number(item.score).toFixed(2),
+                createdAt: item.createdAt,
+                responses: item.reponses,
+              })),
+              typeActivity: activity.typeActivity,
+              count: activity.scores.length,
+            }));
 
-        const scores = [];
-
-        for (const item of score) {
-          if (item.studentId !== studentId) continue;
-
-          const readingTimeSpends = await this.db.timeSpend.findMany({
-            where: {
-              detailReadingId: item.detailReadingId,
-              courseStudent: {
-                studentId: item.studentId,
-              },
-            },
-            select: {
-              startTime: true,
-              endTime: true,
-              createdAt: true,
-            },
-          });
-
-          scores.push({
-            studentId: item.studentId,
-            studentName: item.studentName,
-            scores: item.scores,
-            detailReadingId: item.detailReadingId,
-            readingTimeSpends: readingTimeSpends.map((time) => ({
+            const readingTimeSpends = detailReading.timeSpends.map((time) => ({
               createdAt: time.createdAt,
               timeSpend:
                 (
@@ -780,23 +964,30 @@ export class ScoresService {
                   1000 /
                   60
                 ).toFixed(2) + ' minutos',
-            })),
+            }));
+
+            return {
+              studentId: student?.id || studentId,
+              studentName: student ? `${student.user.firstName} ${student.user.lastName}` : '',
+              scores: studentScores,
+              detailReadingId: detailReading.id,
+              readingTimeSpends,
+            };
           });
-        }
 
-        readings.push({
-          readingId: reading.id,
-          readingTitle: reading.title,
-          scores,
+          return {
+            readingId: reading.id,
+            readingTitle: reading.title,
+            scores,
+          };
         });
-      }
 
-      levels.push({
+      return {
         levelId: levelItem.id,
         levelName: levelItem.name,
         readings,
-      });
-    }
+      };
+    });
 
     return {
       data: levels,
