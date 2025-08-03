@@ -10,8 +10,6 @@ LectoKids is an educational platform that helps improve children's reading compr
 
 ### Core Development
 - `yarn dev` - Start development server with SWC compiler and watch mode (recommended)
-- `yarn start:dev` - Start development server with standard TypeScript compiler and watch mode
-- `yarn build` - Build the application for production
 - `yarn build:swc` - Build with SWC compiler (faster)
 - `yarn start:prod` - Start production server
 - `yarn start:migrate:prod` - Run Prisma migrations and start production server
@@ -24,14 +22,12 @@ LectoKids is an educational platform that helps improve children's reading compr
 - `yarn test:debug` - Run tests in debug mode
 
 ### Code Quality
-- `yarn lint` - Run ESLint with auto-fix
 - `yarn format` - Format code with Prettier
 
 ### Database
 - `npx prisma migrate dev` - Run database migrations in development
 - `npx prisma migrate deploy` - Deploy migrations to production
 - `npx prisma generate` - Generate Prisma client
-- `npx prisma studio` - Open Prisma Studio for database management
 
 ## Architecture Overview
 
@@ -96,9 +92,9 @@ LectoKids is an educational platform that helps improve children's reading compr
 - `src/libs/LoggerFactory.ts` - Centralized logging configuration
 
 ### Testing Strategy
-- Unit tests with Jest
+- Unit tests with Vitest
 - E2E tests with Supertest
-- Test configuration in `jest` section of package.json
+- Test configuration in `vitest.config.ts`
 - Coverage reporting available with `yarn test:cov`
 
 ### Deployment Notes

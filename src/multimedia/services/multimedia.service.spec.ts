@@ -5,7 +5,21 @@ import { PrismaService } from '@/libs/prisma.service';
 import { Logger } from '@nestjs/common';
 import multimediaConfig from '../config/multimedia.config';
 import { StorageProviderFactory } from '../providers/storage-provider.factory';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+// Setup environment variables for multimedia configuration
+const originalEnv = process.env;
+beforeEach(() => {
+  process.env = { ...originalEnv };
+  process.env.BUCKET_NAME = 'test-bucket';
+  process.env.STORAGE_PROVIDER = 'firebase';
+  process.env.PUBLIC_DIR = '/tmp/public';
+  process.env.FIREBASE_CONFIG = JSON.stringify({ projectId: 'test' });
+});
+
+afterEach(() => {
+  process.env = originalEnv;
+});
 
 // Mock dependencies
 const mockPrismaService = {
