@@ -8,10 +8,10 @@ export default registerAs('multimedia', () => ({
   storageProvider: env.STORAGE_PROVIDER,
   bucketName: env.BUCKET_NAME,
   publicDir: env.PUBLIC_DIR,
-  
+
   // Firebase settings
   firebaseConfig: env.FIREBASE_CONFIG,
-  
+
   // MINIO settings
   minioEndpoint: env.MINIO_ENDPOINT,
   minioPort: env.MINIO_PORT,

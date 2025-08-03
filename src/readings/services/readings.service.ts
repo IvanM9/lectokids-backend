@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { CreateReadingDto, UpdateReadingDto } from '../dtos/readings.dto';
 import { AiService } from '@/ai/services/ai/ai.service';
-import puppeteer from 'puppeteer';
+import { PuppeteerPoolService } from '@/shared/services/puppeteer-pool.service';
 import { renderFile } from 'ejs';
 import { TypeContent } from '@prisma/client';
 import { ConfigType } from '@nestjs/config';
@@ -20,6 +20,7 @@ export class ReadingsService {
     private db: PrismaService,
     private readonly logger: Logger,
     private ai: AiService,
+    private readonly puppeteerPool: PuppeteerPoolService,
     @Inject(serverConfig.KEY)
     private environment: ConfigType<typeof serverConfig>,
   ) {}
@@ -357,136 +358,130 @@ export class ReadingsService {
     return { data: await this.ai.generateReadingInformationService() };
   }
 
-  async getPDFReading(readingId: string) {
-    const reading = await this.db.reading
-      .findFirstOrThrow({
-        where: { id: readingId },
-        select: {
-          title: true,
-          goals: true,
-          detailReadings: {
-            select: {
-              contentsLecture: {
-                select: {
-                  content: true,
-                },
-                where: {
-                  status: true,
-                  type: TypeContent.TEXT,
-                },
-              },
-              activities: {
-                select: {
-                  typeActivity: true,
-                  questionActivities: {
-                    select: {
-                      question: true,
-                      answerActivity: {
-                        select: {
-                          answer: true,
-                          isCorrect: true,
-                        },
-                        where: {
-                          status: true,
-                        },
-                      },
-                    },
-                    where: {
-                      status: true,
-                    },
+  async getPDFReading(readingId: string): Promise<Buffer> {
+    try {
+      const reading = await this.db.reading
+        .findFirstOrThrow({
+          where: { id: readingId },
+          select: {
+            title: true,
+            goals: true,
+            detailReadings: {
+              select: {
+                contentsLecture: {
+                  select: {
+                    content: true,
+                  },
+                  where: {
+                    status: true,
+                    type: TypeContent.TEXT,
                   },
                 },
-                where: {
-                  status: true,
+                activities: {
+                  select: {
+                    typeActivity: true,
+                    questionActivities: {
+                      select: {
+                        question: true,
+                        answerActivity: {
+                          select: {
+                            answer: true,
+                            isCorrect: true,
+                          },
+                          where: {
+                            status: true,
+                          },
+                        },
+                      },
+                      where: {
+                        status: true,
+                      },
+                    },
+                  },
+                  where: {
+                    status: true,
+                  },
                 },
-              },
-              studentsOnReadings: {
-                select: {
-                  courseStudent: {
-                    select: {
-                      id: true,
-                      student: {
-                        select: {
-                          user: {
-                            select: {
-                              firstName: true,
-                              lastName: true,
+                studentsOnReadings: {
+                  select: {
+                    courseStudent: {
+                      select: {
+                        id: true,
+                        student: {
+                          select: {
+                            user: {
+                              select: {
+                                firstName: true,
+                                lastName: true,
+                              },
                             },
                           },
                         },
                       },
                     },
                   },
-                },
-                orderBy: {
-                  courseStudent: {
-                    student: {
-                      user: {
-                        firstName: 'asc',
+                  orderBy: {
+                    courseStudent: {
+                      student: {
+                        user: {
+                          firstName: 'asc',
+                        },
                       },
                     },
                   },
                 },
               },
-            },
-            where: {
-              status: true,
+              where: {
+                status: true,
+              },
             },
           },
-        },
-      })
-      .catch(() => {
-        throw new NotFoundException('No se encontró la lectura');
+        })
+        .catch(() => {
+          throw new NotFoundException('No se encontró la lectura');
+        });
+
+      const readings = reading.detailReadings.map((detailReading) => {
+        const text = detailReading.contentsLecture
+          .map((content) => content.content)
+          .join(' <br />');
+
+        return {
+          text,
+          activities: detailReading.activities,
+          students: detailReading.studentsOnReadings.map(
+            (student) => student.courseStudent.student.user,
+          ),
+        };
       });
 
-    const readings = [];
-    for (const detailReading of reading.detailReadings) {
-      const text = detailReading.contentsLecture
-        .map((content) => content.content)
-        .join(' <br />');
+      const data = {
+        readings,
+        title: reading.title,
+        goals: reading.goals,
+      };
 
-      readings.push({
-        text,
-        activities: detailReading.activities,
-        students: detailReading.studentsOnReadings.map(
-          (student) => student.courseStudent.student.user,
-        ),
+      const html = await new Promise<string>((resolve, reject) => {
+        renderFile(
+          this.environment.viewsDir + '/reading.ejs',
+          data,
+          (err, html) => {
+            if (err) {
+              this.logger.error('Error rendering reading template', err);
+              reject(new BadRequestException('Error generando el PDF'));
+              return;
+            }
+            resolve(html);
+          },
+        );
       });
+
+      return await this.puppeteerPool.generatePDF(html, {
+        format: 'A4',
+      });
+    } catch (error) {
+      this.logger.error('Error generating reading PDF', error);
+      throw new BadRequestException('Error generando el PDF de la lectura');
     }
-
-    const data = {
-      readings,
-      title: reading.title,
-      goals: reading.goals,
-    };
-
-    return new Promise<Buffer>((resolve, reject) => {
-      renderFile(
-        this.environment.viewsDir + '/reading.ejs',
-        data,
-        async (err, html) => {
-          if (err) {
-            reject(err);
-            return;
-          }
-
-          const browser = await puppeteer.launch({
-            args: ['--no-sandbox', '--disable-setuid-sandbox'],
-          });
-
-          const page = await browser.newPage();
-
-          await page.setContent(html);
-
-          const buffer = await page.pdf({ format: 'A4' });
-
-          const nodeBuffer = Buffer.from(buffer);
-
-          await browser.close();
-
-          resolve(nodeBuffer);
-        },
-      );
-    });
   }
 }

@@ -7,7 +7,11 @@ import { TypeMultimedia } from '@prisma/client';
 import { ConfigType } from '@nestjs/config';
 import multimediaConfig from '../config/multimedia.config';
 import { StorageProviderFactory } from '../providers/storage-provider.factory';
-import { StorageProvider, StorageUploadResult, StorageDownloadResult } from '../interfaces/storage-provider.interface';
+import {
+  StorageProvider,
+  StorageUploadResult,
+  StorageDownloadResult,
+} from '../interfaces/storage-provider.interface';
 import { CreateLinkMultimediaDto } from '../dtos/multimedia.dto';
 import { Readable } from 'stream';
 import * as fs from 'fs';
@@ -38,7 +42,7 @@ describe('MultimediaService', () => {
   };
 
   const mockMultimediaConfig: ConfigType<typeof multimediaConfig> = {
-    storageProvider: 'firebase',
+    storageProvider: 'minio',
     bucketName: 'test-bucket',
     publicDir: '/tmp/test',
     firebaseConfig: '{}',
@@ -64,7 +68,9 @@ describe('MultimediaService', () => {
     vi.clearAllMocks();
 
     // Setup storage provider factory to return mock storage provider
-    mockStorageProviderFactory.createStorageProvider.mockReturnValue(mockStorageProvider);
+    mockStorageProviderFactory.createStorageProvider.mockReturnValue(
+      mockStorageProvider,
+    );
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -91,7 +97,9 @@ describe('MultimediaService', () => {
     service = module.get<MultimediaService>(MultimediaService);
     prismaService = module.get<PrismaService>(PrismaService);
     logger = module.get<Logger>(Logger);
-    storageProviderFactory = module.get<StorageProviderFactory>(StorageProviderFactory);
+    storageProviderFactory = module.get<StorageProviderFactory>(
+      StorageProviderFactory,
+    );
     storageProvider = mockStorageProvider;
   });
 
@@ -125,18 +133,24 @@ describe('MultimediaService', () => {
     it('should create multimedia successfully with default type', async () => {
       const mockCreatedMultimedia = { id: 'multimedia-id' };
 
-      (mockStorageProvider.uploadFile as any).mockResolvedValue(mockUploadResult);
-      mockPrismaService.multimedia.create.mockResolvedValue(mockCreatedMultimedia);
-      (fs.unlink as any).mockImplementation((path: string, callback: (err?: Error) => void) => {
-        callback();
-      });
+      (mockStorageProvider.uploadFile as any).mockResolvedValue(
+        mockUploadResult,
+      );
+      mockPrismaService.multimedia.create.mockResolvedValue(
+        mockCreatedMultimedia,
+      );
+      (fs.unlink as any).mockImplementation(
+        (path: string, callback: (err?: Error) => void) => {
+          callback();
+        },
+      );
 
       const result = await service.createMultimedia([mockFile]);
 
       expect(mockStorageProvider.uploadFile).toHaveBeenCalledWith(
         mockFile.path,
         mockFile.filename,
-        true
+        true,
       );
       expect(mockPrismaService.multimedia.create).toHaveBeenCalledWith({
         data: {
@@ -149,7 +163,10 @@ describe('MultimediaService', () => {
           id: true,
         },
       });
-      expect(fs.unlink).toHaveBeenCalledWith(mockFile.path, expect.any(Function));
+      expect(fs.unlink).toHaveBeenCalledWith(
+        mockFile.path,
+        expect.any(Function),
+      );
       expect(result).toEqual({
         message: 'Multimedia creado con éxito',
         data: [mockCreatedMultimedia],
@@ -163,11 +180,17 @@ describe('MultimediaService', () => {
         description: 'Test video',
       };
 
-      (mockStorageProvider.uploadFile as any).mockResolvedValue(mockUploadResult);
-      mockPrismaService.multimedia.create.mockResolvedValue(mockCreatedMultimedia);
-      (fs.unlink as any).mockImplementation((path: string, callback: (err?: Error) => void) => {
-        callback();
-      });
+      (mockStorageProvider.uploadFile as any).mockResolvedValue(
+        mockUploadResult,
+      );
+      mockPrismaService.multimedia.create.mockResolvedValue(
+        mockCreatedMultimedia,
+      );
+      (fs.unlink as any).mockImplementation(
+        (path: string, callback: (err?: Error) => void) => {
+          callback();
+        },
+      );
 
       const result = await service.createMultimedia([mockFile], extraData);
 
@@ -207,9 +230,11 @@ describe('MultimediaService', () => {
       mockPrismaService.multimedia.create
         .mockResolvedValueOnce(mockCreatedMultimedia1)
         .mockResolvedValueOnce(mockCreatedMultimedia2);
-      (fs.unlink as any).mockImplementation((path: string, callback: (err?: Error) => void) => {
-        callback();
-      });
+      (fs.unlink as any).mockImplementation(
+        (path: string, callback: (err?: Error) => void) => {
+          callback();
+        },
+      );
 
       const result = await service.createMultimedia([mockFile, mockFile2]);
 
@@ -227,38 +252,42 @@ describe('MultimediaService', () => {
       (mockStorageProvider.uploadFile as any).mockRejectedValue(uploadError);
 
       await expect(service.createMultimedia([mockFile])).rejects.toThrow(
-        BadRequestException
+        BadRequestException,
       );
       await expect(service.createMultimedia([mockFile])).rejects.toThrow(
-        'Error al guardar los archivos en el servidor'
+        'Error al guardar los archivos en el servidor',
       );
 
       expect(mockLogger.error).toHaveBeenCalledWith(
         uploadError.message,
         uploadError.stack,
-        MultimediaService.name
+        MultimediaService.name,
       );
     });
 
     it('should handle database creation error', async () => {
       const dbError = new Error('Database error');
-      (mockStorageProvider.uploadFile as any).mockResolvedValue(mockUploadResult);
+      (mockStorageProvider.uploadFile as any).mockResolvedValue(
+        mockUploadResult,
+      );
       mockPrismaService.multimedia.create.mockRejectedValue(dbError);
-      (fs.unlink as any).mockImplementation((path: string, callback: (err?: Error) => void) => {
-        callback();
-      });
+      (fs.unlink as any).mockImplementation(
+        (path: string, callback: (err?: Error) => void) => {
+          callback();
+        },
+      );
 
       await expect(service.createMultimedia([mockFile])).rejects.toThrow(
-        BadRequestException
+        BadRequestException,
       );
       await expect(service.createMultimedia([mockFile])).rejects.toThrow(
-        'Error al guardar los archivos en la base de datos'
+        'Error al guardar los archivos en la base de datos',
       );
 
       expect(mockLogger.error).toHaveBeenCalledWith(
         dbError.message,
         dbError.stack,
-        MultimediaService.name
+        MultimediaService.name,
       );
     });
 
@@ -266,11 +295,17 @@ describe('MultimediaService', () => {
       const mockCreatedMultimedia = { id: 'multimedia-id' };
       const unlinkError = new Error('File deletion failed');
 
-      (mockStorageProvider.uploadFile as any).mockResolvedValue(mockUploadResult);
-      mockPrismaService.multimedia.create.mockResolvedValue(mockCreatedMultimedia);
-      (fs.unlink as any).mockImplementation((path: string, callback: (err?: Error) => void) => {
-        callback(unlinkError);
-      });
+      (mockStorageProvider.uploadFile as any).mockResolvedValue(
+        mockUploadResult,
+      );
+      mockPrismaService.multimedia.create.mockResolvedValue(
+        mockCreatedMultimedia,
+      );
+      (fs.unlink as any).mockImplementation(
+        (path: string, callback: (err?: Error) => void) => {
+          callback(unlinkError);
+        },
+      );
 
       const result = await service.createMultimedia([mockFile]);
 
@@ -281,7 +316,7 @@ describe('MultimediaService', () => {
       expect(mockLogger.error).toHaveBeenCalledWith(
         unlinkError.message,
         unlinkError.stack,
-        MultimediaService.name
+        MultimediaService.name,
       );
     });
   });
@@ -302,11 +337,14 @@ describe('MultimediaService', () => {
     });
 
     it('should create multimedia from buffer with IMAGE type', async () => {
-      const result = await service.createMultimediaFromBuffer(mockBuffer, extraData);
+      const result = await service.createMultimediaFromBuffer(
+        mockBuffer,
+        extraData,
+      );
 
       expect(fs.writeFileSync).toHaveBeenCalledWith(
         `${mockMultimediaConfig.publicDir}/${extraData.fileName}`,
-        mockBuffer
+        mockBuffer,
       );
 
       expect(service.createMultimedia).toHaveBeenCalledWith(
@@ -327,7 +365,7 @@ describe('MultimediaService', () => {
         {
           type: TypeMultimedia.IMAGE,
           description: extraData.description,
-        }
+        },
       );
 
       expect(result).toEqual({
@@ -355,7 +393,7 @@ describe('MultimediaService', () => {
         {
           type: TypeMultimedia.VIDEO,
           description: videoExtraData.description,
-        }
+        },
       );
     });
 
@@ -378,7 +416,7 @@ describe('MultimediaService', () => {
         {
           type: TypeMultimedia.AUDIO,
           description: audioExtraData.description,
-        }
+        },
       );
     });
 
@@ -396,7 +434,7 @@ describe('MultimediaService', () => {
             mimetype: 'application/octet-stream',
           }),
         ],
-        expect.any(Object)
+        expect.any(Object),
       );
     });
 
@@ -406,15 +444,15 @@ describe('MultimediaService', () => {
         type: TypeMultimedia.IMAGE,
       };
 
-      await service.createMultimediaFromBuffer(mockBuffer, extraDataWithoutDescription);
-
-      expect(service.createMultimedia).toHaveBeenCalledWith(
-        expect.any(Array),
-        {
-          type: TypeMultimedia.IMAGE,
-          description: undefined,
-        }
+      await service.createMultimediaFromBuffer(
+        mockBuffer,
+        extraDataWithoutDescription,
       );
+
+      expect(service.createMultimedia).toHaveBeenCalledWith(expect.any(Array), {
+        type: TypeMultimedia.IMAGE,
+        description: undefined,
+      });
     });
   });
 
@@ -425,17 +463,23 @@ describe('MultimediaService', () => {
     };
 
     it('should delete multimedia successfully', async () => {
-      mockPrismaService.multimedia.findUniqueOrThrow.mockResolvedValue(mockMultimedia);
+      mockPrismaService.multimedia.findUniqueOrThrow.mockResolvedValue(
+        mockMultimedia,
+      );
       (mockStorageProvider.deleteFile as any).mockResolvedValue(undefined);
       mockPrismaService.multimedia.delete.mockResolvedValue(mockMultimedia);
 
       const result = await service.deleteMultimedia(multimediaId);
 
-      expect(mockPrismaService.multimedia.findUniqueOrThrow).toHaveBeenCalledWith({
+      expect(
+        mockPrismaService.multimedia.findUniqueOrThrow,
+      ).toHaveBeenCalledWith({
         where: { id: multimediaId },
         select: { fileName: true },
       });
-      expect(mockStorageProvider.deleteFile).toHaveBeenCalledWith(mockMultimedia.fileName);
+      expect(mockStorageProvider.deleteFile).toHaveBeenCalledWith(
+        mockMultimedia.fileName,
+      );
       expect(mockPrismaService.multimedia.delete).toHaveBeenCalledWith({
         where: { id: multimediaId },
       });
@@ -446,8 +490,12 @@ describe('MultimediaService', () => {
 
     it('should delete multimedia without fileName', async () => {
       const multimediaWithoutFile = { fileName: null };
-      mockPrismaService.multimedia.findUniqueOrThrow.mockResolvedValue(multimediaWithoutFile);
-      mockPrismaService.multimedia.delete.mockResolvedValue(multimediaWithoutFile);
+      mockPrismaService.multimedia.findUniqueOrThrow.mockResolvedValue(
+        multimediaWithoutFile,
+      );
+      mockPrismaService.multimedia.delete.mockResolvedValue(
+        multimediaWithoutFile,
+      );
 
       const result = await service.deleteMultimedia(multimediaId);
 
@@ -461,13 +509,15 @@ describe('MultimediaService', () => {
     });
 
     it('should handle multimedia not found', async () => {
-      mockPrismaService.multimedia.findUniqueOrThrow.mockRejectedValue(new Error('Not found'));
+      mockPrismaService.multimedia.findUniqueOrThrow.mockRejectedValue(
+        new Error('Not found'),
+      );
 
       await expect(service.deleteMultimedia(multimediaId)).rejects.toThrow(
-        NotFoundException
+        NotFoundException,
       );
       await expect(service.deleteMultimedia(multimediaId)).rejects.toThrow(
-        'Multimedia no encontrado'
+        'Multimedia no encontrado',
       );
 
       expect(mockStorageProvider.deleteFile).not.toHaveBeenCalled();
@@ -476,41 +526,45 @@ describe('MultimediaService', () => {
 
     it('should handle storage deletion error', async () => {
       const deleteError = new Error('Storage deletion failed');
-      mockPrismaService.multimedia.findUniqueOrThrow.mockResolvedValue(mockMultimedia);
+      mockPrismaService.multimedia.findUniqueOrThrow.mockResolvedValue(
+        mockMultimedia,
+      );
       (mockStorageProvider.deleteFile as any).mockRejectedValue(deleteError);
 
       await expect(service.deleteMultimedia(multimediaId)).rejects.toThrow(
-        BadRequestException
+        BadRequestException,
       );
       await expect(service.deleteMultimedia(multimediaId)).rejects.toThrow(
-        'Error al eliminar el archivo'
+        'Error al eliminar el archivo',
       );
 
       expect(mockLogger.error).toHaveBeenCalledWith(
         deleteError.message,
         deleteError.stack,
-        MultimediaService.name
+        MultimediaService.name,
       );
       expect(mockPrismaService.multimedia.delete).not.toHaveBeenCalled();
     });
 
     it('should handle database deletion error', async () => {
       const dbError = new Error('Database deletion failed');
-      mockPrismaService.multimedia.findUniqueOrThrow.mockResolvedValue(mockMultimedia);
+      mockPrismaService.multimedia.findUniqueOrThrow.mockResolvedValue(
+        mockMultimedia,
+      );
       (mockStorageProvider.deleteFile as any).mockResolvedValue(undefined);
       mockPrismaService.multimedia.delete.mockRejectedValue(dbError);
 
       await expect(service.deleteMultimedia(multimediaId)).rejects.toThrow(
-        BadRequestException
+        BadRequestException,
       );
       await expect(service.deleteMultimedia(multimediaId)).rejects.toThrow(
-        'Error al eliminar el archivo'
+        'Error al eliminar el archivo',
       );
 
       expect(mockLogger.error).toHaveBeenCalledWith(
         dbError.message,
         dbError.stack,
-        MultimediaService.name
+        MultimediaService.name,
       );
     });
   });
@@ -527,18 +581,26 @@ describe('MultimediaService', () => {
     };
 
     it('should download multimedia successfully', async () => {
-      mockPrismaService.multimedia.findUniqueOrThrow.mockResolvedValue(mockMultimedia);
-      (mockStorageProvider.downloadFile as any).mockResolvedValue(mockDownloadResult);
+      mockPrismaService.multimedia.findUniqueOrThrow.mockResolvedValue(
+        mockMultimedia,
+      );
+      (mockStorageProvider.downloadFile as any).mockResolvedValue(
+        mockDownloadResult,
+      );
 
       const result = await service.downloadMultimedia(multimediaId);
 
-      expect(mockPrismaService.multimedia.findUniqueOrThrow).toHaveBeenCalledWith({
+      expect(
+        mockPrismaService.multimedia.findUniqueOrThrow,
+      ).toHaveBeenCalledWith({
         where: {
           id: multimediaId,
           fileName: { not: null },
         },
       });
-      expect(mockStorageProvider.downloadFile).toHaveBeenCalledWith(mockMultimedia.fileName);
+      expect(mockStorageProvider.downloadFile).toHaveBeenCalledWith(
+        mockMultimedia.fileName,
+      );
       expect(result).toEqual({
         buffer: mockDownloadResult.buffer,
         name: mockMultimedia.url,
@@ -546,13 +608,15 @@ describe('MultimediaService', () => {
     });
 
     it('should handle multimedia not found', async () => {
-      mockPrismaService.multimedia.findUniqueOrThrow.mockRejectedValue(new Error('Not found'));
+      mockPrismaService.multimedia.findUniqueOrThrow.mockRejectedValue(
+        new Error('Not found'),
+      );
 
       await expect(service.downloadMultimedia(multimediaId)).rejects.toThrow(
-        NotFoundException
+        NotFoundException,
       );
       await expect(service.downloadMultimedia(multimediaId)).rejects.toThrow(
-        'Multimedia no encontrado o no es descargable'
+        'Multimedia no encontrado o no es descargable',
       );
 
       expect(mockStorageProvider.downloadFile).not.toHaveBeenCalled();
@@ -560,20 +624,24 @@ describe('MultimediaService', () => {
 
     it('should handle storage download error', async () => {
       const downloadError = new Error('Download failed');
-      mockPrismaService.multimedia.findUniqueOrThrow.mockResolvedValue(mockMultimedia);
-      (mockStorageProvider.downloadFile as any).mockRejectedValue(downloadError);
+      mockPrismaService.multimedia.findUniqueOrThrow.mockResolvedValue(
+        mockMultimedia,
+      );
+      (mockStorageProvider.downloadFile as any).mockRejectedValue(
+        downloadError,
+      );
 
       await expect(service.downloadMultimedia(multimediaId)).rejects.toThrow(
-        NotFoundException
+        NotFoundException,
       );
       await expect(service.downloadMultimedia(multimediaId)).rejects.toThrow(
-        'Multimedia no encontrado'
+        'Multimedia no encontrado',
       );
 
       expect(mockLogger.error).toHaveBeenCalledWith(
         downloadError.message,
         downloadError.stack,
-        MultimediaService.name
+        MultimediaService.name,
       );
     });
   });
@@ -587,11 +655,15 @@ describe('MultimediaService', () => {
     };
 
     it('should get multimedia successfully', async () => {
-      mockPrismaService.multimedia.findUniqueOrThrow.mockResolvedValue(mockMultimedia);
+      mockPrismaService.multimedia.findUniqueOrThrow.mockResolvedValue(
+        mockMultimedia,
+      );
 
       const result = await service.getMultimedia(multimediaId);
 
-      expect(mockPrismaService.multimedia.findUniqueOrThrow).toHaveBeenCalledWith({
+      expect(
+        mockPrismaService.multimedia.findUniqueOrThrow,
+      ).toHaveBeenCalledWith({
         where: { id: multimediaId },
         select: {
           url: true,
@@ -605,13 +677,15 @@ describe('MultimediaService', () => {
     });
 
     it('should handle multimedia not found', async () => {
-      mockPrismaService.multimedia.findUniqueOrThrow.mockRejectedValue(new Error('Not found'));
+      mockPrismaService.multimedia.findUniqueOrThrow.mockRejectedValue(
+        new Error('Not found'),
+      );
 
       await expect(service.getMultimedia(multimediaId)).rejects.toThrow(
-        NotFoundException
+        NotFoundException,
       );
       await expect(service.getMultimedia(multimediaId)).rejects.toThrow(
-        'Multimedia no encontrado'
+        'Multimedia no encontrado',
       );
     });
   });
@@ -625,7 +699,9 @@ describe('MultimediaService', () => {
 
     it('should upload URL successfully', async () => {
       const mockCreatedMultimedia = { id: 'multimedia-id' };
-      mockPrismaService.multimedia.create.mockResolvedValue(mockCreatedMultimedia);
+      mockPrismaService.multimedia.create.mockResolvedValue(
+        mockCreatedMultimedia,
+      );
 
       const result = await service.uploadUrl(payload);
 
@@ -651,7 +727,9 @@ describe('MultimediaService', () => {
         description: 'External image',
       } as CreateLinkMultimediaDto;
       const mockCreatedMultimedia = { id: 'multimedia-id' };
-      mockPrismaService.multimedia.create.mockResolvedValue(mockCreatedMultimedia);
+      mockPrismaService.multimedia.create.mockResolvedValue(
+        mockCreatedMultimedia,
+      );
 
       const result = await service.uploadUrl(payloadWithoutType);
 
@@ -676,10 +754,10 @@ describe('MultimediaService', () => {
       mockPrismaService.multimedia.create.mockRejectedValue(dbError);
 
       await expect(service.uploadUrl(payload)).rejects.toThrow(
-        BadRequestException
+        BadRequestException,
       );
       await expect(service.uploadUrl(payload)).rejects.toThrow(
-        'Error al guardar los archivos en la base de datos'
+        'Error al guardar los archivos en la base de datos',
       );
     });
 
@@ -689,7 +767,9 @@ describe('MultimediaService', () => {
         type: TypeMultimedia.IMAGE,
       } as CreateLinkMultimediaDto;
       const mockCreatedMultimedia = { id: 'multimedia-id' };
-      mockPrismaService.multimedia.create.mockResolvedValue(mockCreatedMultimedia);
+      mockPrismaService.multimedia.create.mockResolvedValue(
+        mockCreatedMultimedia,
+      );
 
       const result = await service.uploadUrl(payloadWithoutDescription);
 
@@ -712,9 +792,9 @@ describe('MultimediaService', () => {
 
   describe('constructor', () => {
     it('should initialize storage provider through factory', () => {
-      expect(mockStorageProviderFactory.createStorageProvider).toHaveBeenCalledWith(
-        mockMultimediaConfig
-      );
+      expect(
+        mockStorageProviderFactory.createStorageProvider,
+      ).toHaveBeenCalledWith(mockMultimediaConfig);
     });
   });
 });

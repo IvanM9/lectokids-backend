@@ -1,4 +1,9 @@
-import { Injectable, Logger, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import * as firebase from 'firebase-admin';
 import {
   StorageProvider,
@@ -44,8 +49,14 @@ export class FirebaseStorageProvider implements StorageProvider {
         fileName,
       };
     } catch (error) {
-      this.logger.error(error.message, error.stack, FirebaseStorageProvider.name);
-      throw new BadRequestException('Error al guardar los archivos en el servidor');
+      this.logger.error(
+        error.message,
+        error.stack,
+        FirebaseStorageProvider.name,
+      );
+      throw new BadRequestException(
+        'Error al guardar los archivos en el servidor',
+      );
     }
   }
 
@@ -62,20 +73,24 @@ export class FirebaseStorageProvider implements StorageProvider {
         name: fileName,
       };
     } catch (error) {
-      this.logger.error(error.message, error.stack, FirebaseStorageProvider.name);
+      this.logger.error(
+        error.message,
+        error.stack,
+        FirebaseStorageProvider.name,
+      );
       throw new NotFoundException('Multimedia no encontrado');
     }
   }
 
   async deleteFile(fileName: string): Promise<void> {
     try {
-      await firebase
-        .storage()
-        .bucket(this.bucketName)
-        .file(fileName)
-        .delete();
+      await firebase.storage().bucket(this.bucketName).file(fileName).delete();
     } catch (error) {
-      this.logger.error(error.message, error.stack, FirebaseStorageProvider.name);
+      this.logger.error(
+        error.message,
+        error.stack,
+        FirebaseStorageProvider.name,
+      );
       throw new BadRequestException('Error al eliminar el archivo');
     }
   }

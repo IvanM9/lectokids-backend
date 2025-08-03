@@ -5,6 +5,7 @@ import { ScoresService } from './services/scores.service';
 import { ScoresController } from './controllers/scores.controller';
 import { PrismaService } from '@/libs/prisma.service';
 import { AiModule } from '@/ai/ai.module';
+import { SharedModule } from '@/shared/shared.module';
 import { AnswersActivitiesService } from './services/answers-activities.service';
 import { QuestionsActivitiesService } from './services/questions-activities.service';
 import { AnswersActivitiesController } from './controllers/answers-activities.controller';
@@ -25,7 +26,7 @@ import { QuestionsActivitiesController } from './controllers/questions-activitie
     QuestionsActivitiesService,
     Logger,
   ],
-  imports: [AiModule],
+  imports: [AiModule, SharedModule],
   exports: [ActivitiesService],
 })
 export class ActivitiesModule {}

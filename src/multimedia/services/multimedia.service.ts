@@ -137,12 +137,10 @@ export class MultimediaService {
       });
 
     if (multimedia.fileName) {
-      await this.storageProvider
-        .deleteFile(multimedia.fileName)
-        .catch((e) => {
-          this.logger.error(e.message, e.stack, MultimediaService.name);
-          throw new BadRequestException('Error al eliminar el archivo');
-        });
+      await this.storageProvider.deleteFile(multimedia.fileName).catch((e) => {
+        this.logger.error(e.message, e.stack, MultimediaService.name);
+        throw new BadRequestException('Error al eliminar el archivo');
+      });
     }
 
     await this.db.multimedia

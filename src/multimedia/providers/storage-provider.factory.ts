@@ -17,9 +17,14 @@ export class StorageProviderFactory {
     switch (config.storageProvider) {
       case 'firebase':
         if (!config.firebaseConfig) {
-          throw new Error('Firebase configuration is required when using Firebase storage');
+          throw new Error(
+            'Firebase configuration is required when using Firebase storage',
+          );
         }
-        return new FirebaseStorageProvider(config.bucketName, config.firebaseConfig);
+        return new FirebaseStorageProvider(
+          config.bucketName,
+          config.firebaseConfig,
+        );
 
       case 'minio':
         if (
@@ -41,7 +46,9 @@ export class StorageProviderFactory {
         );
 
       default:
-        throw new Error(`Unsupported storage provider: ${config.storageProvider}`);
+        throw new Error(
+          `Unsupported storage provider: ${config.storageProvider}`,
+        );
     }
   }
 }
