@@ -7,6 +7,8 @@ import { CustomFileInterceptor } from './interceptors/custom-file.interceptor';
 import { ConfigModule } from '@nestjs/config';
 import multimediaConfig from './config/multimedia.config';
 import { StorageProviderFactory } from './providers/storage-provider.factory';
+import firebaseConfig from './config/firebase.config';
+import minioConfig from './config/minio.config';
 
 @Module({
   providers: [MultimediaService, PrismaService, Logger, StorageProviderFactory],
@@ -16,6 +18,8 @@ import { StorageProviderFactory } from './providers/storage-provider.factory';
       useClass: CustomFileInterceptor,
     }),
     ConfigModule.forFeature(multimediaConfig),
+    ConfigModule.forFeature(firebaseConfig),
+    ConfigModule.forFeature(minioConfig),
   ],
   exports: [MultimediaService],
 })

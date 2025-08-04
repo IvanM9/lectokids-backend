@@ -15,6 +15,9 @@ import {
 import { CreateLinkMultimediaDto } from '../dtos/multimedia.dto';
 import { Readable } from 'stream';
 import * as fs from 'fs';
+import { StorageProviderEnum } from '../enums/storage-provider.enum';
+import firebaseConfig from '../config/firebase.config';
+import minioConfig from '../config/minio.config';
 
 // Mock fs module
 vi.mock('fs', () => ({
@@ -42,16 +45,28 @@ describe('MultimediaService', () => {
   };
 
   const mockMultimediaConfig: ConfigType<typeof multimediaConfig> = {
-    storageProvider: 'minio',
+    storageProvider: StorageProviderEnum.MINIO,
     bucketName: 'test-bucket',
     publicDir: '/tmp/test',
+  };
+
+  const mockFirebaseConfig: ConfigType<typeof firebaseConfig> = {
     firebaseConfig: '{}',
-    minioEndpoint: 'localhost',
-    minioPort: 9000,
-    minioUseSSL: false,
-    minioAccessKey: 'test',
-    minioSecretKey: 'test',
-    minioPublicUrl: 'http://localhost:9000',
+    apiKey: 'test-api-key',
+    authDomain: 'test-auth-domain',
+    projectId: 'test-project-id',
+    storageBucket: 'test-storage-bucket',
+    messaginSenderId: 'test-messaging-sender-id',
+    appId: 'test-app-id',
+  };
+
+  const mockMinioConfig: ConfigType<typeof minioConfig> = {
+    endPoint: 'localhost',
+    port: 9000,
+    useSSL: false,
+    accessKey: 'test',
+    secretKey: 'test',
+    publicUrl: 'http://localhost:9000',
   };
 
   const mockStorageProvider: StorageProvider = {
@@ -90,6 +105,14 @@ describe('MultimediaService', () => {
         {
           provide: StorageProviderFactory,
           useValue: mockStorageProviderFactory,
+        },
+        {
+          provide: firebaseConfig.KEY,
+          useValue: mockFirebaseConfig,
+        },
+        {
+          provide: minioConfig.KEY,
+          useValue: mockMinioConfig,
         },
       ],
     }).compile();
@@ -794,7 +817,11 @@ describe('MultimediaService', () => {
     it('should initialize storage provider through factory', () => {
       expect(
         mockStorageProviderFactory.createStorageProvider,
-      ).toHaveBeenCalledWith(mockMultimediaConfig);
+      ).toHaveBeenCalledWith(
+        mockMultimediaConfig,
+        mockFirebaseConfig,
+        mockMinioConfig,
+      );
     });
   });
 });

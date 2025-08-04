@@ -14,6 +14,8 @@ import multimediaConfig from '../config/multimedia.config';
 import { ConfigType } from '@nestjs/config';
 import { StorageProvider } from '../interfaces/storage-provider.interface';
 import { StorageProviderFactory } from '../providers/storage-provider.factory';
+import minioConfig from '../config/minio.config';
+import firebaseConfig from '../config/firebase.config';
 
 @Injectable()
 export class MultimediaService {
@@ -24,10 +26,16 @@ export class MultimediaService {
     private readonly logger: Logger,
     @Inject(multimediaConfig.KEY)
     private environment: ConfigType<typeof multimediaConfig>,
+    @Inject(minioConfig.KEY)
+    private minioEnv: ConfigType<typeof minioConfig>,
+    @Inject(firebaseConfig.KEY)
+    private firebaseEnv: ConfigType<typeof firebaseConfig>,
     private storageProviderFactory: StorageProviderFactory,
   ) {
     this.storageProvider = this.storageProviderFactory.createStorageProvider(
-      this.environment,
+      environment,
+      firebaseEnv,
+      minioEnv,
     );
   }
 
