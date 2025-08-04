@@ -77,9 +77,13 @@ describe('MinioStorageProvider', () => {
 
       vi.spyOn(fs, 'statSync').mockReturnValue({ size: 100 } as any);
       vi.spyOn(fs, 'createReadStream').mockReturnValue({} as any);
-      vi.spyOn(minioClient, 'putObject').mockRejectedValue(new Error('Upload failed'));
+      vi.spyOn(minioClient, 'putObject').mockRejectedValue(
+        new Error('Upload failed'),
+      );
 
-      await expect(provider.uploadFile(filePath, fileName)).rejects.toThrow(BadRequestException);
+      await expect(provider.uploadFile(filePath, fileName)).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 
@@ -111,9 +115,13 @@ describe('MinioStorageProvider', () => {
     it('should throw a NotFoundException if download fails', async () => {
       const fileName = 'file.txt';
 
-      vi.spyOn(minioClient, 'getObject').mockRejectedValue(new Error('Download failed'));
+      vi.spyOn(minioClient, 'getObject').mockRejectedValue(
+        new Error('Download failed'),
+      );
 
-      await expect(provider.downloadFile(fileName)).rejects.toThrow(NotFoundException);
+      await expect(provider.downloadFile(fileName)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -121,19 +129,28 @@ describe('MinioStorageProvider', () => {
     it('should delete a file', async () => {
       const fileName = 'file.txt';
 
-      const removeObjectMock = vi.spyOn(minioClient, 'removeObject').mockResolvedValue(undefined);
+      const removeObjectMock = vi
+        .spyOn(minioClient, 'removeObject')
+        .mockResolvedValue(undefined);
 
       await provider.deleteFile(fileName);
 
-      expect(removeObjectMock).toHaveBeenCalledWith(config.bucketName, fileName);
+      expect(removeObjectMock).toHaveBeenCalledWith(
+        config.bucketName,
+        fileName,
+      );
     });
 
     it('should throw a BadRequestException if delete fails', async () => {
       const fileName = 'file.txt';
 
-      vi.spyOn(minioClient, 'removeObject').mockRejectedValue(new Error('Delete failed'));
+      vi.spyOn(minioClient, 'removeObject').mockRejectedValue(
+        new Error('Delete failed'),
+      );
 
-      await expect(provider.deleteFile(fileName)).rejects.toThrow(BadRequestException);
+      await expect(provider.deleteFile(fileName)).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 });

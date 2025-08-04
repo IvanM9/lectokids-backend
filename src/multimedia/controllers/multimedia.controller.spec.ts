@@ -5,7 +5,10 @@ import { Response } from 'express';
 import { TypeMultimedia } from '@prisma/client';
 import { MultimediaController } from './multimedia.controller';
 import { MultimediaService } from '../services/multimedia.service';
-import { CreateMultimediaDto, CreateLinkMultimediaDto } from '../dtos/multimedia.dto';
+import {
+  CreateMultimediaDto,
+  CreateLinkMultimediaDto,
+} from '../dtos/multimedia.dto';
 
 describe('MultimediaController', () => {
   let controller: MultimediaController;
@@ -79,18 +82,21 @@ describe('MultimediaController', () => {
     it('should create multimedia successfully with files and data', async () => {
       const expectedResult = {
         message: 'Multimedia creado con éxito',
-        data: [
-          { id: 'multimedia-id-1' },
-          { id: 'multimedia-id-2' },
-        ],
+        data: [{ id: 'multimedia-id-1' }, { id: 'multimedia-id-2' }],
       };
 
       mockMultimediaService.createMultimedia.mockResolvedValue(expectedResult);
 
-      const result = await controller.createMultimedia(mockFiles, createMultimediaDto);
+      const result = await controller.createMultimedia(
+        mockFiles,
+        createMultimediaDto,
+      );
 
       expect(result).toEqual(expectedResult);
-      expect(service.createMultimedia).toHaveBeenCalledWith(mockFiles, createMultimediaDto);
+      expect(service.createMultimedia).toHaveBeenCalledWith(
+        mockFiles,
+        createMultimediaDto,
+      );
       expect(service.createMultimedia).toHaveBeenCalledTimes(1);
     });
 
@@ -109,10 +115,16 @@ describe('MultimediaController', () => {
 
       mockMultimediaService.createMultimedia.mockResolvedValue(expectedResult);
 
-      const result = await controller.createMultimedia(singleFile, singleFileDto);
+      const result = await controller.createMultimedia(
+        singleFile,
+        singleFileDto,
+      );
 
       expect(result).toEqual(expectedResult);
-      expect(service.createMultimedia).toHaveBeenCalledWith(singleFile, singleFileDto);
+      expect(service.createMultimedia).toHaveBeenCalledWith(
+        singleFile,
+        singleFileDto,
+      );
     });
 
     it('should handle empty files array', async () => {
@@ -130,21 +142,32 @@ describe('MultimediaController', () => {
 
       mockMultimediaService.createMultimedia.mockResolvedValue(expectedResult);
 
-      const result = await controller.createMultimedia(emptyFiles, emptyFilesDto);
+      const result = await controller.createMultimedia(
+        emptyFiles,
+        emptyFilesDto,
+      );
 
       expect(result).toEqual(expectedResult);
-      expect(service.createMultimedia).toHaveBeenCalledWith(emptyFiles, emptyFilesDto);
+      expect(service.createMultimedia).toHaveBeenCalledWith(
+        emptyFiles,
+        emptyFilesDto,
+      );
     });
 
     it('should handle service errors during file creation', async () => {
-      const error = new BadRequestException('Error al guardar los archivos en el servidor');
+      const error = new BadRequestException(
+        'Error al guardar los archivos en el servidor',
+      );
       mockMultimediaService.createMultimedia.mockRejectedValue(error);
 
       await expect(
-        controller.createMultimedia(mockFiles, createMultimediaDto)
+        controller.createMultimedia(mockFiles, createMultimediaDto),
       ).rejects.toThrow(BadRequestException);
 
-      expect(service.createMultimedia).toHaveBeenCalledWith(mockFiles, createMultimediaDto);
+      expect(service.createMultimedia).toHaveBeenCalledWith(
+        mockFiles,
+        createMultimediaDto,
+      );
     });
 
     it('should handle different multimedia types', async () => {
@@ -161,10 +184,16 @@ describe('MultimediaController', () => {
 
       mockMultimediaService.createMultimedia.mockResolvedValue(expectedResult);
 
-      const result = await controller.createMultimedia([mockFiles[1]], videoDto);
+      const result = await controller.createMultimedia(
+        [mockFiles[1]],
+        videoDto,
+      );
 
       expect(result).toEqual(expectedResult);
-      expect(service.createMultimedia).toHaveBeenCalledWith([mockFiles[1]], videoDto);
+      expect(service.createMultimedia).toHaveBeenCalledWith(
+        [mockFiles[1]],
+        videoDto,
+      );
     });
   });
 
@@ -187,7 +216,7 @@ describe('MultimediaController', () => {
       mockMultimediaService.deleteMultimedia.mockRejectedValue(error);
 
       await expect(controller.deleteMultimedia(multimediaId)).rejects.toThrow(
-        NotFoundException
+        NotFoundException,
       );
 
       expect(service.deleteMultimedia).toHaveBeenCalledWith(multimediaId);
@@ -198,7 +227,7 @@ describe('MultimediaController', () => {
       mockMultimediaService.deleteMultimedia.mockRejectedValue(error);
 
       await expect(controller.deleteMultimedia(multimediaId)).rejects.toThrow(
-        BadRequestException
+        BadRequestException,
       );
 
       expect(service.deleteMultimedia).toHaveBeenCalledWith(multimediaId);
@@ -210,7 +239,7 @@ describe('MultimediaController', () => {
       mockMultimediaService.deleteMultimedia.mockRejectedValue(error);
 
       await expect(controller.deleteMultimedia(invalidId)).rejects.toThrow(
-        NotFoundException
+        NotFoundException,
       );
 
       expect(service.deleteMultimedia).toHaveBeenCalledWith(invalidId);
@@ -278,7 +307,7 @@ describe('MultimediaController', () => {
       } as unknown as Response;
 
       await expect(
-        controller.getMultimedia(multimediaId, mockResponse)
+        controller.getMultimedia(multimediaId, mockResponse),
       ).rejects.toThrow(NotFoundException);
 
       expect(service.downloadMultimedia).toHaveBeenCalledWith(multimediaId);
@@ -296,7 +325,7 @@ describe('MultimediaController', () => {
       } as unknown as Response;
 
       await expect(
-        controller.getMultimedia(multimediaId, mockResponse)
+        controller.getMultimedia(multimediaId, mockResponse),
       ).rejects.toThrow(BadRequestException);
 
       expect(service.downloadMultimedia).toHaveBeenCalledWith(multimediaId);
@@ -376,7 +405,9 @@ describe('MultimediaController', () => {
         },
       };
 
-      mockMultimediaService.getMultimedia.mockResolvedValue(resultWithoutDescription);
+      mockMultimediaService.getMultimedia.mockResolvedValue(
+        resultWithoutDescription,
+      );
 
       const result = await controller.getMultimediaUrl(multimediaId);
 
@@ -389,7 +420,7 @@ describe('MultimediaController', () => {
       mockMultimediaService.getMultimedia.mockRejectedValue(error);
 
       await expect(controller.getMultimediaUrl(multimediaId)).rejects.toThrow(
-        NotFoundException
+        NotFoundException,
       );
 
       expect(service.getMultimedia).toHaveBeenCalledWith(multimediaId);
@@ -400,7 +431,7 @@ describe('MultimediaController', () => {
       mockMultimediaService.getMultimedia.mockRejectedValue(error);
 
       await expect(controller.getMultimediaUrl(multimediaId)).rejects.toThrow(
-        BadRequestException
+        BadRequestException,
       );
 
       expect(service.getMultimedia).toHaveBeenCalledWith(multimediaId);
@@ -422,7 +453,9 @@ describe('MultimediaController', () => {
 
       mockMultimediaService.uploadUrl.mockResolvedValue(expectedResult);
 
-      const result = await controller.createLinkMultimedia(createLinkMultimediaDto);
+      const result = await controller.createLinkMultimedia(
+        createLinkMultimediaDto,
+      );
 
       expect(result).toEqual(expectedResult);
       expect(service.uploadUrl).toHaveBeenCalledWith(createLinkMultimediaDto);
@@ -463,18 +496,22 @@ describe('MultimediaController', () => {
 
       mockMultimediaService.uploadUrl.mockResolvedValue(expectedResult);
 
-      const result = await controller.createLinkMultimedia(linkWithoutDescription);
+      const result = await controller.createLinkMultimedia(
+        linkWithoutDescription,
+      );
 
       expect(result).toEqual(expectedResult);
       expect(service.uploadUrl).toHaveBeenCalledWith(linkWithoutDescription);
     });
 
     it('should handle service errors during link creation', async () => {
-      const error = new BadRequestException('Error al guardar los archivos en la base de datos');
+      const error = new BadRequestException(
+        'Error al guardar los archivos en la base de datos',
+      );
       mockMultimediaService.uploadUrl.mockRejectedValue(error);
 
       await expect(
-        controller.createLinkMultimedia(createLinkMultimediaDto)
+        controller.createLinkMultimedia(createLinkMultimediaDto),
       ).rejects.toThrow(BadRequestException);
 
       expect(service.uploadUrl).toHaveBeenCalledWith(createLinkMultimediaDto);
@@ -491,9 +528,9 @@ describe('MultimediaController', () => {
       const error = new BadRequestException('URL inválida');
       mockMultimediaService.uploadUrl.mockRejectedValue(error);
 
-      await expect(controller.createLinkMultimedia(invalidUrlDto)).rejects.toThrow(
-        BadRequestException
-      );
+      await expect(
+        controller.createLinkMultimedia(invalidUrlDto),
+      ).rejects.toThrow(BadRequestException);
 
       expect(service.uploadUrl).toHaveBeenCalledWith(invalidUrlDto);
     });
@@ -531,7 +568,9 @@ describe('MultimediaController', () => {
       const unexpectedError = new Error('Unexpected error');
       mockMultimediaService.createMultimedia.mockRejectedValue(unexpectedError);
 
-      await expect(controller.createMultimedia(files, dto)).rejects.toThrow('Unexpected error');
+      await expect(controller.createMultimedia(files, dto)).rejects.toThrow(
+        'Unexpected error',
+      );
     });
 
     it('should handle unexpected service errors in deleteMultimedia', async () => {
@@ -539,7 +578,7 @@ describe('MultimediaController', () => {
       mockMultimediaService.deleteMultimedia.mockRejectedValue(unexpectedError);
 
       await expect(controller.deleteMultimedia('test-id')).rejects.toThrow(
-        'Database connection failed'
+        'Database connection failed',
       );
     });
 
@@ -550,18 +589,22 @@ describe('MultimediaController', () => {
       } as unknown as Response;
 
       const unexpectedError = new Error('File system error');
-      mockMultimediaService.downloadMultimedia.mockRejectedValue(unexpectedError);
-
-      await expect(controller.getMultimedia('test-id', mockResponse)).rejects.toThrow(
-        'File system error'
+      mockMultimediaService.downloadMultimedia.mockRejectedValue(
+        unexpectedError,
       );
+
+      await expect(
+        controller.getMultimedia('test-id', mockResponse),
+      ).rejects.toThrow('File system error');
     });
 
     it('should handle unexpected service errors in getMultimediaUrl', async () => {
       const unexpectedError = new Error('Network error');
       mockMultimediaService.getMultimedia.mockRejectedValue(unexpectedError);
 
-      await expect(controller.getMultimediaUrl('test-id')).rejects.toThrow('Network error');
+      await expect(controller.getMultimediaUrl('test-id')).rejects.toThrow(
+        'Network error',
+      );
     });
 
     it('should handle unexpected service errors in createLinkMultimedia', async () => {
@@ -575,7 +618,7 @@ describe('MultimediaController', () => {
       mockMultimediaService.uploadUrl.mockRejectedValue(unexpectedError);
 
       await expect(controller.createLinkMultimedia(dto)).rejects.toThrow(
-        'External service unavailable'
+        'External service unavailable',
       );
     });
   });

@@ -4,6 +4,9 @@ import multimediaConfig from '../config/multimedia.config';
 import { StorageProvider } from '../interfaces/storage-provider.interface';
 import { FirebaseStorageProvider } from '../providers/firebase-storage.provider';
 import { MinioStorageProvider } from '../providers/minio-storage.provider';
+import { StorageProviderEnum } from '../enums/storage-provider.enum';
+import firebaseConfig from '../config/firebase.config';
+import minioConfig from '../config/minio.config';
 
 @Injectable()
 export class StorageProviderFactory {
@@ -11,37 +14,46 @@ export class StorageProviderFactory {
 
   createStorageProvider(
     config: ConfigType<typeof multimediaConfig>,
+    firebaseEnv: ConfigType<typeof firebaseConfig>,
+    minioEnv: ConfigType<typeof minioConfig>,
   ): StorageProvider {
     this.logger.log(`Creating storage provider: ${config.storageProvider}`);
 
     switch (config.storageProvider) {
-      case 'firebase':
-        if (!config.firebaseConfig) {
-          throw new Error('Firebase configuration is required when using Firebase storage');
+      case StorageProviderEnum.FIREBASE:
+        if (!firebaseEnv.firebaseConfig) {
+          throw new Error(
+            'Firebase configuration is required when using Firebase storage',
+          );
         }
-        return new FirebaseStorageProvider(config.bucketName, config.firebaseConfig);
+        return new FirebaseStorageProvider(
+          config.bucketName,
+          firebaseEnv.firebaseConfig,
+        );
 
-      case 'minio':
+      case StorageProviderEnum.MINIO:
         if (
-          !config.minioEndpoint ||
-          !config.minioPort ||
-          !config.minioAccessKey ||
-          !config.minioSecretKey
+          !minioEnv.endPoint ||
+          !minioEnv.port ||
+          !minioEnv.accessKey ||
+          !minioEnv.secretKey
         ) {
           throw new Error('MINIO configuration is incomplete');
         }
         return new MinioStorageProvider(
-          config.minioEndpoint,
-          config.minioPort,
-          config.minioUseSSL ?? false,
-          config.minioAccessKey,
-          config.minioSecretKey,
+          minioEnv.endPoint,
+          minioEnv.port,
+          minioEnv.useSSL ?? false,
+          minioEnv.accessKey,
+          minioEnv.secretKey,
           config.bucketName,
-          config.minioPublicUrl,
+          minioEnv.publicUrl,
         );
 
       default:
-        throw new Error(`Unsupported storage provider: ${config.storageProvider}`);
+        throw new Error(
+          `Unsupported storage provider: ${config.storageProvider}`,
+        );
     }
   }
 }

@@ -1,4 +1,9 @@
-import { Injectable, Logger, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { Client as MinioClient } from 'minio';
 import * as fs from 'fs';
 import {
@@ -84,22 +89,27 @@ export class MinioStorageProvider implements StorageProvider {
       };
     } catch (error) {
       this.logger.error(error.message, error.stack, MinioStorageProvider.name);
-      throw new BadRequestException('Error al guardar los archivos en el servidor');
+      throw new BadRequestException(
+        'Error al guardar los archivos en el servidor',
+      );
     }
   }
 
   async downloadFile(fileName: string): Promise<StorageDownloadResult> {
     try {
-      const dataStream = await this.minioClient.getObject(this.bucketName, fileName);
-      
+      const dataStream = await this.minioClient.getObject(
+        this.bucketName,
+        fileName,
+      );
+
       // Convert stream to buffer
       const chunks: Buffer[] = [];
-      
+
       return new Promise((resolve, reject) => {
         dataStream.on('data', (chunk) => {
           chunks.push(chunk);
         });
-        
+
         dataStream.on('end', () => {
           const buffer = Buffer.concat(chunks);
           resolve({
@@ -107,7 +117,7 @@ export class MinioStorageProvider implements StorageProvider {
             name: fileName,
           });
         });
-        
+
         dataStream.on('error', (error) => {
           reject(error);
         });
@@ -143,7 +153,10 @@ export class MinioStorageProvider implements StorageProvider {
         ],
       };
 
-      await this.minioClient.setBucketPolicy(this.bucketName, JSON.stringify(policy));
+      await this.minioClient.setBucketPolicy(
+        this.bucketName,
+        JSON.stringify(policy),
+      );
     } catch (error) {
       this.logger.warn(
         `Could not set public policy for object ${fileName}: ${error.message}`,
@@ -156,7 +169,7 @@ export class MinioStorageProvider implements StorageProvider {
     if (this.publicUrl) {
       return `${this.publicUrl}/${this.bucketName}/${fileName}`;
     }
-    
+
     const protocol = this.useSSL ? 'https' : 'http';
     const port = this.port === 80 || this.port === 443 ? '' : `:${this.port}`;
     return `${protocol}://${this.endPoint}${port}/${this.bucketName}/${fileName}`;

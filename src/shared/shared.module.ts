@@ -6,6 +6,7 @@ import { HealthController } from './controllers/health.controller';
 import { PrismaService } from '@/libs/prisma.service';
 import { ConfigModule } from '@nestjs/config';
 import serverConfig from './config/server.config';
+import { PuppeteerPoolService } from './services/puppeteer-pool.service';
 
 @Module({
   providers: [
@@ -14,6 +15,7 @@ import serverConfig from './config/server.config';
       useClass: DateFormatInterceptor,
     },
     PrismaService,
+    PuppeteerPoolService,
   ],
   imports: [
     TerminusModule.forRoot({
@@ -21,5 +23,6 @@ import serverConfig from './config/server.config';
     }),
   ],
   controllers: [HealthController],
+  exports: [PuppeteerPoolService],
 })
 export class SharedModule {}

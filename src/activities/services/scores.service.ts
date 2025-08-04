@@ -15,7 +15,7 @@ import { ScoreQuestionActivityInterface } from '../interfaces/score.interface';
 import { AiService } from '@/ai/services/ai/ai.service';
 import { TypeContent } from '@prisma/client';
 import { renderFile } from 'ejs';
-import puppeteer from 'puppeteer';
+import { PuppeteerPoolService } from '@/shared/services/puppeteer-pool.service';
 import serverConfig from '@/shared/config/server.config';
 import { ConfigType } from '@nestjs/config';
 
@@ -25,6 +25,7 @@ export class ScoresService {
     private db: PrismaService,
     private readonly logger: Logger,
     private readonly ai: AiService,
+    private readonly puppeteerPool: PuppeteerPoolService,
     @Inject(serverConfig.KEY)
     private environment: ConfigType<typeof serverConfig>,
   ) {}
@@ -352,7 +353,9 @@ export class ScoresService {
 
     const scores = activities.map((activity) => ({
       activityId: activity.id,
-      score: Number(activity.scores[activity.scores.length - 1]?.score ?? 0).toFixed(2),
+      score: Number(
+        activity.scores[activity.scores.length - 1]?.score ?? 0,
+      ).toFixed(2),
       allScores: activity.scores.map((item) => ({
         score: Number(item.score).toFixed(2),
         createdAt: item.createdAt,
@@ -432,10 +435,12 @@ export class ScoresService {
         const activityScores = activity.scores.filter(
           (score) => score.courseStudentId === student.courseStudent.id,
         );
-        
+
         return {
           activityId: activity.id,
-          score: Number(activityScores[activityScores.length - 1]?.score ?? 0).toFixed(2),
+          score: Number(
+            activityScores[activityScores.length - 1]?.score ?? 0,
+          ).toFixed(2),
           allScores: activityScores.map((item) => ({
             score: Number(item.score).toFixed(2),
             createdAt: item.createdAt,
@@ -553,7 +558,9 @@ export class ScoresService {
             const detailReading = reading.detailReadings[0];
             const activityScores = detailReading.activities.map((activity) => ({
               activityId: activity.id,
-              score: Number(activity.scores[activity.scores.length - 1]?.score ?? 0).toFixed(2),
+              score: Number(
+                activity.scores[activity.scores.length - 1]?.score ?? 0,
+              ).toFixed(2),
               allScores: activity.scores.map((item) => ({
                 score: Number(item.score).toFixed(2),
                 createdAt: item.createdAt,
@@ -707,15 +714,17 @@ export class ScoresService {
           return detailReading.studentsOnReadings.map((studentOnReading) => {
             const student = studentOnReading.courseStudent.student;
             const studentId = student.id;
-            
+
             const studentScores = detailReading.activities.map((activity) => {
               const activityScores = activity.scores.filter(
                 (score) => score.courseStudent.studentId === studentId,
               );
-              
+
               return {
                 activityId: activity.id,
-                score: Number(activityScores[activityScores.length - 1]?.score ?? 0).toFixed(2),
+                score: Number(
+                  activityScores[activityScores.length - 1]?.score ?? 0,
+                ).toFixed(2),
                 allScores: activityScores.map((item) => ({
                   score: Number(item.score).toFixed(2),
                   createdAt: item.createdAt,
@@ -727,7 +736,9 @@ export class ScoresService {
             });
 
             const readingTimeSpends = detailReading.timeSpends
-              .filter((timeSpend) => timeSpend.courseStudent.studentId === studentId)
+              .filter(
+                (timeSpend) => timeSpend.courseStudent.studentId === studentId,
+              )
               .map((time) => {
                 const timeSpendAux =
                   (time.endTime.getTime() - time.startTime.getTime()) / 1000;
@@ -770,44 +781,38 @@ export class ScoresService {
     };
   }
 
-  async getPDFScoreByCourse(userId: string, courseId: string) {
-    const data = (await this.getAllScoreByCourse(userId, courseId)).data;
+  async getPDFScoreByCourse(userId: string, courseId: string): Promise<Buffer> {
+    try {
+      const data = (await this.getAllScoreByCourse(userId, courseId)).data;
 
-    return new Promise<Buffer>((resolve, reject) => {
-      renderFile(
-        this.environment.viewsDir + '/report-by-course.ejs',
-        { course: data },
-        async (err, html) => {
-          if (err) {
-            reject(err);
-            return;
-          }
+      const html = await new Promise<string>((resolve, reject) => {
+        renderFile(
+          this.environment.viewsDir + '/report-by-course.ejs',
+          { course: data },
+          (err, html) => {
+            if (err) {
+              this.logger.error('Error rendering course report template', err);
+              reject(new BadRequestException('Error generando el reporte'));
+              return;
+            }
+            resolve(html);
+          },
+        );
+      });
 
-          const browser = await puppeteer.launch({
-            args: ['--no-sandbox', '--disable-setuid-sandbox'],
-          });
-
-          const page = await browser.newPage();
-          await page.setContent(html);
-
-          const buffer = await page.pdf({
-            format: 'A4',
-            margin: {
-              top: '20px',
-              bottom: '20px',
-              left: '20px',
-              right: '20px',
-            },
-          });
-
-          const nodeBuffer = Buffer.from(buffer);
-
-          await browser.close();
-
-          resolve(nodeBuffer);
+      return await this.puppeteerPool.generatePDF(html, {
+        format: 'A4',
+        margin: {
+          top: '20px',
+          bottom: '20px',
+          left: '20px',
+          right: '20px',
         },
-      );
-    });
+      });
+    } catch (error) {
+      this.logger.error('Error generating course PDF report', error);
+      throw new BadRequestException('Error generando el reporte PDF');
+    }
   }
 
   async getScoreByStudent(userId: string, studentId: string, courseId: string) {
@@ -942,11 +947,14 @@ export class ScoresService {
         .filter((reading) => reading.detailReadings.length > 0)
         .map((reading) => {
           const scores = reading.detailReadings.map((detailReading) => {
-            const student = detailReading.studentsOnReadings[0]?.courseStudent.student;
-            
+            const student =
+              detailReading.studentsOnReadings[0]?.courseStudent.student;
+
             const studentScores = detailReading.activities.map((activity) => ({
               activityId: activity.id,
-              score: Number(activity.scores[activity.scores.length - 1]?.score ?? 0).toFixed(2),
+              score: Number(
+                activity.scores[activity.scores.length - 1]?.score ?? 0,
+              ).toFixed(2),
               allScores: activity.scores.map((item) => ({
                 score: Number(item.score).toFixed(2),
                 createdAt: item.createdAt,
@@ -968,7 +976,9 @@ export class ScoresService {
 
             return {
               studentId: student?.id || studentId,
-              studentName: student ? `${student.user.firstName} ${student.user.lastName}` : '',
+              studentName: student
+                ? `${student.user.firstName} ${student.user.lastName}`
+                : '',
               scores: studentScores,
               detailReadingId: detailReading.id,
               readingTimeSpends,
@@ -998,36 +1008,32 @@ export class ScoresService {
     userId: string,
     studentId: string,
     courseId: string,
-  ) {
-    const data = (await this.getScoreByStudent(userId, studentId, courseId))
-      .data;
+  ): Promise<Buffer> {
+    try {
+      const data = (await this.getScoreByStudent(userId, studentId, courseId))
+        .data;
 
-    return new Promise<Buffer>((resolve, reject) => {
-      renderFile(
-        this.environment.viewsDir + '/report-by-student.ejs',
-        { data },
-        async (err, html) => {
-          if (err) {
-            reject(err);
-            return;
-          }
+      const html = await new Promise<string>((resolve, reject) => {
+        renderFile(
+          this.environment.viewsDir + '/report-by-student.ejs',
+          { data },
+          (err, html) => {
+            if (err) {
+              this.logger.error('Error rendering student report template', err);
+              reject(new BadRequestException('Error generando el reporte'));
+              return;
+            }
+            resolve(html);
+          },
+        );
+      });
 
-          const browser = await puppeteer.launch({
-            args: ['--no-sandbox', '--disable-setuid-sandbox'],
-          });
-
-          const page = await browser.newPage();
-          await page.setContent(html);
-
-          const buffer = await page.pdf({ format: 'A4' });
-
-          const nodeBuffer = Buffer.from(buffer);
-
-          await browser.close();
-
-          resolve(nodeBuffer);
-        },
-      );
-    });
+      return await this.puppeteerPool.generatePDF(html, {
+        format: 'A4',
+      });
+    } catch (error) {
+      this.logger.error('Error generating student PDF report', error);
+      throw new BadRequestException('Error generando el reporte PDF');
+    }
   }
 }
