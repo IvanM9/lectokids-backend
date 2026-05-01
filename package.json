@@ -68,7 +68,7 @@
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
     "unplugin-swc": "^1.5.9",
-    "uuid": "^11.1.0",
+    "uuid": "^14.0.0",
     "vitest": "^3.2.4",
     "winston": "^3.18.3",
     "xlsx": "^0.18.5",
